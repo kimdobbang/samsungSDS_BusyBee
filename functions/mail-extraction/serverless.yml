@@ -1,0 +1,36 @@
+org: ourmail
+app: busybee
+service: mail-extraction
+
+provider:
+  name: aws
+  runtime: python3.12
+  region: ap-northeast-2
+  environment:
+    OPENAI_API_KEY: ${ssm:/prod/openAI/api_key} # SSM Parameter Store에서 참조
+    EXTRACT_QUEUE_URL: 'https://sqs.ap-northeast-2.amazonaws.com/047719649915/information_integrity_verification_trigger'
+
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 'ssm:GetParameter' # SSM Parameter Store 접근 권한 추가
+          Resource: 'arn:aws:ssm:ap-northeast-2:047719649915:parameter/prod/openAI/api_key'
+        - Effect: 'Allow'
+          Action:
+            - 'sqs:SendMessage'
+            - 'sqs:ReceiveMessage'
+            - 'sqs:DeleteMessage'
+          Resource:
+            - 'arn:aws:sqs:ap-northeast-2:047719649915:request_llm_trigger'
+            - 'arn:aws:sqs:ap-northeast-2:047719649915:information_integrity_verification_trigger'
+
+functions:
+  extractEmailData:
+    name: mail-extraction
+    image:
+      uri: 047719649915.dkr.ecr.ap-northeast-2.amazonaws.com/mail_extraction:latest
+    events:
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:047719649915:request_llm_trigger

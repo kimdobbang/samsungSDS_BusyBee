@@ -28,7 +28,7 @@ provider:
 
 functions:
   extractEmailData:
-    name: mail_extraction
+    name: mail-extraction
     image:
       uri: 047719649915.dkr.ecr.ap-northeast-2.amazonaws.com/mail_extraction:latest
     events:

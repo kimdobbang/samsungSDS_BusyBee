@@ -1,4 +1,4 @@
-package online.everymail;
+package online.everymail.dto;
 
 import lombok.AllArgsConstructor;
 

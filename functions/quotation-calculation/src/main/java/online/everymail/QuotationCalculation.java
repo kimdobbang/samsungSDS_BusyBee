@@ -9,6 +9,9 @@ import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import online.everymail.dto.Data;
+import online.everymail.dto.SNSMessageData;
+import online.everymail.dto.SQSMessageData;
 
 public class QuotationCalculation implements RequestHandler<SQSEvent, Void> {
 

@@ -562,7 +562,6 @@ buildNumber.properties
 .mvn/timing.properties
 .gradle/
 gradle/
-gradlew*
 
 # Exclude maven wrapper
 !/.mvn/wrapper/maven-wrapper.jar

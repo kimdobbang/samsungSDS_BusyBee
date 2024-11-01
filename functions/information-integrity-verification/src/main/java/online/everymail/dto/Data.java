@@ -1,4 +1,4 @@
-package online.everymail;
+package online.everymail.dto;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;

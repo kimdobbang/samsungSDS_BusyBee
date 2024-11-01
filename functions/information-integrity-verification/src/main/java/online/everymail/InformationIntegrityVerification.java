@@ -12,6 +12,7 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import online.everymail.dto.SQSMessageData;
 
 public class InformationIntegrityVerification implements RequestHandler<SQSEvent, Void> {
 

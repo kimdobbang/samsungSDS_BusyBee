@@ -153,7 +153,8 @@ async function getSessionData(orderId) {
 
 module.exports = {
   saveConnection,
-  deleteConnection,
+  saveChat,
+  markSessionDeactive,
   markSessionComplete,
   getSessionData,
 };

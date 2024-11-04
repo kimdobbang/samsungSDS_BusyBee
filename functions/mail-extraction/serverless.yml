@@ -32,8 +32,3 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:ap-northeast-2:481665114066:mail-extraction-trigger
-    vpc:
-      subnetIds:
-        - ${ssm:/network/private-subnet-id}
-      securityGroupIds:
-        - ${ssm:/network/lambda-security-group-id}

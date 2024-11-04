@@ -7,7 +7,14 @@ from langchain_openai import ChatOpenAI
 
 PROMPT_TEMPLATE = """
 다음 이메일 내용에서 아래의 6가지 속성에 해당하는 정보를 JSON 형식으로 추출하세요.
-각 도시명을 아래 `City Code`로 매핑하여 일관성 있게 표시하세요. 만약 목록에 없는 도시는 "unknown"으로 표시하세요.
+각 도시명을 아래 `City Code`로 매핑하여 일관성 있게 표시하세요. 만약 목록에 없는 도시는 "unknown"으로 표시하세요. 
+값이 없는 경우에는 다음과 같은 기본 값을 사용하세요:
+- Weight: 0
+- ContainerSize: 0
+- DepartureDate: ""
+- ArrivalDate: ""
+- DepartureCity: ""
+- ArrivalCity: ""
 
 [List of attributes]
 1. Weight:type(integer)
@@ -17,33 +24,36 @@ PROMPT_TEMPLATE = """
 5. DepartureCity:type(string) - 도시명과 `City Code` 목록 참조
 6. ArrivalCity:type(string) - 도시명과 `City Code` 목록 참조
 
-도시명과 `City Code` 목록:
-- New York (JFK)
-- Los Angeles (LAX)
-- San Francisco (SFO)
-- Chicago (ORD)
-- London (LHR)
-- Paris (CDG)
-- Tokyo (HND)
-- Beijing (PEK)
-- Sydney (SYD)
-- Seoul (ICN)
-- Dubai (DXB)
-- Frankfurt (FRA)
-- Singapore (SIN)
-- Hong Kong (HKG)
-- Toronto (YYZ)
-- Johor Bahru, Malaysia (JHB)
-- Incheon, South Korea (ICN)
-- Busan, South Korea (PUS)
-- Frankfurt, Germany (FRA)
-- Shenzhen, China (SZX)
-- Hanoi, Vietnam (HAN)
+도시명과 `City Code` 목록 (한국 지역):
+- 서울 (ICN)
+- 인천 (ICN)
+- 부산 (PUS)
+- 대구 (TAE)
+- 대전 (DCC)
+- 광주 (KWJ)
+- 울산 (USN)
+- 제주 (CJU)
+- 김포 (GMP)
+- 포항 (KPO)
+- 양양 (YNY)
+- 청주 (CJJ)
+- 원주 (WJU)
+- 군산 (KUV)
+- 여수 (RSU)
+- 사천 (HIN)
+- 목포 (MPK)
+- 진주 (HIN)
+- 속초 (SHO)
+- 강릉 (KAG)
+- 춘천 (CNX)
+- 안동 (AEO)
+- 전주 (CHN)
+- 삼척 (SCK)
 
 이메일 내용:
 {email_content}
 
-JSON 형식 데이터만 응답으로 제공해 주세요. 목록에 없는 도시는 "unknown"으로 표시해 주세요. 찾을 수 없는 속성은 빈 값을 넣어주세요.
+JSON 형식 데이터만 응답으로 제공해 주세요. 목록에 없는 도시는 "unknown"으로 표시해 주세요. 찾을 수 없는 속성은 위의 기본 값을 넣어주세요.
 """
 
 def create_extraction_chain():

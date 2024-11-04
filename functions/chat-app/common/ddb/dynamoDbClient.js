@@ -36,11 +36,11 @@ async function saveConnection(customerId, connectionId) {
   }
 }
 
-// complete 처리
+// complete 처리 수정예정
 
-// complete 가 안되었는데 예기치 못하게 종료 되었을 때 처리
+// complete 가 안되었는데 예기치 못하게 종료 되었을 때 처리 작성예정
 
-// connectionId 삭제
+// connectionId 삭제 수정예정
 async function deleteConnection(connectionId) {
   try {
     const command = new DeleteCommand({

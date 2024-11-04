@@ -1,64 +1,88 @@
 // handlers/connect.js
 // 연결시 DB조회를 통해 입력 받아야 할 정보 알아야함
-//
 
 const {
   saveConnection,
-  getOrderData,
+  getSessionData,
 } = require("../common/ddb/dynamoDbClient");
+const { getOrderData } = require("../common/orderDataClient");
+
 const { sendMessageToClient } = require("../common/utils/apiGatewayClient");
 
 module.exports.handler = async (event) => {
   const connectionId = event.requestContext.connectionId;
-  console.log(`Connected - ConnectionId: ${connectionId}`);
+  const orderId = event.queryStringParameters["order-id"]; // 쿼리 문자열에서 order-id 가져오기
+  console.log(`Connected - ConnectionId: ${connectionId}, OrderId: ${orderId}`);
 
   try {
-    // WebSocket 연결 ID 저장
-    await saveConnection(orderId, connectionId);
-
-    // 고객 데이터 조회(수정필요)
-    // orderData 저장된 estimate 테이블에서 orderData로 responsedData 가져오기
-    const orderData = await getCustomerData(customerId); // 고객 데이터 조회
-    if (!orderData || !orderData.value) {
-      throw new Error("Customer data not found.");
+    // 쿼리 문자열에서 orderId가 없으면 오류 처리
+    if (!orderId) {
+      throw new Error("Order ID not provided in the query string.");
     }
-    // json 문자열 파싱하여 객체로 변환
-    const parsedData = JSON.parse(orderData.value.S); // value에서 문자열로 인코딩된 JSON 파싱
-    const responsedData = orderData.value.data || {}; // value에서 data 객체를 가져옴
 
+    // orderId로 채팅 세션 데이터 조회
+    const existingSessionData = await getSessionData(orderId); // orderId를 사용하여 세션 데이터 조회
+
+    // 초기화
+    let sessionStatus = "inProgress";
+    let isSessionActive = true;
+    let responsedData = {};
+    let pendingFields = {};
+    let lastInteractionTimestamp = existingSessionData ? existingSessionData.lastInteractionTimestamp : new Date().toISOString();
+    let chatHistory = existingSessionData ? existingSessionData.chatHistory : [];
+
+    if (existingSessionData) {
+      // 채팅 세션 데이터에 orderId가 존재하는 경우: 기존 데이터 사용
+      sessionStatus = existingSessionData.sessionStatus;
+      isSessionActive = existingSessionData.isSessionActive;
+      responsedData = existingSessionData.responsedData;
+      pendingFields = existingSessionData.pendingFields;
+
+      // 상태가 completed인 경우: 채팅 종료 안내 후 세션 종료
+      if (sessionStatus === "completed") {
+        await sendMessageToClient(
+            connectionId,
+            "견적 산출에 필요한 정보를 제공해주셔서 감사합니다. 담당자님의 이메일로 견적을 발송해드리겠습니다."
+        );
+        return {
+          statusCode: 400,
+          body: JSON.stringify({
+            message: "Session completed.",
+          }),
+        };
+      }
+      // orderId가 존재하지 않는 경우: 새로운 데이터를 가져와야 함
+    } else {
+      const orderData = await getOrderData(orderId); // estimate 테이블에서 orderId로 데이터 가져오기
+      if (!orderData || !orderData.value) {
+        throw new Error("Customer order data not found in estimate table.");
+      }
+      const parsedData = JSON.parse(orderData.value.S); // value에서 문자열로 인코딩된 JSON 파싱
+      responsedData = parsedData.data || {};
 
     // pendingFields 구성
     const pendingFields = {};
     const requiredFields = [
-      "ArrivalDate",
-      "ArrivalCity",
       "Weight", //TotalWeight???
-      "Quantity",
       "ContainerSize",
       "DepartureDate",
+      "ArrivalDate",
+      "ArrivalCity",
       "DepartureCity",
-      "Company",
-      "Company address",
-      "PIC",
-      "contanct"
+      // "Quantity",
+      // "Company",
+      // "Company address",
+      // "PIC",
+      // "contanct"
     ];
 
-    // responsedFields에서 빈 문자열("") 또는 'unknown'인 필드를 찾아 pendingFields에 추가
-    requiredFields.forEach((field) => {
-      if (responsedData[field] === "" || responsedData[field] === "unknown") {
-        pendingFields[field] = true; // 필드 추가
-      }
-    });
-
-    // 세션 데이터에 대한 정보를 설정
-    const sessionStatus = "inProgress";
-    const isSessionActive = true;
-
-    // 시작 메시지 전송
-    await sendMessageToClient(
-      connectionId,
-      "안녕하세요! 견적 요청을 주셔서 감사합니다. 요청주신 내용을 검토해보니, 견적 산출에 필요한 추가 정보가 필요합니다."
-    );
+      // responsedFields에서 빈 문자열("") 또는 'unknown'인 필드를 찾아 pendingFields에 추가
+      requiredFields.forEach((field) => {
+        if (responsedData[field] === "" || responsedData[field] === "unknown" || responsedData[field] === "0") {
+          pendingFields[field] = true; // 필드 추가
+        }
+      });
+    }
 
     // 연결 정보를 포함하여 DB에 세션 정보 저장
     await saveConnection(orderId, connectionId, {
@@ -66,9 +90,16 @@ module.exports.handler = async (event) => {
       sessionStatus,
       pendingFields,
       responsedData,
-      lastInteractionTimestamp: new Date().toISOString(),
-      chatHistory: [],
+      lastInteractionTimestamp,
+      chatHistory,
     });
+
+    // 시작 메시지 전송
+    await sendMessageToClient(
+        connectionId,
+        "안녕하세요! 견적 요청을 주셔서 감사합니다. 요청주신 내용을 검토해보니, 견적 산출에 필요한 추가 정보가 필요합니다."
+    );
+
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -77,8 +108,8 @@ module.exports.handler = async (event) => {
     };
   } catch (error) {
     console.error(
-      `Error during connection process for ConnectionId: ${connectionId}`,
-      error
+        `Error during connection process for ConnectionId: ${connectionId}`,
+        error
     );
     return {
       statusCode: 500,

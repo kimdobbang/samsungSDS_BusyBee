@@ -1,0 +1,35 @@
+service: information-mail-request
+
+provider:
+  name: aws
+  runtime: java17
+  region: ap-northeast-2
+  memorySize: 512
+  timeout: 30
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+          Resource:
+            - arn:aws:sqs:ap-northeast-2:481665114066:information-mail-request-trigger
+        - Effect: Allow
+          Action:
+            - "ses:SendEmail"
+            - "ses:SendRawEmail"
+          Resource: "*"
+
+package:
+  artifact: build/libs/information-mail-request-0.0.1-SNAPSHOT-all.jar
+
+functions:
+  InformationIntegrityVerification:
+    name: information-mail-request
+    handler: online.everymail.InformationMailRequest
+    events:
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:information-mail-request-trigger

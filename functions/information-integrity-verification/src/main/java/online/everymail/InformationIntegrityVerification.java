@@ -18,9 +18,9 @@ public class InformationIntegrityVerification implements RequestHandler<SQSEvent
 
     private static final AmazonSQS sqsClient = AmazonSQSClientBuilder.defaultClient();
     private static final AmazonSNS snsClient = AmazonSNSClientBuilder.defaultClient();
-    private static final String successSqsUrl =
-            "https://sqs.ap-northeast-2.amazonaws.com/047719649915/quotation-calculation-trigger";
-    private static final String incorrectInfoSnsArn = "arn:aws:sns:ap-northeast-2:047719649915:incorrect-information";
+    private static final String sqsUrl =
+            "https://sqs.ap-northeast-2.amazonaws.com/481665114066/quotation-calculation-trigger";
+    private static final String snsTopicArn = "arn:aws:sns:ap-northeast-2:481665114066:incorrect-information";
     private static final Gson gson = new Gson();
 
     @Override
@@ -37,7 +37,7 @@ public class InformationIntegrityVerification implements RequestHandler<SQSEvent
                         context.getLogger().log("All data is valid. Preparing to send to the success queue.");
 
                         SendMessageRequest sendMsgRequest = new SendMessageRequest()
-                                .withQueueUrl(successSqsUrl)
+                                .withQueueUrl(sqsUrl)
                                 .withMessageBody(originalMessageBody);
 
                         sqsClient.sendMessage(sendMsgRequest);
@@ -46,7 +46,7 @@ public class InformationIntegrityVerification implements RequestHandler<SQSEvent
                         context.getLogger().log("Invalid data. Sending to SNS for further handling.");
 
                         PublishRequest publishRequest = new PublishRequest()
-                                .withTopicArn(incorrectInfoSnsArn)
+                                .withTopicArn(snsTopicArn)
                                 .withMessage(originalMessageBody);
 
                         PublishResult publishResult = snsClient.publish(publishRequest);

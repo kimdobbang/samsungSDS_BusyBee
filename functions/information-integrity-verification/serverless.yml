@@ -16,13 +16,13 @@ provider:
             - sqs:DeleteMessage
             - sqs:GetQueueAttributes
           Resource:
-            - arn:aws:sqs:ap-northeast-2:047719649915:information-integrity-verification-trigger
-            - arn:aws:sqs:ap-northeast-2:047719649915:quotation-calculation-trigger
+            - arn:aws:sqs:ap-northeast-2:481665114066:information-integrity-verification-trigger
+            - arn:aws:sqs:ap-northeast-2:481665114066:quotation-calculation-trigger
         - Effect: Allow
           Action:
             - sns:Publish
           Resource:
-            - arn:aws:sns:ap-northeast-2:047719649915:incorrect-information
+            - arn:aws:sns:ap-northeast-2:481665114066:incorrect-information
 
 package:
   artifact: build/libs/information-integrity-verification-0.0.1-SNAPSHOT-all.jar
@@ -33,4 +33,4 @@ functions:
     handler: online.everymail.InformationIntegrityVerification
     events:
       - sqs:
-          arn: arn:aws:sqs:ap-northeast-2:047719649915:information-integrity-verification-trigger
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:information-integrity-verification-trigger

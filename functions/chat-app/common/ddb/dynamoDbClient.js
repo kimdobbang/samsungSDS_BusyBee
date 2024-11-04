@@ -4,7 +4,7 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const {
   DynamoDBDocumentClient,
   PutCommand,
-  DeleteCommand,
+  // DeleteCommand,
   UpdateCommand,
   GetCommand,
 } = require("@aws-sdk/lib-dynamodb");
@@ -45,7 +45,7 @@ async function saveChat(orderId, chatMessage) {
   try {
     const command = new PutCommand({
       TableName: TABLE_NAME,
-      Key: { orderId }, // connectionId 구분
+      Key: { orderId },
       UpdateExpression:
         "SET chatHistory = list_append(if_not_exists(chatHistory, :empty_list), :new_chat)",
       ExpressionAttributeValues: {

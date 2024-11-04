@@ -5,7 +5,7 @@ const {
   ApiGatewayManagementApiClient,
   PostToConnectionCommand,
 } = require("@aws-sdk/client-apigatewaymanagementapi");
-const { saveChat } = require("../common/ddb/dynamoDbClient");
+const { saveChat } = require("../ddb/dynamoDbClient");
 
 const apigatewayManagementApi = new ApiGatewayManagementApiClient({
   endpoint: `https://${process.env.DOMAIN_NAME}/${process.env.STAGE}`,

@@ -7,9 +7,10 @@ provider:
   stage: dev
 
   environment:
-    DOMAIN_NAME: ltrsdvinge.execute-api.${self:provider.region}.amazonaws.com
+#    OPENAI_API_KEY:
+    DOMAIN_NAME: pro3n29gzb.execute-api.${self:provider.region}.amazonaws.com
     CHAT_SESSIONS_TABLE: ${self:service}-CustomerChatSessions
-    CUSTOMER_DATA_TABLE: estimate
+    ORDER_DATA_TABLE: estimate
     STAGE: ${self:provider.stage}
 
   iamRoleStatements:
@@ -41,7 +42,6 @@ provider:
         - execute-api:ManageConnections
       Resource:
         - arn:aws:execute-api:${self:provider.region}:*:*/*/@connections/*
-
 functions:
   connect:
     name: ${self:service}-connect

@@ -11,7 +11,8 @@ const { sendMessageToClient } = require("../common/utils/apiGatewayClient");
 
 module.exports.handler = async (event) => {
   const connectionId = event.requestContext.connectionId;
-  const orderId = event.queryStringParameters["order-id"]; // 쿼리 문자열에서 order-id 가져오기
+  // const orderId = event.queryStringParameters["order-id"]; // 쿼리 문자열에서 order-id 가져오기
+  const orderId = "testdata2" // 임시 하드코딩
   console.log(`Connected - ConnectionId: ${connectionId}, OrderId: ${orderId}`);
 
   try {

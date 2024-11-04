@@ -1,5 +1,3 @@
-org: ourmail
-app: busybee
 service: mail-extraction
 
 provider:
@@ -8,7 +6,7 @@ provider:
   region: ap-northeast-2
   environment:
     OPENAI_API_KEY: ${ssm:/prod/openAI/api_key} # SSM Parameter Store에서 참조
-    EXTRACT_QUEUE_URL: 'https://sqs.ap-northeast-2.amazonaws.com/047719649915/information-integrity-verification-trigger'
+    EXTRACT_QUEUE_URL: 'https://sqs.ap-northeast-2.amazonaws.com/481665114066/information-integrity-verification-trigger'
 
   iam:
     role:
@@ -16,24 +14,24 @@ provider:
         - Effect: 'Allow'
           Action:
             - 'ssm:GetParameter' # SSM Parameter Store 접근 권한 추가
-          Resource: 'arn:aws:ssm:ap-northeast-2:047719649915:parameter/prod/openAI/api_key'
+          Resource: 'arn:aws:ssm:ap-northeast-2:481665114066:parameter/prod/openAI/api_key'
         - Effect: 'Allow'
           Action:
             - 'sqs:SendMessage'
             - 'sqs:ReceiveMessage'
             - 'sqs:DeleteMessage'
           Resource:
-            - 'arn:aws:sqs:ap-northeast-2:047719649915:mail-extraction-trigger'
-            - 'arn:aws:sqs:ap-northeast-2:047719649915:information-integrity-verification-trigger'
+            - 'arn:aws:sqs:ap-northeast-2:481665114066:mail-extraction-trigger'
+            - 'arn:aws:sqs:ap-northeast-2:481665114066:information-integrity-verification-trigger'
 
 functions:
   extractEmailData:
     name: mail-extraction
     image:
-      uri: 047719649915.dkr.ecr.ap-northeast-2.amazonaws.com/mail-extraction:latest
+      uri: 481665114066.dkr.ecr.ap-northeast-2.amazonaws.com/mail-extraction:latest
     events:
       - sqs:
-          arn: arn:aws:sqs:ap-northeast-2:047719649915:mail-extraction-trigger
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:mail-extraction-trigger
     vpc:
       subnetIds:
         - ${ssm:/network/private-subnet-id}

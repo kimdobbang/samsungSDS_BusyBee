@@ -11,13 +11,13 @@ const {
 
 const client = new DynamoDBClient({ region: "ap-northeast-2" });
 const dynamoDb = DynamoDBDocumentClient.from(client);
-const TABLE_NAME = process.env.TABLE_NAME;
+const CHAT_SESSIONS_TABLE = process.env.TABLE_NAME;
 
-// connectionId 저장 & 삭제
+// connectionId 저장
 async function saveConnection(customerId, connectionId) {
   try {
     const command = new PutCommand({
-      TableName: TABLE_NAME,
+      TableName: CHAT_SESSIONS_TABLE,
       Item: {
         customerId,
         connectionId,
@@ -25,7 +25,7 @@ async function saveConnection(customerId, connectionId) {
         sessionStatus: "inProgress",
       },
     });
-    dynamoDb.send(command);
+    await dynamoDb.send(command);
     console.log(`ConnectionId saved: ${connectionId}`);
   } catch (error) {
     console.error(
@@ -36,10 +36,15 @@ async function saveConnection(customerId, connectionId) {
   }
 }
 
+// complete 처리 수정예정
+
+// complete 가 안되었는데 예기치 못하게 종료 되었을 때 처리 작성예정
+
+// connectionId 삭제 수정예정
 async function deleteConnection(connectionId) {
   try {
     const command = new DeleteCommand({
-      TableName: TABLE_NAME,
+      TableName: CHAT_SESSIONS_TABLE,
       Key: { connectionId },
     });
     dynamoDb.send(command);
@@ -55,11 +60,11 @@ async function deleteConnection(connectionId) {
   }
 }
 
-// 세션 상태를 완료로 표시
+// complete 처리: 세션 상태를 완료로 표시
 async function markSessionComplete(customerId) {
   try {
     const command = new UpdateCommand({
-      TableName: TABLE_NAME,
+      TableName: CHAT_SESSIONS_TABLE,
       Key: { customerId }, // customerId가 PK인 경우
       UpdateExpression:
         "SET sessionStatus = :status, isSessionActive = :active",
@@ -68,7 +73,7 @@ async function markSessionComplete(customerId) {
         ":active": false, // 세션을 비활성화
       },
     });
-    await dynamoDb.send(command); // 비동기 처리
+    await dynamoDb.send(command);
     console.log(`Session for customer ${customerId} marked as complete`);
   } catch (error) {
     console.error(
@@ -83,7 +88,7 @@ async function markSessionComplete(customerId) {
 async function getSessionData(customerId) {
   try {
     const command = new GetCommand({
-      TableName: TABLE_NAME,
+      TableName: CHAT_SESSIONS_TABLE,
       Key: { customerId },
     });
     const response = await dynamoDb.send(command);
@@ -96,28 +101,10 @@ async function getSessionData(customerId) {
     throw new Error("세션 데이터 조회 오류");
   }
 }
-// 고객 데이터 조회를 위한 함수 (estimate 테이블에서 데이터를 가져오는 함수도 필요)
-async function getCustomerData(customerId) {
-  try {
-    const command = new GetCommand({
-      TableName: process.env.CUSTOMER_DATA_TABLE,
-      Key: { Id: customerId }, // estimate 테이블에서 키로 사용
-    });
-    const response = await dynamoDb.send(command);
-    return response.Item;
-  } catch (error) {
-    console.error(
-      `Failed to get estimate data for customerId ${customerId}:`,
-      JSON.stringify(error)
-    );
-    throw new Error("고객 데이터 조회 오류");
-  }
-}
 
 module.exports = {
   saveConnection,
   deleteConnection,
   markSessionComplete,
   getSessionData,
-  getCustomerData,
 };

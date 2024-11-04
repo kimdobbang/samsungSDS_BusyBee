@@ -2,7 +2,7 @@
 // 모든 정보가 수집되고 세션이 정상적으로 종료될 때 호출.
 // 고객정보 DB에 데이터를 업데이트하고 세션을 완료 처리.
 
-const { updateCustomerData } = require("../utils/customerDbClient");
+const { updateCustomerData } = require("../utils/orderDynamoDbClient");
 const { markSessionComplete } = require("../utils/dynamoDbClient");
 
 module.exports.handler = async (event) => {

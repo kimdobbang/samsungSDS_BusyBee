@@ -1,6 +1,6 @@
 import './globals.css';
-import { Header } from '../shared/components/Header';
-import { Footer } from '../shared/components/Footer';
+// import { Header } from '../shared/components/Header';
+// import { Footer } from '../shared/components/Footer';
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -9,9 +9,9 @@ export default function RootLayout({
   return (
     <html lang='en'>
       <body>
-        <Header />
+        {/* <Header /> */}
         {children}
-        <Footer />
+        {/* <Footer /> */}
       </body>
     </html>
   );

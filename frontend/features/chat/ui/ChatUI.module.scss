@@ -15,9 +15,9 @@
   @include general();
   display: flex;
   justify-content: space-between;
-  background-color: rgb(89, 184, 247);
+  background-color: rgb(89, 193, 241);
   width: 100vw;
-  height: 12vh;
+  height: 10vh;
   padding-inline: 30px;
 }
 
@@ -69,7 +69,7 @@
 
 .profileContainer {
   display: flex;
-  align-items: center;
+  // align-items: center;
 }
 
 .message {

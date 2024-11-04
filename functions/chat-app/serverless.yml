@@ -7,8 +7,8 @@ provider:
   stage: dev
 
   environment:
-#    OPENAI_API_KEY:
-    DOMAIN_NAME: pro3n29gzb.execute-api.${self:provider.region}.amazonaws.com
+    #    OPENAI_API_KEY:
+    DOMAIN_NAME: t1iwynwhw3.execute-api.${self:provider.region}.amazonaws.com
     CHAT_SESSIONS_TABLE_NAME: ${self:service}-CustomerChatSessions
     ORDER_DATA_TABLE_NAME: estimate
     STAGE: ${self:provider.stage}
@@ -80,13 +80,13 @@ resources:
         AttributeDefinitions:
           - AttributeName: orderId
             AttributeType: S
-          - AttributeName: timestamp
-            AttributeType: S
+          # - AttributeName: timestamp
+          #   AttributeType: S
         KeySchema:
           - AttributeName: orderId
             KeyType: HASH
-          - AttributeName: timestamp
-            KeyType: RANGE
+          # - AttributeName: timestamp
+          #   KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         StreamSpecification:
           StreamViewType: NEW_IMAGE

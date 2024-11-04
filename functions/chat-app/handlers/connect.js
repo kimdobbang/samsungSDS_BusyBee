@@ -72,10 +72,12 @@ module.exports.handler = async (event) => {
       });
 
       // 추가 정보 요청 메시지 전송
-      const formattedDate = formatTimestamp(lastInteractionTimestamp);
+      const formattedDateTime = formatTimestamp(lastInteractionTimestamp);
       await sendMessageToClient(
+        orderId,
         connectionId,
-        `아직 제게 전달해주지 않으신 정보가 남아있습니다! ${formattedDate} 이후의 대화를 이어가겠습니다.`
+        `아직 제게 전달해주지 않으신 정보가 남아있습니다! ${formattedDateTime} 이후의 대화를 이어가겠습니다.`,
+        "bot"
       );
 
       // orderId가 존재하지 않는 경우: estimate 에서 새로운 데이터를 가져와야 함
@@ -128,10 +130,12 @@ module.exports.handler = async (event) => {
 
     // 시작 메시지 전송
     await sendMessageToClient(
+      orderId,
       connectionId,
       `안녕하세요! 견적 요청을 주셔서 감사합니다. 요청주신 내용을 검토해보니, ${
         Object.keys(pendingFields).length
-      }가지 정보가 누락 되었네요! 제가 추가 정보를 요청 드리겠습니다.`
+      }가지 정보가 누락 되었네요! 제가 추가 정보를 요청 드리겠습니다.`,
+      "bot"
     );
 
     return {

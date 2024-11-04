@@ -1,0 +1,41 @@
+service: save-data
+
+provider:
+  name: aws
+  runtime: java17
+  region: ap-northeast-2
+  memorySize: 512
+  timeout: 30
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+          Resource:
+            - arn:aws:sqs:ap-northeast-2:481665114066:save-data-trigger
+            - arn:aws:sqs:ap-northeast-2:481665114066:save-incorrect-information-trigger
+            - arn:aws:sqs:ap-northeast-2:481665114066:chat-save-data-trigger
+        - Effect: Allow
+          Action:
+            - "dynamodb:PutItem"
+          Resource:
+            - "arn:aws:dynamodb:ap-northeast-2:481665114066:table/estimate"
+
+package:
+  artifact: build/libs/save-data-0.0.1-SNAPSHOT-all.jar
+
+functions:
+  InformationIntegrityVerification:
+    name: save-data
+    handler: online.everymail.SaveData
+    events:
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:save-data-trigger
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:save-incorrect-information-trigger
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:chat-save-data-trigger

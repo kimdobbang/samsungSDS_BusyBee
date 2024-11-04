@@ -13,4 +13,3 @@ export * from './chat/api/chatApi';
 export * from './chat/hooks/useChat';
 export * from './chat/model/Message';
 export * from './chat/ui/ChatUI';
-export * from './chat/ui/MessageBubble';

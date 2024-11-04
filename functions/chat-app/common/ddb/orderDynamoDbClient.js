@@ -8,13 +8,13 @@ const {
 
 const client = new DynamoDBClient({ region: "ap-northeast-2" });
 const dynamoDb = DynamoDBDocumentClient.from(client);
-const ORDER_DATA_TABLE = process.env.ORDER_DATA_TABLE;
+const TABLE_NAME = process.env.ORDER_DATA_TABLE_NAME;
 
 // 고객 데이터 조회를 위한 함수 (estimate 테이블에서 데이터를 가져오는 함수도 필요)
 async function getOrderData(orderId) {
     try {
         const command = new GetCommand({
-            TableName: process.env.ORDER_DATA_TABLE,
+            TableName: TABLE_NAME,
             Key: { Id: orderId },
         });
         const response = await dynamoDb.send(command);

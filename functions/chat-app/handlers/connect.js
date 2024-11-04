@@ -5,7 +5,7 @@ const {
   saveConnection,
   getSessionData,
 } = require("../common/ddb/dynamoDbClient");
-const { getOrderData } = require("../common/orderDataClient");
+const { getOrderData } = require("../common/ddb/orderDynamoDbClient");
 
 const { sendMessageToClient } = require("../common/utils/apiGatewayClient");
 
@@ -28,9 +28,10 @@ module.exports.handler = async (event) => {
     let isSessionActive = true;
     let responsedData = {};
     let pendingFields = {};
-    let lastInteractionTimestamp = existingSessionData ? existingSessionData.lastInteractionTimestamp : new Date().toISOString();
-    let chatHistory = existingSessionData ? existingSessionData.chatHistory : [];
+    let lastInteractionTimestamp = new Date().toISOString();
+    let chatHistory = []
 
+    // connect 되었을때 채팅 세션 데이터에 orderId가 존재하는 경우: 기존 데이터 사용
     if (existingSessionData) {
       // 채팅 세션 데이터에 orderId가 존재하는 경우: 기존 데이터 사용
       sessionStatus = existingSessionData.sessionStatus;
@@ -55,10 +56,11 @@ module.exports.handler = async (event) => {
     } else {
       const orderData = await getOrderData(orderId); // estimate 테이블에서 orderId로 데이터 가져오기
       if (!orderData || !orderData.value) {
-        throw new Error("Customer order data not found in estimate table.");
+        throw new Error("order data not found in estimate table.");
       }
       const parsedData = JSON.parse(orderData.value.S); // value에서 문자열로 인코딩된 JSON 파싱
       responsedData = parsedData.data || {};
+      console.log(responsedData);
 
     // pendingFields 구성
     const pendingFields = {};
@@ -75,16 +77,17 @@ module.exports.handler = async (event) => {
       // "PIC",
       // "contanct"
     ];
+    console.log(pendingFields);
 
       // responsedFields에서 빈 문자열("") 또는 'unknown'인 필드를 찾아 pendingFields에 추가
       requiredFields.forEach((field) => {
         if (responsedData[field] === "" || responsedData[field] === "unknown" || responsedData[field] === "0") {
-          pendingFields[field] = true; // 필드 추가
+          pendingFields[field] = true;
         }
       });
     }
 
-    // 연결 정보를 포함하여 DB에 세션 정보 저장
+    // 연결 정보를 포함하여 연결정보DB에 저장
     await saveConnection(orderId, connectionId, {
       isSessionActive,
       sessionStatus,

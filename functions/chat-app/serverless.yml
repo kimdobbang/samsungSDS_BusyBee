@@ -8,7 +8,7 @@ provider:
 
   environment:
     #    OPENAI_API_KEY:
-    DOMAIN_NAME: pro3n29gzb.execute-api.${self:provider.region}.amazonaws.com
+    DOMAIN_NAME: t1iwynwhw3.execute-api.${self:provider.region}.amazonaws.com
     CHAT_SESSIONS_TABLE_NAME: ${self:service}-CustomerChatSessions
     ORDER_DATA_TABLE_NAME: estimate
     STAGE: ${self:provider.stage}

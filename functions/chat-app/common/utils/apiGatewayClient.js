@@ -5,7 +5,7 @@ const {
   ApiGatewayManagementApiClient,
   PostToConnectionCommand,
 } = require("@aws-sdk/client-apigatewaymanagementapi");
-const { saveChat } = require("./dynamoDbClient"); // chatHistory를 저장하는 함수
+const { saveChat } = require("../common/ddb/dynamoDbClient");
 
 const apigatewayManagementApi = new ApiGatewayManagementApiClient({
   endpoint: `https://${process.env.DOMAIN_NAME}/${process.env.STAGE}`,

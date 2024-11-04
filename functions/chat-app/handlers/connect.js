@@ -1,5 +1,6 @@
 // handlers/connect.js
 // 연결시 DB조회를 통해 입력 받아야 할 정보 알아야함
+const { formatTimestamp } = require("../common/utils/formatUtils");
 
 const {
   saveConnection,
@@ -12,7 +13,7 @@ const { sendMessageToClient } = require("../common/utils/apiGatewayClient");
 module.exports.handler = async (event) => {
   const connectionId = event.requestContext.connectionId;
   // const orderId = event.queryStringParameters["order-id"]; // 쿼리 문자열에서 order-id 가져오기
-  const orderId = "testdata2" // 임시 하드코딩
+  const orderId = "testdata2"; // 임시 하드코딩
   console.log(`Connected - ConnectionId: ${connectionId}, OrderId: ${orderId}`);
 
   try {
@@ -25,22 +26,24 @@ module.exports.handler = async (event) => {
     const existingSessionData = await getSessionData(orderId); // orderId를 사용하여 세션 데이터 조회
 
     // 초기화
-    let sessionStatus = existingSessionData ? existingSessionData.sessionStatus : "inProgress";
+    let sessionStatus = existingSessionData
+      ? existingSessionData.sessionStatus
+      : "inProgress";
     let isSessionActive = true;
     let responsedData = {};
     let pendingFields = {};
     let lastInteractionTimestamp = new Date().toISOString();
-    let chatHistory = []
+    let chatHistory = [];
 
     // connect 되었을때 채팅 세션 데이터에 orderId가 존재하는 경우: 기존 데이터 사용
     if (existingSessionData) {
-      console.log(existingSessionData)
+      console.log(existingSessionData);
 
       // 상태가 completed인 경우: 견적발송 안내후 세션 종료
       if (sessionStatus === "completed") {
         await sendMessageToClient(
-            connectionId,
-            "견적 산출에 필요한 정보를 제공해주셔서 감사합니다. 담당자님의 이메일로 견적을 발송해드렸습니다."
+          connectionId,
+          "견적 산출에 필요한 정보를 제공해주셔서 감사합니다. 담당자님의 이메일로 견적을 발송해드렸습니다."
         );
         return {
           statusCode: 400,
@@ -63,7 +66,19 @@ module.exports.handler = async (event) => {
         sessionStatus,
       });
 
-    // orderId가 존재하지 않는 경우: estimate 에서 새로운 데이터를 가져와야 함
+      // 채팅 기록을 시간 순서에 따라 보여줌
+      chatHistory.forEach((chat) => {
+        console.log(`${chat.timestamp} - ${chat.senderType}: ${chat.message}`);
+      });
+
+      // 추가 정보 요청 메시지 전송
+      const formattedDate = formatTimestamp(lastInteractionTimestamp);
+      await sendMessageToClient(
+        connectionId,
+        `아직 제게 전달해주지 않으신 정보가 남아있습니다! ${formattedDate} 이후의 대화를 이어가겠습니다.`
+      );
+
+      // orderId가 존재하지 않는 경우: estimate 에서 새로운 데이터를 가져와야 함
     } else {
       const orderData = await getOrderData(orderId); // estimate 테이블에서 orderId로 데이터 가져오기
       if (!orderData || !orderData.value) {
@@ -73,29 +88,32 @@ module.exports.handler = async (event) => {
       responsedData = parsedData.data || {};
       console.log(responsedData);
 
-    // pendingFields 구성
-    const pendingFields = {};
-    const requiredFields = [
-      "Weight", //TotalWeight???
-      "ContainerSize",
-      "DepartureDate",
-      "ArrivalDate",
-      "ArrivalCity",
-      "DepartureCity",
-      // "Quantity",
-      // "Company",
-      // "Company address",
-      // "PIC",
-      // "contanct"
-    ];
-    console.log(pendingFields);
+      // pendingFields 구성
+      const requiredFields = [
+        "Weight", //TotalWeight???
+        "ContainerSize",
+        "DepartureDate",
+        "ArrivalDate",
+        "ArrivalCity",
+        "DepartureCity",
+        // "Quantity",
+        // "Company",
+        // "Company address",
+        // "PIC",
+        // "contanct"
+      ];
 
       // responsedFields에서 빈 문자열("") 또는 'unknown'인 필드를 찾아 pendingFields에 추가
       requiredFields.forEach((field) => {
-        if (responsedData[field] === "" || responsedData[field] === "unknown" || responsedData[field] === "0") {
+        if (
+          responsedData[field] === "" ||
+          responsedData[field] === "unknown" ||
+          responsedData[field] === "0"
+        ) {
           pendingFields[field] = true;
         }
       });
+      console.log(pendingFields);
     }
 
     // 연결 정보를 포함하여 연결정보DB에 저장
@@ -110,8 +128,10 @@ module.exports.handler = async (event) => {
 
     // 시작 메시지 전송
     await sendMessageToClient(
-        connectionId,
-        "안녕하세요! 견적 요청을 주셔서 감사합니다. 요청주신 내용을 검토해보니, 견적 산출에 필요한 추가 정보가 필요합니다."
+      connectionId,
+      `안녕하세요! 견적 요청을 주셔서 감사합니다. 요청주신 내용을 검토해보니, ${
+        Object.keys(pendingFields).length
+      }가지 정보가 누락 되었네요! 제가 추가 정보를 요청 드리겠습니다.`
     );
 
     return {
@@ -122,8 +142,8 @@ module.exports.handler = async (event) => {
     };
   } catch (error) {
     console.error(
-        `Error during connection process for ConnectionId: ${connectionId}`,
-        error
+      `Error during connection process for ConnectionId: ${connectionId}`,
+      error
     );
     return {
       statusCode: 500,

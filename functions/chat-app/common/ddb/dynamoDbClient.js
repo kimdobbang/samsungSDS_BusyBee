@@ -1,6 +1,5 @@
 // utils/dynamoDbClient.js
 // 채팅 관리 테이블
-
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const {
   DynamoDBDocumentClient,
@@ -21,7 +20,7 @@ async function saveConnection(orderId, connectionId, sessionData) {
       TableName: TABLE_NAME,
       Item: {
         orderId,
-        timestamp: new Date().toISOString(), // 현재 시간
+        timestamp: new Date().toISOString(),
         connectionId,
         isSessionActive: sessionData.isSessionActive,
         sessionStatus: sessionData.sessionStatus,
@@ -32,7 +31,7 @@ async function saveConnection(orderId, connectionId, sessionData) {
       },
     });
     await dynamoDb.send(command);
-    console.log(`Connection saved: ${connectionId}`);
+    console.log(`Connection saved: ${orderId} - ${connectionId}`);
   } catch (error) {
     console.error(
       "Error saving connection data to DynamoDB:",
@@ -85,8 +84,8 @@ async function saveChat(orderId, chatMessage) {
 // TODO: complete 가 안되었는데 예기치 못하게 종료 되었을 때 처리 작성예정
 //sessionStatus = disconnected, active= false
 
-// 정상적 disconnect 처리
-async function markSessionDeactive(orderId) {
+// disconnect 처리
+async function markSessionInactive(orderId) {
   try {
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
@@ -99,10 +98,10 @@ async function markSessionDeactive(orderId) {
       },
     });
     await dynamoDb.send(command);
-    console.log(`Session for customer ${customerId} marked as complete`);
+    console.log(`Session for customer ${orderId} marked as complete`);
   } catch (error) {
     console.error(
-      `Failed to mark session complete for customer ${customerId}:`,
+      `Failed to mark session complete for customer ${orderId}:`,
       JSON.stringify(error)
     );
     throw new Error("SessionActive업데이트 오류");
@@ -110,7 +109,7 @@ async function markSessionDeactive(orderId) {
 }
 
 // complete 처리: 세션 상태를 완료로 표시
-async function markSessionComplete(customerId) {
+async function markSessionComplete(orderId) {
   try {
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
@@ -123,10 +122,10 @@ async function markSessionComplete(customerId) {
       },
     });
     await dynamoDb.send(command);
-    console.log(`Session for customer ${customerId} marked as complete`);
+    console.log(`Session for customer ${orderId} marked as complete`);
   } catch (error) {
     console.error(
-      `Failed to mark session complete for customer ${customerId}:`,
+      `Failed to mark session complete for customer ${orderId}:`,
       JSON.stringify(error)
     );
     throw new Error("세션 완료 상태 업데이트 오류");
@@ -154,7 +153,7 @@ async function getSessionData(orderId) {
 module.exports = {
   saveConnection,
   saveChat,
-  markSessionDeactive,
+  markSessionInactive,
   markSessionComplete,
   getSessionData,
 };

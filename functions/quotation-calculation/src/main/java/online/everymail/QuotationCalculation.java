@@ -16,7 +16,7 @@ import online.everymail.dto.SQSMessageData;
 public class QuotationCalculation implements RequestHandler<SQSEvent, Void> {
 
     private static final AmazonSNS snsClient = AmazonSNSClientBuilder.defaultClient();
-    private static final String snsTopicArn = "arn:aws:sns:ap-northeast-2:047719649915:save-data";
+    private static final String snsTopicArn = "arn:aws:sns:ap-northeast-2:481665114066:save-data";
     private static final Gson gson = new Gson();
 
     @Override

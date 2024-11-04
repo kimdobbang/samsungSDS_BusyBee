@@ -25,7 +25,7 @@ module.exports.handler = async (event) => {
     const existingSessionData = await getSessionData(orderId); // orderId를 사용하여 세션 데이터 조회
 
     // 초기화
-    let sessionStatus = "inProgress";
+    let sessionStatus = existingSessionData ? existingSessionData.sessionStatus : "inProgress";
     let isSessionActive = true;
     let responsedData = {};
     let pendingFields = {};
@@ -34,17 +34,13 @@ module.exports.handler = async (event) => {
 
     // connect 되었을때 채팅 세션 데이터에 orderId가 존재하는 경우: 기존 데이터 사용
     if (existingSessionData) {
-      // 채팅 세션 데이터에 orderId가 존재하는 경우: 기존 데이터 사용
-      sessionStatus = existingSessionData.sessionStatus;
-      isSessionActive = existingSessionData.isSessionActive;
-      responsedData = existingSessionData.responsedData;
-      pendingFields = existingSessionData.pendingFields;
+      console.log(existingSessionData)
 
-      // 상태가 completed인 경우: 채팅 종료 안내 후 세션 종료
+      // 상태가 completed인 경우: 견적발송 안내후 세션 종료
       if (sessionStatus === "completed") {
         await sendMessageToClient(
             connectionId,
-            "견적 산출에 필요한 정보를 제공해주셔서 감사합니다. 담당자님의 이메일로 견적을 발송해드리겠습니다."
+            "견적 산출에 필요한 정보를 제공해주셔서 감사합니다. 담당자님의 이메일로 견적을 발송해드렸습니다."
         );
         return {
           statusCode: 400,
@@ -53,7 +49,21 @@ module.exports.handler = async (event) => {
           }),
         };
       }
-      // orderId가 존재하지 않는 경우: 새로운 데이터를 가져와야 함
+
+      // 기존 저장 데이터로 업데이트
+      isSessionActive = existingSessionData.isSessionActive;
+      responsedData = existingSessionData.responsedData;
+      pendingFields = existingSessionData.pendingFields;
+      lastInteractionTimestamp = existingSessionData.lastInteractionTimestamp;
+      chatHistory = existingSessionData.chatHistory;
+
+      // 이미 존재하는 연결정보에 최신정보업데이트
+      await saveConnection(orderId, connectionId, {
+        isSessionActive,
+        sessionStatus,
+      });
+
+    // orderId가 존재하지 않는 경우: estimate 에서 새로운 데이터를 가져와야 함
     } else {
       const orderData = await getOrderData(orderId); // estimate 테이블에서 orderId로 데이터 가져오기
       if (!orderData || !orderData.value) {

@@ -20,7 +20,6 @@ async function saveConnection(orderId, connectionId, sessionData) {
       TableName: TABLE_NAME,
       Item: {
         orderId,
-        timestamp: new Date().toISOString(),
         connectionId,
         isSessionActive: sessionData.isSessionActive,
         sessionStatus: sessionData.sessionStatus,

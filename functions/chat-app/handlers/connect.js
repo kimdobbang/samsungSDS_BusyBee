@@ -4,7 +4,7 @@
 
 const {
   saveConnection,
-  getCustomerData,
+  getOrderData,
 } = require("../common/ddb/dynamoDbClient");
 const { sendMessageToClient } = require("../common/utils/apiGatewayClient");
 
@@ -13,26 +13,34 @@ module.exports.handler = async (event) => {
   console.log(`Connected - ConnectionId: ${connectionId}`);
 
   try {
-    // 고객 데이터 조회(수정필요)
-    // const customerData = await getCustomerData(customerId, connectionId); // 고객 데이터 조회
-    // const customerId = customerData.customerId; // customerId를 추출
-
     // WebSocket 연결 ID 저장
-    await saveConnection(customerId, connectionId);
+    await saveConnection(orderId, connectionId);
 
     // 고객 데이터 조회(수정필요)
-    // const customerData = await getCustomerData(customerId); // 고객의 estimate 데이터 가져오기
-    // const responsedData = customerData.value.data || {}; // value에서 data 객체를 가져옴
+    // orderData 저장된 estimate 테이블에서 orderData로 responsedData 가져오기
+    const orderData = await getCustomerData(customerId); // 고객 데이터 조회
+    if (!orderData || !orderData.value) {
+      throw new Error("Customer data not found.");
+    }
+    // json 문자열 파싱하여 객체로 변환
+    const parsedData = JSON.parse(orderData.value.S); // value에서 문자열로 인코딩된 JSON 파싱
+    const responsedData = orderData.value.data || {}; // value에서 data 객체를 가져옴
+
 
     // pendingFields 구성
     const pendingFields = {};
     const requiredFields = [
       "ArrivalDate",
       "ArrivalCity",
-      "Weight",
+      "Weight", //TotalWeight???
+      "Quantity",
       "ContainerSize",
       "DepartureDate",
       "DepartureCity",
+      "Company",
+      "Company address",
+      "PIC",
+      "contanct"
     ];
 
     // responsedFields에서 빈 문자열("") 또는 'unknown'인 필드를 찾아 pendingFields에 추가
@@ -53,7 +61,7 @@ module.exports.handler = async (event) => {
     );
 
     // 연결 정보를 포함하여 DB에 세션 정보 저장
-    await saveConnection(customerId, connectionId, {
+    await saveConnection(orderId, connectionId, {
       isSessionActive,
       sessionStatus,
       pendingFields,

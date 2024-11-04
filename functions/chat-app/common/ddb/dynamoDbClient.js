@@ -41,28 +41,71 @@ async function saveConnection(orderId, connectionId, sessionData) {
     throw new Error("connection DynamoDB 저장 오류");
   }
 }
-
+async function saveChat(orderId, chatMessage) {
+  const timestamp = new Date().toISOString();
+  try {
+    const command = new PutCommand({
+      TableName: TABLE_NAME,
+      Key: { orderId }, // connectionId 구분
+      UpdateExpression:
+        "SET chatHistory = list_append(if_not_exists(chatHistory, :empty_list), :new_chat)",
+      ExpressionAttributeValues: {
+        ":new_chat": [chatMessage], // 추가할 메시지
+        ":empty_list": [], // 빈 리스트 초기값
+      },
+    });
+    await dynamoDb.send(command);
+    console.log(`Chat saved: ${JSON.stringify(chatMessage)}`);
+  } catch (error) {
+    console.error("Error saving chat to DynamoDB:", JSON.stringify(error));
+    throw new Error("DynamoDB 채팅 저장 오류");
+  }
+}
 // complete 처리 수정예정
 
-// complete 가 안되었는데 예기치 못하게 종료 되었을 때 처리 작성예정
-
 // connectionId 삭제 수정예정
-async function deleteConnection(connectionId) {
+// async function disConnection(orderId, connectionId) {
+//   try {
+//     const command = new DeleteCommand({
+//       TableName: TABLE_NAME,
+//       Key: { orderId },
+//     });
+//     dynamoDb.send(command);
+//     console.log(
+//       `ConnectionId ${connectionId} successfully deleted from DynamoDB`
+//     );
+//   } catch (error) {
+//     console.error(
+//       `Failed to delete ConnectionId ${connectionId} from DynamoDB:`,
+//       JSON.stringify(error)
+//     );
+//     throw new Error("DynamoDB 삭제 오류");
+//   }
+// }
+// TODO: complete 가 안되었는데 예기치 못하게 종료 되었을 때 처리 작성예정
+//sessionStatus = disconnected, active= false
+
+// 정상적 disconnect 처리
+async function markSessionDeactive(orderId) {
   try {
-    const command = new DeleteCommand({
+    const command = new UpdateCommand({
       TableName: TABLE_NAME,
-      Key: { connectionId },
+      Key: { orderId },
+      UpdateExpression:
+        // "SET sessionStatus = :status, isSessionActive = :active",
+        "SET isSessionActive = :active",
+      ExpressionAttributeValues: {
+        ":active": false, // 세션을 비활성화
+      },
     });
-    dynamoDb.send(command);
-    console.log(
-      `ConnectionId ${connectionId} successfully deleted from DynamoDB`
-    );
+    await dynamoDb.send(command);
+    console.log(`Session for customer ${customerId} marked as complete`);
   } catch (error) {
     console.error(
-      `Failed to delete ConnectionId ${connectionId} from DynamoDB:`,
+      `Failed to mark session complete for customer ${customerId}:`,
       JSON.stringify(error)
     );
-    throw new Error("DynamoDB 삭제 오류");
+    throw new Error("SessionActive업데이트 오류");
   }
 }
 
@@ -71,7 +114,7 @@ async function markSessionComplete(customerId) {
   try {
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
-      Key: { customerId }, // customerId가 PK인 경우
+      Key: { orderId },
       UpdateExpression:
         "SET sessionStatus = :status, isSessionActive = :active",
       ExpressionAttributeValues: {

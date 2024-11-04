@@ -1,0 +1,38 @@
+service: send-quote-mail
+
+provider:
+  name: aws
+  runtime: java17
+  region: ap-northeast-2
+  memorySize: 512
+  timeout: 30
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+          Resource:
+            - arn:aws:sqs:ap-northeast-2:481665114066:send-quote-mail-trigger
+            - arn:aws:sqs:ap-northeast-2:481665114066:chat-send-quote-mail-trigger
+        - Effect: Allow
+          Action:
+            - "ses:SendEmail"
+            - "ses:SendRawEmail"
+          Resource: "*"
+
+package:
+  artifact: build/libs/send-quote-mail-0.0.1-SNAPSHOT-all.jar
+
+functions:
+  InformationIntegrityVerification:
+    name: send-quote-mail
+    handler: online.everymail.SendQuoteMail
+    events:
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:send-quote-mail-trigger
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:chat-send-quote-mail-trigger

@@ -4,6 +4,7 @@ const { formatTimestamp } = require("../common/utils/formatUtils");
 
 const {
   saveConnection,
+  updateConnection,
   getSessionData,
 } = require("../common/ddb/dynamoDbClient");
 const { getOrderData } = require("../common/ddb/orderDynamoDbClient");
@@ -32,7 +33,7 @@ module.exports.handler = async (event) => {
     let isSessionActive = true;
     let responsedData = {};
     let pendingFields = {};
-    let lastInteractionTimestamp = new Date().toISOString();
+    let lastInteractionTimestamp = "";
     let chatHistory = [];
 
     // orderId가 존재하는 경우: 기존 데이터 사용
@@ -53,15 +54,11 @@ module.exports.handler = async (event) => {
 
       // 기존 저장 데이터 할당
       isSessionActive = existingSessionData.isSessionActive;
-      lastInteractionTimestamp = existingSessionData.lastInteractionTimestamp;
       chatHistory = existingSessionData.chatHistory;
 
       // 이미 존재하는 연결정보에 최신정보업데이트
-      console.log(`이미 존재하는 id정보저장 - Before saving connection:`);
-      await saveConnection(orderId, connectionId, {
-        isSessionActive,
-        sessionStatus,
-      });
+      console.log(`이미 존재하는 id정보 업뎃 - Before updateConnection:`);
+      await updateConnection(orderId, connectionId, isSessionActive);
 
       // 채팅 기록을 시간 순서에 따라 보여줌
       chatHistory.forEach((chat) => {

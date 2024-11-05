@@ -7,12 +7,13 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 
 module.exports.handler = async (event) => {
   const connectionId = event.requestContext.connectionId;
-  const orderId = event.queryStringParameters.order;
+  // const orderId = event.queryStringParameters.orderId;
+  const orderId = "testdata2"; // 임시 하드코딩
   console.log(`Disconnected - ConnectionId: ${connectionId}`);
 
   try {
     await markSessionInactive(orderId);
-    console.log(`orderId ${orderId} successfully deleted disconnect`);
+    console.log(`orderId ${orderId} successfully disconnect`);
     return {
       statusCode: 200,
       body: `Disconnected - orderId: ${orderId}`,

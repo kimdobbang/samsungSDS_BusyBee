@@ -13,7 +13,7 @@ const client = new DynamoDBClient({ region: "ap-northeast-2" });
 const dynamoDb = DynamoDBDocumentClient.from(client);
 const TABLE_NAME = process.env.CHAT_SESSIONS_TABLE_NAME;
 
-// connectionId 저장
+// connection 저장
 async function saveConnection(orderId, connectionId, sessionData) {
   try {
     console.log(`Session Data in saveConnection:`, sessionData);
@@ -33,7 +33,7 @@ async function saveConnection(orderId, connectionId, sessionData) {
           chatHistory = :chatHistory
       `,
       ExpressionAttributeValues: {
-        ":sender": sender,
+        ":sender": sessionData.sender,
         ":connectionId": connectionId,
         ":isSessionActive": sessionData.isSessionActive,
         ":sessionStatus": sessionData.sessionStatus,
@@ -130,7 +130,7 @@ async function markSessionInactive(orderId) {
   }
 }
 
-// complete 처리: 세션 상태를 완료로 표시
+// complete 처리
 async function markSessionComplete(orderId) {
   try {
     const command = new UpdateCommand({
@@ -139,8 +139,7 @@ async function markSessionComplete(orderId) {
       UpdateExpression:
         "SET sessionStatus = :status, isSessionActive = :active",
       ExpressionAttributeValues: {
-        ":status": "completed", // 세션 상태를 completed로 설정
-        ":active": false, // 세션을 비활성화
+        ":status": "completed",
       },
     });
     await dynamoDb.send(command);

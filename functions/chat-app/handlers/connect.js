@@ -50,12 +50,10 @@ module.exports.handler = async (event) => {
         };
       }
 
-      // 기존 저장 데이터로 업데이트
+      // 기존 저장 데이터 할당
       isSessionActive = existingSessionData.isSessionActive;
-      // responsedData = existingSessionData.responsedData;
-      // pendingFields = existingSessionData.pendingFields;
-      // lastInteractionTimestamp = existingSessionData.lastInteractionTimestamp;
-      // chatHistory = existingSessionData.chatHistory;
+      lastInteractionTimestamp = existingSessionData.lastInteractionTimestamp;
+      chatHistory = existingSessionData.chatHistory;
 
       // 이미 존재하는 연결정보에 최신정보업데이트
       console.log(`이미 존재하는 id정보저장 - Before saving connection:`);
@@ -69,7 +67,7 @@ module.exports.handler = async (event) => {
         console.log(`${chat.timestamp} - ${chat.senderType}: ${chat.message}`);
       });
 
-      // 추가 정보 요청 메시지 전송
+      // 추가 정보 요청 시작 메시지 전송
       const formattedDateTime = formatTimestamp(lastInteractionTimestamp);
       await sendMessageToClient(
         orderId,
@@ -80,24 +78,28 @@ module.exports.handler = async (event) => {
 
       // orderId가 존재하지 않는 경우: estimate 에서 새로운 데이터를 가져와야 함
     } else {
-      console.log("기존의 연결정보 없음");
-      const orderData = await getOrderData(orderId); // estimate 테이블에서 orderId로 데이터 가져오기
+      console.log("최초 접속(기존 데이터 없음)");
+      const newoOrderData = await getOrderData(orderId); // estimate 테이블에서 orderId로 데이터 가져오기
 
-      if (!orderData || !orderData.value) {
+      if (!newoOrderData || !newoOrderData.value) {
         throw new Error("order data not found in estimate table.");
       }
-      // JSON 문자열로 변환
+      // 가져온 데이터를 JSON 문자열로 변환
       let parsedData;
       try {
-        parsedData = JSON.parse(orderData.value); // value에서 문자열로 인코딩된 JSON 파싱
+        parsedData = JSON.parse(newoOrderData.value); // value에서 문자열로 인코딩된 JSON 파싱
       } catch (error) {
-        console.error(`Failed to parse order data value: ${orderData.value}`);
+        console.error(
+          `Failed to parse order data value: ${newoOrderData.value}`
+        );
         throw new Error("Invalid JSON format in order data.");
       }
 
+      // 채팅세션정보 DB에 저장할 데이터 구성
       responsedData = parsedData.data || {};
+      sender = parsedData.sender || "";
 
-      // pendingFields 구성
+      // pendingFields생성
       const requiredFields = [
         "Weight", //TotalWeight???
         "ContainerSize",

@@ -4,6 +4,7 @@ const { formatTimestamp } = require("../common/utils/formatUtils");
 
 const {
   saveConnection,
+  updateConnection,
   getSessionData,
 } = require("../common/ddb/dynamoDbClient");
 const { getOrderData } = require("../common/ddb/orderDynamoDbClient");
@@ -25,13 +26,14 @@ module.exports.handler = async (event) => {
     const existingSessionData = await getSessionData(orderId);
 
     // 초기화
+    let sender = "";
     let sessionStatus = existingSessionData
       ? existingSessionData.sessionStatus
       : "inProgress";
     let isSessionActive = true;
     let responsedData = {};
     let pendingFields = {};
-    let lastInteractionTimestamp = new Date().toISOString();
+    let lastInteractionTimestamp = "";
     let chatHistory = [];
 
     // orderId가 존재하는 경우: 기존 데이터 사용
@@ -50,26 +52,20 @@ module.exports.handler = async (event) => {
         };
       }
 
-      // 기존 저장 데이터로 업데이트
+      // 기존 저장 데이터 할당
       isSessionActive = existingSessionData.isSessionActive;
-      // responsedData = existingSessionData.responsedData;
-      // pendingFields = existingSessionData.pendingFields;
-      // lastInteractionTimestamp = existingSessionData.lastInteractionTimestamp;
-      // chatHistory = existingSessionData.chatHistory;
+      chatHistory = existingSessionData.chatHistory;
 
       // 이미 존재하는 연결정보에 최신정보업데이트
-      console.log(`이미 존재하는 id정보저장 - Before saving connection:`);
-      await saveConnection(orderId, connectionId, {
-        isSessionActive,
-        sessionStatus,
-      });
+      console.log(`이미 존재하는 id정보 업뎃 - Before updateConnection:`);
+      await updateConnection(orderId, connectionId, isSessionActive);
 
       // 채팅 기록을 시간 순서에 따라 보여줌
       chatHistory.forEach((chat) => {
         console.log(`${chat.timestamp} - ${chat.senderType}: ${chat.message}`);
       });
 
-      // 추가 정보 요청 메시지 전송
+      // 추가 정보 요청 시작 메시지 전송
       const formattedDateTime = formatTimestamp(lastInteractionTimestamp);
       await sendMessageToClient(
         orderId,
@@ -80,24 +76,28 @@ module.exports.handler = async (event) => {
 
       // orderId가 존재하지 않는 경우: estimate 에서 새로운 데이터를 가져와야 함
     } else {
-      console.log("기존의 연결정보 없음");
-      const orderData = await getOrderData(orderId); // estimate 테이블에서 orderId로 데이터 가져오기
+      console.log("최초 접속(기존 데이터 없음)");
+      const newoOrderData = await getOrderData(orderId); // estimate 테이블에서 orderId로 데이터 가져오기
 
-      if (!orderData || !orderData.value) {
+      if (!newoOrderData || !newoOrderData.value) {
         throw new Error("order data not found in estimate table.");
       }
-      // JSON 문자열로 변환
+      // 가져온 데이터를 JSON 문자열로 변환
       let parsedData;
       try {
-        parsedData = JSON.parse(orderData.value); // value에서 문자열로 인코딩된 JSON 파싱
+        parsedData = JSON.parse(newoOrderData.value); // value에서 문자열로 인코딩된 JSON 파싱
       } catch (error) {
-        console.error(`Failed to parse order data value: ${orderData.value}`);
+        console.error(
+          `Failed to parse order data value: ${newoOrderData.value}`
+        );
         throw new Error("Invalid JSON format in order data.");
       }
 
+      // 채팅세션정보 DB에 저장할 데이터 구성
       responsedData = parsedData.data || {};
+      sender = parsedData.sender || "";
 
-      // pendingFields 구성
+      // pendingFields생성
       const requiredFields = [
         "Weight", //TotalWeight???
         "ContainerSize",
@@ -111,17 +111,16 @@ module.exports.handler = async (event) => {
         // "PIC",
         // "contanct"
       ];
-
-      // responsedFields에서 빈 문자열("") 또는 'unknown'인 필드를 찾아 pendingFields에 추가
       requiredFields.forEach((field) => {
-        if (
-          responsedData[field] === "" ||
-          responsedData[field] === "unknown" ||
-          responsedData[field] === "0"
-        ) {
-          pendingFields[field] = true;
+        if (!responsedData[field]) {
+          pendingFields[field] = "omission";
+        } else if (responsedData[field] === "unknown") {
+          pendingFields[field] = "unknown";
+        } else if (responsedData[field] === "0") {
+          pendingFields[field] = "omission";
         }
       });
+
       // 연결 정보를 포함하여 연결정보DB에 저장
       console.log("최초접속 정보저장-Session Data before saving");
       await saveConnection(orderId, connectionId, {
@@ -130,7 +129,6 @@ module.exports.handler = async (event) => {
         sessionStatus,
         pendingFields,
         responsedData,
-        lastInteractionTimestamp,
         chatHistory,
       });
       // 시작 메시지 전송

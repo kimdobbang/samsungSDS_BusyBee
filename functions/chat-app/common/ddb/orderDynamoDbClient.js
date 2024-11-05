@@ -21,7 +21,7 @@ async function getOrderData(orderId) {
       `Failed to get estimate data for customerId ${orderId}:`,
       JSON.stringify(error)
     );
-    throw new Error("주문 데이터 조회 오류");
+    throw new Error("산출 고객데이터 조회 오류");
   }
 }
 

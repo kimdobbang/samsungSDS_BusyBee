@@ -13,65 +13,79 @@ const client = new DynamoDBClient({ region: "ap-northeast-2" });
 const dynamoDb = DynamoDBDocumentClient.from(client);
 const TABLE_NAME = process.env.CHAT_SESSIONS_TABLE_NAME;
 
-// connectionId 저장
 async function saveConnection(orderId, connectionId, sessionData) {
   try {
-    console.log(`Session Data in saveConnection:`, sessionData);
+    console.log(`saveConnectionData:`, sessionData);
+    const command = new PutCommand({
+      TableName: TABLE_NAME,
+      Item: {
+        orderId,
+        connectionId,
+        sender: sessionData.sender,
+        isSessionActive: sessionData.isSessionActive,
+        sessionStatus: sessionData.sessionStatus,
+        pendingFields: sessionData.pendingFields,
+        responsedData: sessionData.responsedData,
+        chatHistory: sessionData.chatHistory,
+      },
+    });
 
+    await dynamoDb.send(command);
+    console.log(`saveConnection 성공: ${orderId} - ${connectionId}`);
+  } catch (error) {
+    console.error(`Error saving connection:${orderId} - ${connectionId}`);
+    throw new Error("connection 저장 오류");
+  }
+}
+
+async function updateConnection(orderId, connectionId, isSessionActive) {
+  try {
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { orderId },
       UpdateExpression: `
         SET 
-          sender = :sender,
           connectionId = :connectionId,
-          isSessionActive = :isSessionActive,
-          sessionStatus = :sessionStatus,
-          pendingFields = :pendingFields,
-          responsedData = :responsedData,
-          lastInteractionTimestamp = :lastInteractionTimestamp,
-          chatHistory = :chatHistory
+          isSessionActive = :isSessionActive
       `,
       ExpressionAttributeValues: {
-        ":sender": sender,
         ":connectionId": connectionId,
-        ":isSessionActive": sessionData.isSessionActive,
-        ":sessionStatus": sessionData.sessionStatus,
-        ":pendingFields": sessionData.pendingFields,
-        ":responsedData": sessionData.responsedData,
-        ":lastInteractionTimestamp": sessionData.lastInteractionTimestamp,
-        ":chatHistory": sessionData.chatHistory,
+        ":isSessionActive": isSessionActive,
       },
-      // 기존 데이터가 없으면 항목을 생성합니다.
-      ConditionExpression: "attribute_exists(orderId)", // orderId가 없을 때만 실행
     });
 
-    await dynamoDb.send(command);
+    await dynamoDb.send(updateCommand);
     console.log(
-      `saveConnection성공: ${orderId} - ${connectionId} - itemData:${JSON.stringify(
+      `Connection update 성공: ${orderId} - ${connectionId} - updateItemData:${JSON.stringify(
         command.Item
       )} `
     );
   } catch (error) {
     console.error(
-      "Error saving connection data to DynamoDB:",
+      `Error updating connection data to DynamoDB:${orderId} - ${connectionId} - updateItemData:${JSON.stringify(
+        command.Item
+      )}`,
       JSON.stringify(error)
     );
-    throw new Error("connection DynamoDB 저장 오류");
+    throw new Error("connection 업데이트 오류");
   }
 }
+
 // 채팅 히스토리 저장
 async function saveChat(orderId, chatMessage) {
-  const timestamp = new Date().toISOString();
   try {
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { orderId },
-      UpdateExpression:
-        "SET chatHistory = list_append(if_not_exists(chatHistory, :empty_list), :new_chat)",
+      UpdateExpression: `
+        SET 
+          chatHistory = list_append(if_not_exists(chatHistory, :empty_list), :new_chat),
+          lastInteractionTimestamp = :timestamp
+      `,
       ExpressionAttributeValues: {
-        ":new_chat": [chatMessage], // 추가할 메시지
-        ":empty_list": [], // 빈 리스트 초기값
+        ":new_chat": [chatMessage],
+        ":empty_list": [],
+        ":timestamp": chatMessage.timestamp,
       },
     });
 
@@ -82,6 +96,7 @@ async function saveChat(orderId, chatMessage) {
     throw new Error("DynamoDB 채팅 저장 오류");
   }
 }
+
 // complete 처리 수정예정
 
 // connectionId 삭제 수정예정
@@ -130,7 +145,7 @@ async function markSessionInactive(orderId) {
   }
 }
 
-// complete 처리: 세션 상태를 완료로 표시
+// complete 처리
 async function markSessionComplete(orderId) {
   try {
     const command = new UpdateCommand({
@@ -139,8 +154,7 @@ async function markSessionComplete(orderId) {
       UpdateExpression:
         "SET sessionStatus = :status, isSessionActive = :active",
       ExpressionAttributeValues: {
-        ":status": "completed", // 세션 상태를 completed로 설정
-        ":active": false, // 세션을 비활성화
+        ":status": "completed",
       },
     });
     await dynamoDb.send(command);
@@ -174,6 +188,7 @@ async function getSessionData(orderId) {
 
 module.exports = {
   saveConnection,
+  updateConnection,
   saveChat,
   markSessionInactive,
   markSessionComplete,

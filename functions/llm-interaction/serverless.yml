@@ -1,0 +1,49 @@
+service: llm-interaction
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  environment:
+    TABLE_NAME: chat-app-CustomerChatSessions
+    OPENAI_API_KEY: ${ssm:/path/to/your/openai/api/key}
+
+package:
+  individually: true # 각 함수 및 레이어를 개별적으로 패키징
+
+functions:
+  processChatSessions:
+    handler: handler.processEvent
+    layers:
+      - { Ref: LangChainLayer } # 생성된 레이어 참조
+    events:
+      - stream:
+          type: dynamodb
+          arn:
+            Fn::GetAtt: [ChatAppCustomerChatSessions, StreamArn]
+
+layers:
+  LangChainLayer:
+    path: layer # 레이어 경로
+    compatibleRuntimes:
+      - nodejs20.x # 레이어와 호환되는 런타임
+    description: 'Layer containing AWS SDK and LangChain for the chatbot function'
+
+resources:
+  Resources:
+    ChatAppCustomerChatSessions:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: chat-app-CustomerChatSessions
+        AttributeDefinitions:
+          - AttributeName: orderId
+            AttributeType: S
+          - AttributeName: timestamp
+            AttributeType: S
+        KeySchema:
+          - AttributeName: orderId
+            KeyType: HASH
+          - AttributeName: timestamp
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE

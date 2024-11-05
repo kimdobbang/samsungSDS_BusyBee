@@ -60,18 +60,22 @@ async function saveConnection(orderId, connectionId, sessionData) {
     throw new Error("connection DynamoDB 저장 오류");
   }
 }
+
 // 채팅 히스토리 저장
 async function saveChat(orderId, chatMessage) {
-  const timestamp = new Date().toISOString();
   try {
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { orderId },
-      UpdateExpression:
-        "SET chatHistory = list_append(if_not_exists(chatHistory, :empty_list), :new_chat)",
+      UpdateExpression: `
+        SET 
+          chatHistory = list_append(if_not_exists(chatHistory, :empty_list), :new_chat),
+          lastInteractionTimestamp = :timestamp
+      `,
       ExpressionAttributeValues: {
-        ":new_chat": [chatMessage], // 추가할 메시지
-        ":empty_list": [], // 빈 리스트 초기값
+        ":new_chat": [chatMessage],
+        ":empty_list": [],
+        ":timestamp": chatMessage.timestamp,
       },
     });
 
@@ -82,6 +86,7 @@ async function saveChat(orderId, chatMessage) {
     throw new Error("DynamoDB 채팅 저장 오류");
   }
 }
+
 // complete 처리 수정예정
 
 // connectionId 삭제 수정예정

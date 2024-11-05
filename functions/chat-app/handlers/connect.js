@@ -25,6 +25,7 @@ module.exports.handler = async (event) => {
     const existingSessionData = await getSessionData(orderId);
 
     // 초기화
+    let sender = "";
     let sessionStatus = existingSessionData
       ? existingSessionData.sessionStatus
       : "inProgress";

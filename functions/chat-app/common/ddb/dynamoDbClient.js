@@ -16,22 +16,40 @@ const TABLE_NAME = process.env.CHAT_SESSIONS_TABLE_NAME;
 // connectionId 저장
 async function saveConnection(orderId, connectionId, sessionData) {
   try {
-    const command = new PutCommand({
+    console.log(`Session Data in saveConnection:`, sessionData);
+
+    const command = new UpdateCommand({
       TableName: TABLE_NAME,
-      Item: {
-        orderId,
-        connectionId,
-        isSessionActive: sessionData.isSessionActive,
-        sessionStatus: sessionData.sessionStatus,
-        pendingFields: sessionData.pendingFields,
-        responsedData: sessionData.responsedData,
-        lastInteractionTimestamp: sessionData.lastInteractionTimestamp,
-        chatHistory: sessionData.chatHistory,
+      Key: { orderId },
+      UpdateExpression: `
+        SET 
+          connectionId = :connectionId,
+          isSessionActive = :isSessionActive,
+          sessionStatus = :sessionStatus,
+          pendingFields = :pendingFields,
+          responsedData = :responsedData,
+          lastInteractionTimestamp = :lastInteractionTimestamp,
+          chatHistory = :chatHistory
+      `,
+      ExpressionAttributeValues: {
+        ":connectionId": connectionId,
+        ":isSessionActive": sessionData.isSessionActive,
+        ":sessionStatus": sessionData.sessionStatus,
+        ":pendingFields": sessionData.pendingFields,
+        ":responsedData": sessionData.responsedData,
+        ":lastInteractionTimestamp": sessionData.lastInteractionTimestamp,
+        ":chatHistory": sessionData.chatHistory,
       },
+      // 기존 데이터가 없으면 항목을 생성합니다.
+      ConditionExpression: "attribute_not_exists(orderId)", // orderId가 없을 때만 실행
     });
-    console.log(`Saving connection with data: ${JSON.stringify(command.Item)}`);
+
     await dynamoDb.send(command);
-    console.log(`Connection saved: ${orderId} - ${connectionId}`);
+    console.log(
+      `saveConnection성공: ${orderId} - ${connectionId} - itemData:${JSON.stringify(
+        command.Item
+      )} `
+    );
   } catch (error) {
     console.error(
       "Error saving connection data to DynamoDB:",
@@ -40,10 +58,11 @@ async function saveConnection(orderId, connectionId, sessionData) {
     throw new Error("connection DynamoDB 저장 오류");
   }
 }
+// 채팅 히스토리 저장
 async function saveChat(orderId, chatMessage) {
   const timestamp = new Date().toISOString();
   try {
-    const command = new PutCommand({
+    const command = new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { orderId },
       UpdateExpression:
@@ -52,7 +71,10 @@ async function saveChat(orderId, chatMessage) {
         ":new_chat": [chatMessage], // 추가할 메시지
         ":empty_list": [], // 빈 리스트 초기값
       },
+      // 아이템이 없으면 새로 생성하도록 조건 설정
+      ConditionExpression: "attribute_not_exists(orderId)",
     });
+
     await dynamoDb.send(command);
     console.log(`Chat saved: ${JSON.stringify(chatMessage)}`);
   } catch (error) {
@@ -140,7 +162,6 @@ async function getSessionData(orderId) {
       Key: { orderId },
     });
     const response = await dynamoDb.send(command);
-    console.log(response.Item);
     return response.Item; // 세션 데이터 반환
   } catch (error) {
     console.error(

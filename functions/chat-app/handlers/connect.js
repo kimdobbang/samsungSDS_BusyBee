@@ -52,10 +52,10 @@ module.exports.handler = async (event) => {
 
       // 기존 저장 데이터로 업데이트
       isSessionActive = existingSessionData.isSessionActive;
-      responsedData = existingSessionData.responsedData;
-      pendingFields = existingSessionData.pendingFields;
-      lastInteractionTimestamp = existingSessionData.lastInteractionTimestamp;
-      chatHistory = existingSessionData.chatHistory;
+      // responsedData = existingSessionData.responsedData;
+      // pendingFields = existingSessionData.pendingFields;
+      // lastInteractionTimestamp = existingSessionData.lastInteractionTimestamp;
+      // chatHistory = existingSessionData.chatHistory;
 
       // 이미 존재하는 연결정보에 최신정보업데이트
       console.log(`이미 존재하는 id정보저장 - Before saving connection:`);
@@ -125,6 +125,7 @@ module.exports.handler = async (event) => {
       // 연결 정보를 포함하여 연결정보DB에 저장
       console.log("최초접속 정보저장-Session Data before saving");
       await saveConnection(orderId, connectionId, {
+        sender,
         isSessionActive,
         sessionStatus,
         pendingFields,

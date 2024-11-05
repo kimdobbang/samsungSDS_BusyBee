@@ -15,7 +15,7 @@ const TABLE_NAME = process.env.CHAT_SESSIONS_TABLE_NAME;
 
 async function saveConnection(orderId, connectionId, sessionData) {
   try {
-    console.log(`Session Data in saveConnection:`, sessionData);
+    console.log(`saveConnectionData:`, sessionData);
     const command = new PutCommand({
       TableName: TABLE_NAME,
       Item: {
@@ -31,25 +31,16 @@ async function saveConnection(orderId, connectionId, sessionData) {
     });
 
     await dynamoDb.send(command);
-    console.log(
-      `saveConnection 성공: ${orderId} - ${connectionId} - saveItemData:${JSON.stringify(
-        putCommand.Item
-      )}`
-    );
+    console.log(`saveConnection 성공: ${orderId} - ${connectionId}`);
   } catch (error) {
-    console.error(
-      `Error saving connection:${orderId} - ${connectionId} - updateItemData:${JSON.stringify(
-        command.Item
-      )}`,
-      JSON.stringify(error)
-    );
+    console.error(`Error saving connection:${orderId} - ${connectionId}`);
     throw new Error("connection 저장 오류");
   }
 }
 
 async function updateConnection(orderId, connectionId, isSessionActive) {
   try {
-    const updateCommand = new UpdateCommand({
+    const command = new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { orderId },
       UpdateExpression: `

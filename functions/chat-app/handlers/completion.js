@@ -1,6 +1,6 @@
 // 완료 핸들러
 // 모든 정보가 수집되고 세션이 정상적으로 종료될 때 호출.
-// responsed data 를 sqs에
+// responsed data 를 sqs에 넣기 성공시 disconnect 이벤트 트리거
 
 const { markSessionComplete } = require("../common/ddb/dynamoDbClient");
 module.exports.handler = async (event) => {

@@ -6,12 +6,13 @@ const {
   PostToConnectionCommand,
 } = require("@aws-sdk/client-apigatewaymanagementapi");
 const { saveChat } = require("../ddb/dynamoDbClient");
+const { markSessionInactive } = require("../ddb/dynamoDbClient");
 
 const apigatewayManagementApi = new ApiGatewayManagementApiClient({
   endpoint: `https://${process.env.DOMAIN_NAME}/${process.env.STAGE}`,
 });
 
-function sendMessageToClient(orderId, connectionId, message, senderType) {
+async function sendMessageToClient(orderId, connectionId, message, senderType) {
   try {
     const timestamp = new Date().toISOString();
     const chatMessage = {
@@ -24,9 +25,11 @@ function sendMessageToClient(orderId, connectionId, message, senderType) {
       ConnectionId: connectionId,
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
-    saveChat(orderId, chatMessage);
 
-    apigatewayManagementApi.send(command);
+    await saveChat(orderId, chatMessage);
+
+    await apigatewayManagementApi.send(command);
+
     console.log(
       `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
         chatMessage
@@ -34,16 +37,13 @@ function sendMessageToClient(orderId, connectionId, message, senderType) {
     );
   } catch (error) {
     if (error.$metadata?.httpStatusCode == 410) {
-      // 연결 끊어진 경우 처리(connection id 삭제)
-      deleteConnection(connectionId);
+      // 연결 끊어진 경우 처리
+      // $disconnect 핸들러 호출
       console.error(
-        `Client disconnected(410) - deleting ConnectionId: ${connectionId}`
+        `Client disconnected - markSessionInactive orderId: ${orderId}`
       );
     } else {
-      console.error(
-        `Error sending message to ConnectionId: ${connectionId}`,
-        error
-      );
+      console.error(`Error sending message to orderId: ${orderId}`, error);
     }
   }
 }

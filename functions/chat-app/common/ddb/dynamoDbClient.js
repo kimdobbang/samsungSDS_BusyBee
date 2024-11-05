@@ -23,6 +23,7 @@ async function saveConnection(orderId, connectionId, sessionData) {
       Key: { orderId },
       UpdateExpression: `
         SET 
+          sender = :sender,
           connectionId = :connectionId,
           isSessionActive = :isSessionActive,
           sessionStatus = :sessionStatus,
@@ -32,6 +33,7 @@ async function saveConnection(orderId, connectionId, sessionData) {
           chatHistory = :chatHistory
       `,
       ExpressionAttributeValues: {
+        ":sender": sender,
         ":connectionId": connectionId,
         ":isSessionActive": sessionData.isSessionActive,
         ":sessionStatus": sessionData.sessionStatus,
@@ -41,7 +43,7 @@ async function saveConnection(orderId, connectionId, sessionData) {
         ":chatHistory": sessionData.chatHistory,
       },
       // 기존 데이터가 없으면 항목을 생성합니다.
-      ConditionExpression: "attribute_not_exists(orderId)", // orderId가 없을 때만 실행
+      ConditionExpression: "attribute_exists(orderId)", // orderId가 없을 때만 실행
     });
 
     await dynamoDb.send(command);

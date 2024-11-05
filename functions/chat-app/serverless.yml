@@ -71,6 +71,10 @@ functions:
       - websocket:
           route: sendMessage
 
+  completion:
+    name: ${self:service}-completion
+    handler: handlers/completion.handler
+
 resources:
   Resources:
     CustomerChatSessionsTable:

@@ -37,7 +37,7 @@ module.exports.handler = async (event) => {
 
     // connect 되었을때 채팅 세션 데이터에 orderId가 존재하는 경우: 기존 데이터 사용
     if (existingSessionData) {
-      console.log(existingSessionData);
+      console.log(`conneced - existingSessionData: ${existingSessionData}`);
 
       // 상태가 completed인 경우: 견적발송 안내후 세션 종료
       if (sessionStatus === "completed") {
@@ -82,13 +82,22 @@ module.exports.handler = async (event) => {
 
       // orderId가 존재하지 않는 경우: estimate 에서 새로운 데이터를 가져와야 함
     } else {
+      console.log("기존의 연결정보 없음");
       const orderData = await getOrderData(orderId); // estimate 테이블에서 orderId로 데이터 가져오기
+
       if (!orderData || !orderData.value) {
         throw new Error("order data not found in estimate table.");
       }
-      const parsedData = JSON.parse(orderData.value.S); // value에서 문자열로 인코딩된 JSON 파싱
+      // JSON 문자열로 변환
+      let parsedData;
+      try {
+        parsedData = JSON.parse(orderData.value); // value에서 문자열로 인코딩된 JSON 파싱
+      } catch (error) {
+        console.error(`Failed to parse order data value: ${orderData.value}`);
+        throw new Error("Invalid JSON format in order data.");
+      }
+
       responsedData = parsedData.data || {};
-      console.log(responsedData);
 
       // pendingFields 구성
       const requiredFields = [
@@ -115,9 +124,10 @@ module.exports.handler = async (event) => {
           pendingFields[field] = true;
         }
       });
-      console.log(pendingFields);
     }
-
+    console.log(`Connected - Before saving connection:`);
+    console.log(`Connected - Responsed Data: ${JSON.stringify(responsedData)}`);
+    console.log(`connected - pendingFields:${JSON.stringify(pendingFields)}`);
     // 연결 정보를 포함하여 연결정보DB에 저장
     await saveConnection(orderId, connectionId, {
       isSessionActive,

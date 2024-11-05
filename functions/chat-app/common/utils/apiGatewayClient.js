@@ -19,6 +19,7 @@ function sendMessageToClient(orderId, connectionId, message, senderType) {
       senderType,
       message,
     };
+
     saveChat(orderId, chatMessage);
 
     const command = new PostToConnectionCommand({

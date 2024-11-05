@@ -29,6 +29,7 @@ async function saveConnection(orderId, connectionId, sessionData) {
         chatHistory: sessionData.chatHistory,
       },
     });
+    console.log(`Saving connection with data: ${JSON.stringify(command.Item)}`);
     await dynamoDb.send(command);
     console.log(`Connection saved: ${orderId} - ${connectionId}`);
   } catch (error) {
@@ -139,6 +140,7 @@ async function getSessionData(orderId) {
       Key: { orderId },
     });
     const response = await dynamoDb.send(command);
+    console.log(response.Item);
     return response.Item; // 세션 데이터 반환
   } catch (error) {
     console.error(

@@ -71,8 +71,6 @@ async function saveChat(orderId, chatMessage) {
         ":new_chat": [chatMessage], // 추가할 메시지
         ":empty_list": [], // 빈 리스트 초기값
       },
-      // 아이템이 없으면 새로 생성하도록 조건 설정
-      ConditionExpression: "attribute_not_exists(orderId)",
     });
 
     await dynamoDb.send(command);

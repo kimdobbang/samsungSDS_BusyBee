@@ -26,7 +26,6 @@ async function saveConnection(orderId, connectionId, sessionData) {
         sessionStatus: sessionData.sessionStatus,
         pendingFields: sessionData.pendingFields,
         responsedData: sessionData.responsedData,
-        lastInteractionTimestamp: sessionData.lastInteractionTimestamp,
         chatHistory: sessionData.chatHistory,
       },
     });

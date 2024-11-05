@@ -129,7 +129,6 @@ module.exports.handler = async (event) => {
         sessionStatus,
         pendingFields,
         responsedData,
-        lastInteractionTimestamp,
         chatHistory,
       });
       // 시작 메시지 전송

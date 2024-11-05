@@ -20,12 +20,11 @@ function sendMessageToClient(orderId, connectionId, message, senderType) {
       message,
     };
 
-    saveChat(orderId, chatMessage);
-
     const command = new PostToConnectionCommand({
       ConnectionId: connectionId,
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
+    saveChat(orderId, command.Data);
 
     apigatewayManagementApi.send(command);
     console.log(

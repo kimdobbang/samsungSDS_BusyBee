@@ -14,16 +14,15 @@ module.exports.handler = async (event) => {
   const connectionId = event.requestContext.connectionId;
   // const orderId = event.queryStringParameters["order-id"]; // 쿼리 문자열에서 order-id 가져오기
   const orderId = "testdata2"; // 임시 하드코딩
-  console.log(`Connected - ConnectionId: ${connectionId}, OrderId: ${orderId}`);
+  console.log(`연결성공 - ConnectionId: ${connectionId}, OrderId: ${orderId}`);
 
   try {
-    // 쿼리 문자열에서 orderId가 없으면 오류 처리
     if (!orderId) {
       throw new Error("Order ID not provided in the query string.");
     }
 
     // orderId로 채팅 세션 데이터 조회
-    const existingSessionData = await getSessionData(orderId); // orderId를 사용하여 세션 데이터 조회
+    const existingSessionData = await getSessionData(orderId);
 
     // 초기화
     let sessionStatus = existingSessionData
@@ -35,10 +34,8 @@ module.exports.handler = async (event) => {
     let lastInteractionTimestamp = new Date().toISOString();
     let chatHistory = [];
 
-    // connect 되었을때 채팅 세션 데이터에 orderId가 존재하는 경우: 기존 데이터 사용
+    // orderId가 존재하는 경우: 기존 데이터 사용
     if (existingSessionData) {
-      console.log(`conneced - existingSessionData: ${existingSessionData}`);
-
       // 상태가 completed인 경우: 견적발송 안내후 세션 종료
       if (sessionStatus === "completed") {
         await sendMessageToClient(
@@ -61,6 +58,7 @@ module.exports.handler = async (event) => {
       chatHistory = existingSessionData.chatHistory;
 
       // 이미 존재하는 연결정보에 최신정보업데이트
+      console.log(`이미 존재하는 id정보저장 - Before saving connection:`);
       await saveConnection(orderId, connectionId, {
         isSessionActive,
         sessionStatus,
@@ -124,29 +122,26 @@ module.exports.handler = async (event) => {
           pendingFields[field] = true;
         }
       });
+      // 연결 정보를 포함하여 연결정보DB에 저장
+      console.log("최초접속 정보저장-Session Data before saving");
+      await saveConnection(orderId, connectionId, {
+        isSessionActive,
+        sessionStatus,
+        pendingFields,
+        responsedData,
+        lastInteractionTimestamp,
+        chatHistory,
+      });
+      // 시작 메시지 전송
+      await sendMessageToClient(
+        orderId,
+        connectionId,
+        `안녕하세요! 견적 요청을 주셔서 감사합니다. 요청주신 내용을 검토해보니, ${
+          Object.keys(pendingFields).length
+        }가지 정보가 누락 되었네요! 제가 추가 정보를 요청 드리겠습니다.`,
+        "bot"
+      );
     }
-    console.log(`Connected - Before saving connection:`);
-    console.log(`Connected - Responsed Data: ${JSON.stringify(responsedData)}`);
-    console.log(`connected - pendingFields:${JSON.stringify(pendingFields)}`);
-    // 연결 정보를 포함하여 연결정보DB에 저장
-    await saveConnection(orderId, connectionId, {
-      isSessionActive,
-      sessionStatus,
-      pendingFields,
-      responsedData,
-      lastInteractionTimestamp,
-      chatHistory,
-    });
-
-    // 시작 메시지 전송
-    await sendMessageToClient(
-      orderId,
-      connectionId,
-      `안녕하세요! 견적 요청을 주셔서 감사합니다. 요청주신 내용을 검토해보니, ${
-        Object.keys(pendingFields).length
-      }가지 정보가 누락 되었네요! 제가 추가 정보를 요청 드리겠습니다.`,
-      "bot"
-    );
 
     return {
       statusCode: 200,

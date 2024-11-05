@@ -24,7 +24,7 @@ function sendMessageToClient(orderId, connectionId, message, senderType) {
       ConnectionId: connectionId,
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
-    saveChat(orderId, command.Data);
+    saveChat(orderId, chatMessage);
 
     apigatewayManagementApi.send(command);
     console.log(

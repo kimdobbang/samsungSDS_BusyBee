@@ -114,17 +114,16 @@ module.exports.handler = async (event) => {
         // "PIC",
         // "contanct"
       ];
-
-      // responsedFields에서 빈 문자열("") 또는 'unknown'인 필드를 찾아 pendingFields에 추가
       requiredFields.forEach((field) => {
-        if (
-          responsedData[field] === "" ||
-          responsedData[field] === "unknown" ||
-          responsedData[field] === "0"
-        ) {
-          pendingFields[field] = true;
+        if (!responsedData[field]) {
+          pendingFields[field] = "omission";
+        } else if (responsedData[field] === "unknown") {
+          pendingFields[field] = "unknown";
+        } else if (responsedData[field] === "0") {
+          pendingFields[field] = "omission";
         }
       });
+
       // 연결 정보를 포함하여 연결정보DB에 저장
       console.log("최초접속 정보저장-Session Data before saving");
       await saveConnection(orderId, connectionId, {

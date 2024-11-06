@@ -1,35 +1,27 @@
 // 완료 핸들러
 // 모든 정보가 수집되고 세션이 정상적으로 종료될 때 호출.
-// 고객정보 DB에 데이터를 업데이트하고 세션을 완료 처리.
+// responsed data 를 sqs에 넣기 성공시 disconnect 이벤트 트리거
 
-const { updateCustomerData } = require("../utils/customerDbClient");
-const { markSessionComplete } = require("../utils/dynamoDbClient");
-
+const { markSessionComplete } = require("../common/ddb/dynamoDbClient");
 module.exports.handler = async (event) => {
-  // 이벤트에서 customerId를 가져옴
-  const { customerId } = JSON.parse(event.body); // 고객 ID를 이벤트 본문에서 파싱
-  //   const completedData; // db의 responsedFields
-  //   const sessionStatus = ; // db의 ssessionStatus
+  const { customerId } = JSON.parse(event.body);
   console.log(`Completion handler triggered for customer ${customerId}`);
 
   try {
-    // 고객정보 DB 업데이트
-    await updateCustomerData(customerId, completedData);
-    console.log(`Customer data updated for ${customerId}`);
-
+    // sqs에 보내야함
     // 세션을 완료로 표시
-    await markSessionComplete(customerId, sessionStatus);
+    await markSessionComplete(orderId, sessionStatus);
     console.log(
-      `Session ${ssessionStatus} for customer ${customerId} marked as complete`
+      `Session ${ssessionStatus} for customer ${orderId} marked as complete`
     );
 
     return {
       statusCode: 200,
-      body: `Completion process done for customer ${customerId}`,
+      body: `Completion process done for customer ${orderId}`,
     };
   } catch (error) {
     console.error(
-      `Error during completion process for customer ${customerId}`,
+      `Error during completion process for customer ${orderId}`,
       error
     );
     return {

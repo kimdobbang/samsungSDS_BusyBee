@@ -25,7 +25,7 @@ PROMPT_TEMPLATE = """
 6. ArrivalCity:type(string) - 도시명과 `City Code` 목록 참조
 
 도시명과 `City Code` 목록 (한국 지역):
-- 서울 (ICN)
+- 서울 (SEL)
 - 인천 (ICN)
 - 부산 (PUS)
 - 대구 (TAE)

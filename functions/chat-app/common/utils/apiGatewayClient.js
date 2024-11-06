@@ -6,12 +6,13 @@ const {
   PostToConnectionCommand,
 } = require("@aws-sdk/client-apigatewaymanagementapi");
 const { saveChat } = require("../ddb/dynamoDbClient");
-
+const { invokeDisconnectHandler } = require("../utils/lambdaClients");
 const apigatewayManagementApi = new ApiGatewayManagementApiClient({
   endpoint: `https://${process.env.DOMAIN_NAME}/${process.env.STAGE}`,
 });
 
-function sendMessageToClient(orderId, connectionId, message, senderType) {
+// 첫 접속시
+async function sendMessageToClient(orderId, connectionId, message, senderType) {
   try {
     const timestamp = new Date().toISOString();
     const chatMessage = {
@@ -25,8 +26,8 @@ function sendMessageToClient(orderId, connectionId, message, senderType) {
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
 
-    apigatewayManagementApi.send(command);
-    saveChat(orderId, connectionId, chatMessage);
+    await apigatewayManagementApi.send(command);
+    await saveChat(orderId, connectionId, chatMessage);
     console.log(
       `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
         chatMessage
@@ -37,13 +38,19 @@ function sendMessageToClient(orderId, connectionId, message, senderType) {
       console.error(
         `Message - Client disconnected - markSessionInactive orderId: ${orderId}`
       );
+      await invokeDisconnectHandler(orderId, connectionId);
     } else {
       console.error(`Error sending message to orderId: ${orderId}`, error);
     }
   }
 }
 
-function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
+// 기존 히스토리전송
+async function sendChatHistoryToClientWithoutSave(
+  orderId,
+  connectionId,
+  chatHistory
+) {
   try {
     const chatMessage = {
       timestamp: chatHistory.timestamp,
@@ -56,7 +63,7 @@ function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
 
-    apigatewayManagementApi.send(command);
+    await apigatewayManagementApi.send(command);
     console.log(
       `History sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
         chatMessage
@@ -65,10 +72,9 @@ function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
   } catch (error) {
     if (error.$metadata?.httpStatusCode == 410) {
       console.error(
-        // 연결 끊어진 경우 처리
-        // TODO: 람다트리거로 $disconnect 핸들러 호출후 로그 수정
         `History - Client disconnected - sendChatHistoryToClient: ${connectionId}`
       );
+      invokeDisconnectHandler(orderId, connectionId);
     } else {
       console.error(
         `Error sending message to connectionId: ${connectionId}`,
@@ -78,12 +84,8 @@ function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
   }
 }
 
-function sendInformToClientWithoutSave(
-  orderId,
-  connectionId,
-  message,
-  senderType
-) {
+// 재접속시
+async function sendInformToClient(orderId, connectionId, message, senderType) {
   try {
     const timestamp = new Date().toISOString();
 
@@ -98,8 +100,8 @@ function sendInformToClientWithoutSave(
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
 
-    apigatewayManagementApi.send(command);
-    saveChat(orderId, connectionId, chatMessage);
+    await apigatewayManagementApi.send(command);
+    await saveChat(orderId, connectionId, chatMessage);
     console.log(
       `Inform sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
         chatMessage
@@ -108,10 +110,9 @@ function sendInformToClientWithoutSave(
   } catch (error) {
     if (error.$metadata?.httpStatusCode == 410) {
       console.error(
-        // 연결 끊어진 경우 처리
-        // TODO: 람다트리거로 $disconnect 핸들러 호출후 로그 수정
         `Inform - Client disconnected - sendInformToClient ${connectionId}`
       );
+      invokeDisconnectHandler(orderId, connectionId);
     } else {
       console.error(
         `Error sending message to connectionId: ${connectionId}`,
@@ -124,5 +125,5 @@ function sendInformToClientWithoutSave(
 module.exports = {
   sendMessageToClient,
   sendChatHistoryToClientWithoutSave,
-  sendInformToClientWithoutSave,
+  sendInformToClient,
 };

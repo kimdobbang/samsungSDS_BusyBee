@@ -83,9 +83,7 @@ async function saveChat(orderId, connectionId, chatMessage) {
 
     await dynamoDb.send(command);
     console.log(
-      `Message sent to ConnectionId & saved: ${connectionId}, Data: ${JSON.stringify(
-        chatMessage
-      )}`
+      `saved chat: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
     );
   } catch (error) {
     console.error("Error saving chat to DynamoDB:", JSON.stringify(error));
@@ -93,31 +91,7 @@ async function saveChat(orderId, connectionId, chatMessage) {
   }
 }
 
-// complete 처리 수정예정
-
-// connectionId 삭제 수정예정
-// async function disConnection(orderId, connectionId) {
-//   try {
-//     const command = new DeleteCommand({
-//       TableName: TABLE_NAME,
-//       Key: { orderId },
-//     });
-//     dynamoDb.send(command);
-//     console.log(
-//       `ConnectionId ${connectionId} successfully deleted from DynamoDB`
-//     );
-//   } catch (error) {
-//     console.error(
-//       `Failed to delete ConnectionId ${connectionId} from DynamoDB:`,
-//       JSON.stringify(error)
-//     );
-//     throw new Error("DynamoDB 삭제 오류");
-//   }
-// }
-// TODO: complete 가 안되었는데 예기치 못하게 종료 되었을 때 처리 작성예정
-//sessionStatus = disconnected, active= false
-
-// disconnect 처리
+// 세션비활성화
 async function markSessionInactive(orderId) {
   try {
     const command = new UpdateCommand({
@@ -133,9 +107,9 @@ async function markSessionInactive(orderId) {
   } catch (error) {
     console.error(
       `Failed to mark session complete for customer ${orderId}:`,
-      JSON.stringify(error)
+      error
     );
-    throw new Error("SessionActive업데이트 오류");
+    throw new Error("Session 비활성화 오류");
   }
 }
 

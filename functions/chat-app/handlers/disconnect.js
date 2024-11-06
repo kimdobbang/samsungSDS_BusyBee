@@ -5,10 +5,8 @@ const { markSessionInactive } = require("../common/ddb/dynamoDbClient");
 
 module.exports.handler = async (event) => {
   // Payload에서 orderId와 connectionId를 가져올거임
-  // const { orderId, connectionId } = JSON.parse(event.body);
-  // const { connectionId } = JSON.parse(event.body); // JSON 문자열을 파싱하여 객체로 변환합니다.
-  const orderId = "testdata2"; // 임시 하드코딩
-  // console.log(`Disconnected - ConnectionId: ${connectionId}`);
+  const { orderId, connectionId } = JSON.parse(event.body);
+  console.log(`Disconnected - ConnectionId: ${connectionId}`);
 
   try {
     await markSessionInactive(orderId);

@@ -9,7 +9,11 @@ const {
 } = require("../common/ddb/dynamoDbClient");
 const { getOrderData } = require("../common/ddb/orderDynamoDbClient");
 
-const { sendMessageToClient } = require("../common/utils/apiGatewayClient");
+const {
+  sendMessageToClient,
+  sendChatHistoryToClientWithoutSave,
+  sendInformToClientWithoutSave,
+} = require("../common/utils/apiGatewayClient");
 
 module.exports.handler = async (event) => {
   const connectionId = event.requestContext.connectionId;
@@ -57,26 +61,28 @@ module.exports.handler = async (event) => {
       chatHistory = existingSessionData.chatHistory;
 
       // 이미 존재하는 연결정보에 최신정보업데이트
-      console.log(`이미 존재하는 id정보 업뎃 - Before updateConnection:`);
       await updateConnection(orderId, connectionId, isSessionActive);
 
       // 채팅 기록을 시간 순서에 따라 보여줌
-      chatHistory.forEach((chat) => {
-        console.log(`${chat.timestamp} - ${chat.senderType}: ${chat.message}`);
+      chatHistory.forEach((chatHistory) => {
+        sendChatHistoryToClientWithoutSave(connectionId, chatHistory);
+        console.log(
+          `${chatHistory.timestamp} - ${chatHistory.senderType}: ${chatHistory.message}`
+        );
       });
 
       // 추가 정보 요청 시작 메시지 전송
       const formattedDateTime = formatTimestamp(lastInteractionTimestamp);
-      await sendMessageToClient(
-        orderId,
+      await sendInformToClientWithoutSave(
         connectionId,
-        `아직 제게 전달해주지 않으신 정보가 남아있습니다! ${formattedDateTime} 이후의 대화를 이어가겠습니다.`,
+        `아직 제게 전달해주지 않으신 정보가 ${
+          Object.keys(pendingFields).length
+        }건 남아있습니다! ${formattedDateTime} 이후의 대화를 이어가겠습니다.`,
         "bot"
       );
 
       // orderId가 존재하지 않는 경우: estimate 에서 새로운 데이터를 가져와야 함
     } else {
-      console.log("최초 접속(기존 데이터 없음)");
       const newoOrderData = await getOrderData(orderId); // estimate 테이블에서 orderId로 데이터 가져오기
 
       if (!newoOrderData || !newoOrderData.value) {
@@ -122,7 +128,6 @@ module.exports.handler = async (event) => {
       });
 
       // 연결 정보를 포함하여 연결정보DB에 저장
-      console.log("최초접속 정보저장-Session Data before saving");
       await saveConnection(orderId, connectionId, {
         sender,
         isSessionActive,

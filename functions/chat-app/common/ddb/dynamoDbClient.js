@@ -54,25 +54,17 @@ async function updateConnection(orderId, connectionId, isSessionActive) {
       },
     });
 
-    await dynamoDb.send(updateCommand);
-    console.log(
-      `Connection update 성공: ${orderId} - ${connectionId} - updateItemData:${JSON.stringify(
-        command.Item
-      )} `
-    );
+    await dynamoDb.send(command);
+    console.log(`Connection update 성공: ${orderId} - ${connectionId}`);
   } catch (error) {
-    console.error(
-      `Error updating connection data to DynamoDB:${orderId} - ${connectionId} - updateItemData:${JSON.stringify(
-        command.Item
-      )}`,
-      JSON.stringify(error)
-    );
+    console.error(`Error updating connection:${orderId} - ${connectionId}`);
     throw new Error("connection 업데이트 오류");
   }
 }
 
 // 채팅 히스토리 저장
-async function saveChat(orderId, chatMessage) {
+// TODO: 개발 완료 후 로그를 위한 connectionId 제거
+async function saveChat(orderId, connectionId, chatMessage) {
   try {
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
@@ -90,7 +82,11 @@ async function saveChat(orderId, chatMessage) {
     });
 
     await dynamoDb.send(command);
-    console.log(`Chat saved: ${JSON.stringify(chatMessage)}`);
+    console.log(
+      `Message sent to ConnectionId & saved: ${connectionId}, Data: ${JSON.stringify(
+        chatMessage
+      )}`
+    );
   } catch (error) {
     console.error("Error saving chat to DynamoDB:", JSON.stringify(error));
     throw new Error("DynamoDB 채팅 저장 오류");
@@ -131,7 +127,7 @@ async function markSessionInactive(orderId) {
         // "SET sessionStatus = :status, isSessionActive = :active",
         "SET isSessionActive = :active",
       ExpressionAttributeValues: {
-        ":active": false, // 세션을 비활성화
+        ":active": false,
       },
     });
     await dynamoDb.send(command);

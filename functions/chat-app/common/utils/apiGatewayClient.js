@@ -26,13 +26,16 @@ function sendMessageToClient(orderId, connectionId, message, senderType) {
     });
 
     apigatewayManagementApi.send(command);
-    saveChat(orderId, connectionId, chatMessage); // TODO: 개발 완료 후 로그를 위한 connectionId 제거
+    saveChat(orderId, connectionId, chatMessage);
+    console.log(
+      `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
+        chatMessage
+      )}`
+    );
   } catch (error) {
-    if (error.$metadata?.httpStatusCode == 410) {
-      // 연결 끊어진 경우 처리
-      // TODO: 람다트리거로 $disconnect 핸들러 호출후 로그 수정
+    if (error.$metadata?.httpStatusCode === 410) {
       console.error(
-        `Client disconnected - markSessionInactive orderId: ${orderId}`
+        `Message - Client disconnected - markSessionInactive orderId: ${orderId}`
       );
     } else {
       console.error(`Error sending message to orderId: ${orderId}`, error);
@@ -40,7 +43,7 @@ function sendMessageToClient(orderId, connectionId, message, senderType) {
   }
 }
 
-async function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
+function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
   try {
     const chatMessage = {
       timestamp: chatHistory.timestamp,
@@ -53,9 +56,9 @@ async function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
 
-    await apigatewayManagementApi.send(command);
+    apigatewayManagementApi.send(command);
     console.log(
-      `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
+      `History sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
         chatMessage
       )}`
     );
@@ -64,7 +67,7 @@ async function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
       console.error(
         // 연결 끊어진 경우 처리
         // TODO: 람다트리거로 $disconnect 핸들러 호출후 로그 수정
-        `Client disconnected - sendChatHistoryToClient: ${connectionId}`
+        `History - Client disconnected - sendChatHistoryToClient: ${connectionId}`
       );
     } else {
       console.error(
@@ -75,7 +78,8 @@ async function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
   }
 }
 
-async function sendInformToClientWithoutSave(
+function sendInformToClientWithoutSave(
+  orderId,
   connectionId,
   message,
   senderType
@@ -94,9 +98,10 @@ async function sendInformToClientWithoutSave(
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
 
-    await apigatewayManagementApi.send(command);
+    apigatewayManagementApi.send(command);
+    saveChat(orderId, connectionId, chatMessage);
     console.log(
-      `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
+      `Inform sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
         chatMessage
       )}`
     );
@@ -105,7 +110,7 @@ async function sendInformToClientWithoutSave(
       console.error(
         // 연결 끊어진 경우 처리
         // TODO: 람다트리거로 $disconnect 핸들러 호출후 로그 수정
-        `Client disconnected - sendInformToClient ${connectionId}`
+        `Inform - Client disconnected - sendInformToClient ${connectionId}`
       );
     } else {
       console.error(

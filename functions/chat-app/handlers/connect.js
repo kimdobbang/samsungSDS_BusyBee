@@ -1,14 +1,12 @@
 // handlers/connect.js
 // 연결시 DB조회를 통해 입력 받아야 할 정보 알아야함
-const { formatTimestamp } = require("../common/utils/formatUtils");
-
+const { formatDateTimestamp } = require("../common/utils/formatUtils");
 const {
   saveConnection,
   updateConnection,
   getSessionData,
 } = require("../common/ddb/dynamoDbClient");
 const { getOrderData } = require("../common/ddb/orderDynamoDbClient");
-
 const {
   sendMessageToClient,
   sendChatHistoryToClientWithoutSave,
@@ -57,8 +55,10 @@ module.exports.handler = async (event) => {
       }
 
       // 기존 저장 데이터 할당
-      isSessionActive = existingSessionData.isSessionActive;
+      pendingFields = existingSessionData.pendingFields;
       chatHistory = existingSessionData.chatHistory;
+      lastInteractionTimestamp =
+        existingSessionData.lastInteractionTimestamp || "";
 
       // 이미 존재하는 연결정보에 최신정보업데이트
       await updateConnection(orderId, connectionId, isSessionActive);
@@ -66,18 +66,17 @@ module.exports.handler = async (event) => {
       // 채팅 기록을 시간 순서에 따라 보여줌
       chatHistory.forEach((chatHistory) => {
         sendChatHistoryToClientWithoutSave(connectionId, chatHistory);
-        console.log(
-          `${chatHistory.timestamp} - ${chatHistory.senderType}: ${chatHistory.message}`
-        );
       });
 
       // 추가 정보 요청 시작 메시지 전송
-      const formattedDateTime = formatTimestamp(lastInteractionTimestamp);
+      const formattedDateTime = formatDateTimestamp(lastInteractionTimestamp);
+
       await sendInformToClientWithoutSave(
+        orderId,
         connectionId,
         `아직 제게 전달해주지 않으신 정보가 ${
           Object.keys(pendingFields).length
-        }건 남아있습니다! ${formattedDateTime} 이후의 대화를 이어가겠습니다.`,
+        }건 남아있습니다! ${formattedDateTime} 이후의 요청을 이어가겠습니다.`,
         "bot"
       );
 
@@ -126,6 +125,7 @@ module.exports.handler = async (event) => {
           pendingFields[field] = "omission";
         }
       });
+      console.log(`요청받을 갯수는 ${Object.keys(pendingFields).length}`);
 
       // 연결 정보를 포함하여 연결정보DB에 저장
       await saveConnection(orderId, connectionId, {

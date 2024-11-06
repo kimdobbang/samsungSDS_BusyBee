@@ -123,9 +123,7 @@ async function markSessionInactive(orderId) {
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { orderId },
-      UpdateExpression:
-        // "SET sessionStatus = :status, isSessionActive = :active",
-        "SET isSessionActive = :active",
+      UpdateExpression: "SET isSessionActive = :active",
       ExpressionAttributeValues: {
         ":active": false,
       },

@@ -1,10 +1,6 @@
-'use client';
-
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './ChatUI.module.scss';
-import Image from 'next/image';
-import busybee2 from '@/shared/assets/images/busybee2.png';
-import busybee3 from '@/shared/assets/images/busybee3.png';
+import busybee2 from '../../../shared/assets/images/busybee2.png';
 import { Message } from '../model/Message';
 
 const messagesData: Message[] = [
@@ -58,7 +54,7 @@ export const ChatUI = () => {
       <div className={styles.header}>
         <div></div>
         <div className={styles.middle}>
-          <Image src={busybee3} alt={''} height={55} />
+          <img src={busybee2} alt='' height={55} />
           <h1>BUSYBEE</h1>
         </div>
         <div></div>
@@ -66,7 +62,7 @@ export const ChatUI = () => {
 
       <div className={styles.userId}>
         {userId}
-        <Image src={busybee2} alt={''} height={45} />
+        <img src={busybee2} alt='' height={45} />
       </div>
       <div className={styles.chat} ref={chatRef}>
         {messages.map((message, index) => (
@@ -76,7 +72,7 @@ export const ChatUI = () => {
           >
             {message.sender === 'admin' ? (
               <div className={styles.profileContainer}>
-                <Image src={busybee2} alt='' width={45} height={45} />
+                <img src={busybee2} alt='' width={45} height={45} />
                 <div className={`${styles.message} ${styles[message.sender]}`}>
                   {message.content}
                 </div>

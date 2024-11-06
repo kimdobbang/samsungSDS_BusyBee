@@ -3,13 +3,12 @@
 // 세션 상태를 isSessionActive = false로 업데이트
 const { markSessionInactive } = require("../common/ddb/dynamoDbClient");
 
-const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-
 module.exports.handler = async (event) => {
-  const connectionId = event.requestContext.connectionId;
-  // const orderId = event.queryStringParameters.orderId;
+  // Payload에서 orderId와 connectionId를 가져올거임
+  // const { orderId, connectionId } = JSON.parse(event.body);
+  // const { connectionId } = JSON.parse(event.body); // JSON 문자열을 파싱하여 객체로 변환합니다.
   const orderId = "testdata2"; // 임시 하드코딩
-  console.log(`Disconnected - ConnectionId: ${connectionId}`);
+  // console.log(`Disconnected - ConnectionId: ${connectionId}`);
 
   try {
     await markSessionInactive(orderId);

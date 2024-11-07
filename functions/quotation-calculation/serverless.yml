@@ -17,6 +17,7 @@ provider:
             - sqs:GetQueueAttributes
           Resource:
             - arn:aws:sqs:ap-northeast-2:481665114066:quotation-calculation-trigger
+            - arn:aws:sqs:ap-northeast-2:481665114066:chat-quotation-calculation-trigger
         - Effect: Allow
           Action:
             - sns:Publish
@@ -33,3 +34,5 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:ap-northeast-2:481665114066:quotation-calculation-trigger
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:chat-quotation-calculation-trigger

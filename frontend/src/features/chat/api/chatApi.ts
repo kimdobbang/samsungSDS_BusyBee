@@ -1,4 +1,4 @@
-// 채팅 API 처리 코드
-export const sendMessage = () => {
-  // 메시지 전송 코드
+export const getWebSocketUrl = (orderId: string | null): string => {
+  const apiUrl = `wss://3q2gfm3fql.execute-api.ap-northeast-2.amazonaws.com/dev`;
+  return `${apiUrl}?orderId=${orderId}`;
 };

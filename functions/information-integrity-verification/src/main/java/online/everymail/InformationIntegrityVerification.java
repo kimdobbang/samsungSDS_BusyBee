@@ -70,6 +70,8 @@ public class InformationIntegrityVerification implements RequestHandler<SQSEvent
                 && data.getData().getDepartureDate() != null && !data.getData().getDepartureDate().isEmpty()
                 && data.getData().getArrivalDate() != null && !data.getData().getArrivalDate().isEmpty()
                 && data.getData().getDepartureCity() != null && !data.getData().getDepartureCity().isEmpty()
-                && data.getData().getArrivalCity() != null && !data.getData().getArrivalCity().isEmpty();
+                && !data.getData().getDepartureCity().equals("unknown")
+                && data.getData().getArrivalCity() != null && !data.getData().getArrivalCity().isEmpty()
+                && !data.getData().getArrivalCity().equals("unknown");
     }
 }

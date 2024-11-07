@@ -39,7 +39,7 @@ public class InformationMailRequest implements RequestHandler<SQSEvent, Void> {
                                     .withSubject(new Content().withData("요청하신 견적 건에 대하여 추가 정보 입력 요청드립니다."))
                                     .withBody(new Body().withText(new Content().withData(
                                             "아래 url로 접속하여 챗봇의 안내에 따라 추가 정보 입력 부탁드립니다.\n"
-                                            + "https://busybeemail.net/chat?order-id=" + parsedData.getKey()
+                                            + "https://busybeemail.net/chatUI?orderId=" + parsedData.getKey()
                                     ))))
                             .withSource(emailAddress);
 

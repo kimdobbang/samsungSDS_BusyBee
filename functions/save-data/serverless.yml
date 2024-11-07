@@ -18,7 +18,6 @@ provider:
           Resource:
             - arn:aws:sqs:ap-northeast-2:481665114066:save-data-trigger
             - arn:aws:sqs:ap-northeast-2:481665114066:save-incorrect-information-trigger
-            - arn:aws:sqs:ap-northeast-2:481665114066:chat-save-data-trigger
         - Effect: Allow
           Action:
             - "dynamodb:PutItem"
@@ -37,5 +36,3 @@ functions:
           arn: arn:aws:sqs:ap-northeast-2:481665114066:save-data-trigger
       - sqs:
           arn: arn:aws:sqs:ap-northeast-2:481665114066:save-incorrect-information-trigger
-      - sqs:
-          arn: arn:aws:sqs:ap-northeast-2:481665114066:chat-save-data-trigger

@@ -17,7 +17,6 @@ provider:
             - sqs:GetQueueAttributes
           Resource:
             - arn:aws:sqs:ap-northeast-2:481665114066:send-quote-mail-trigger
-            - arn:aws:sqs:ap-northeast-2:481665114066:chat-send-quote-mail-trigger
         - Effect: Allow
           Action:
             - "ses:SendEmail"
@@ -34,5 +33,3 @@ functions:
     events:
       - sqs:
           arn: arn:aws:sqs:ap-northeast-2:481665114066:send-quote-mail-trigger
-      - sqs:
-          arn: arn:aws:sqs:ap-northeast-2:481665114066:chat-send-quote-mail-trigger

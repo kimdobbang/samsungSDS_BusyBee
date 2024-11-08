@@ -1,0 +1,28 @@
+service: responsed-data-replication
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-northeast-2
+  stage: dev
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeStream
+        - dynamodb:GetRecords
+        - dynamodb:GetShardIterator
+        - dynamodb:ListStreams
+        - dynamodb:PutItem
+      Resource:
+        - arn:aws:dynamodb:ap-northeast-2:481665114066:table/estimate
+        - arn:aws:dynamodb:ap-northeast-2:481665114066:table/chat-app-CustomerChatSessions
+
+functions:
+  responsedDataReplication:
+    name: responsed-data-replication
+    handler: handler.responsedDataReplication
+    events:
+      - stream:
+          type: dynamodb
+          arn: arn:aws:dynamodb:ap-northeast-2:481665114066:table/estimate/stream/2024-11-07T11:07:02.681

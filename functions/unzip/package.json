@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "aws-sdk": "^2.1692.0",
+    "mailparser": "^3.7.1"
+  }
+}

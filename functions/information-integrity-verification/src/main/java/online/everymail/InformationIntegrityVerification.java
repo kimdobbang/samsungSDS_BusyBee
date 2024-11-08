@@ -12,6 +12,7 @@ import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import online.everymail.dto.MessageData;
 import online.everymail.dto.SQSMessageData;
 
 public class InformationIntegrityVerification implements RequestHandler<SQSEvent, Void> {
@@ -36,18 +37,20 @@ public class InformationIntegrityVerification implements RequestHandler<SQSEvent
                     if (isDataValid(parsedData)) {
                         context.getLogger().log("All data is valid. Preparing to send to the success queue.");
 
+                        MessageData messageData = new MessageData(parsedData, 2);
                         SendMessageRequest sendMsgRequest = new SendMessageRequest()
                                 .withQueueUrl(sqsUrl)
-                                .withMessageBody(originalMessageBody);
+                                .withMessageBody(gson.toJson(messageData));
 
                         sqsClient.sendMessage(sendMsgRequest);
                         context.getLogger().log("Message sent to success queue.");
                     } else {
                         context.getLogger().log("Invalid data. Sending to SNS for further handling.");
 
+                        MessageData messageData = new MessageData(parsedData, 1);
                         PublishRequest publishRequest = new PublishRequest()
                                 .withTopicArn(snsTopicArn)
-                                .withMessage(originalMessageBody);
+                                .withMessage(gson.toJson(messageData));
 
                         PublishResult publishResult = snsClient.publish(publishRequest);
                         context.getLogger().log("Message published to SNS with message ID: " + publishResult.getMessageId());

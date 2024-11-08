@@ -1,0 +1,37 @@
+service: quote-order-save
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-northeast-2
+  stage: dev
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+        - logs:DescribeLogStreams
+        - logs:TagResource
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - sqs:ReceiveMessage
+        - sqs:DeleteMessage
+        - sqs:GetQueueAttributes
+      Resource:
+        - arn:aws:sqs:ap-northeast-2:481665114066:quote-order-save-trigger
+    - Effect: Allow
+      Action:
+        - dynamodb:UpdateItem
+      Resource:
+        - arn:aws:dynamodb:ap-northeast-2:481665114066:table/estimate
+
+functions:
+  quoteOrderSave:
+    name: quote-order-save
+    handler: handler.quoteOrderSave
+    events:
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:quote-order-save-trigger

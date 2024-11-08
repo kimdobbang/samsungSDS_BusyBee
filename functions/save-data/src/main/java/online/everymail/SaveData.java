@@ -37,7 +37,10 @@ public class SaveData implements RequestHandler<SQSEvent, Void> {
                     // DynamoDB에 저장할 데이터 구성
                     Map<String, AttributeValue> item = new HashMap<>();
                     item.put("Id", new AttributeValue(parsedData.getKey()));
-                    item.put("value", new AttributeValue().withS(gson.toJson(parsedData)));
+                    item.put("sender", new AttributeValue(parsedData.getSender()));
+                    item.put("data", new AttributeValue().withS(gson.toJson(parsedData.getData())));
+                    item.put("status", new AttributeValue().withN(String.valueOf(parsedData.getStatus())));
+                    item.put("quote", new AttributeValue().withN(String.valueOf(parsedData.getQuote())));
 
                     // PutItemRequest 생성 및 데이터 저장
                     PutItemRequest putItemRequest = new PutItemRequest()

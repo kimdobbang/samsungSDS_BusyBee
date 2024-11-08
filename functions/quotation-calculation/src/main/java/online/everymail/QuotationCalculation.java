@@ -9,8 +9,7 @@ import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import online.everymail.dto.Data;
-import online.everymail.dto.SNSMessageData;
+import online.everymail.dto.MessageData;
 import online.everymail.dto.SQSMessageData;
 
 public class QuotationCalculation implements RequestHandler<SQSEvent, Void> {
@@ -29,8 +28,6 @@ public class QuotationCalculation implements RequestHandler<SQSEvent, Void> {
 
                     SQSMessageData parsedData = gson.fromJson(originalMessageBody, SQSMessageData.class);
 
-                    String key = parsedData.getKey();
-                    String sender = parsedData.getSender();
                     int weight = parsedData.getData().getWeight();
                     int containerSize = parsedData.getData().getContainerSize();
                     String departureDate = parsedData.getData().getDepartureDate();
@@ -41,8 +38,7 @@ public class QuotationCalculation implements RequestHandler<SQSEvent, Void> {
                     // 견적 계산 로직 추가해야 함 (일단 고정값 1000)
                     int quote = 1000;
 
-                    SNSMessageData newData = new SNSMessageData(key, sender,
-                            new Data(weight, containerSize, departureDate, arrivalDate, departureCity, arrivalCity), quote);
+                    MessageData newData = new MessageData(parsedData, quote);
 
                     String newMessageBody = gson.toJson(newData);
 

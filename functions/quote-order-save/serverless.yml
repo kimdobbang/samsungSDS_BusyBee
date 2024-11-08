@@ -1,0 +1,33 @@
+org: modomail
+service: quote-order
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-northeast-2
+  environment:
+    SQS_QUEUE_URL: https://sqs.${self:provider.region}.amazonaws.com/481665114066/quote-order-trigger
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+          Resource:
+            - arn:aws:sqs:ap-northeast-2:481665114066:quote-order-trigger
+        - Effect: Allow
+          Action:
+            - "ses:SendEmail"
+            - "ses:SendRawEmail"
+          Resource: "*"
+
+functions:
+  quoteOrder:
+    name: quote-order  # 함수 개별 설정 안에 name 위치
+    handler: handler.quoteOrder
+    events:
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:quote-order-trigger

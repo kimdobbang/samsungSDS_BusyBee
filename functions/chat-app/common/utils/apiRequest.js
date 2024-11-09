@@ -26,7 +26,7 @@ async function makeApiRequest(url, data) {
     console.log(`makeApiRequest 성공:${responseData} `);
     return responseData;
   } catch (error) {
-    console.error("API 요청 실패:", error);
+    console.log("API 요청 실패:", error);
     throw new Error("API 요청 실패");
   }
 }

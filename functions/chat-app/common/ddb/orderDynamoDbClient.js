@@ -17,10 +17,7 @@ async function getOrderData(orderId) {
     const response = await dynamoDb.send(command);
     return response.Item;
   } catch (error) {
-    console.error(
-      `Failed to get estimate data for customerId ${orderId}:`,
-      JSON.stringify(error)
-    );
+    console.log(`Failed to get estimate data for customerId ${orderId}:`, JSON.stringify(error));
     throw new Error("산출 고객데이터 조회 오류");
   }
 }

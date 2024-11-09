@@ -15,7 +15,7 @@ module.exports.handler = async (event) => {
       return { statusCode: 403, body: "나가셈" };
     }
   } catch (error) {
-    console.error("Error in default handler:", error);
+    console.log("Error in default handler:", error);
     return { statusCode: 500, body: "서버 에러" };
   }
   console.log("너의 링크가 맞음", loginUser === sender);

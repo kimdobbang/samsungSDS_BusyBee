@@ -100,7 +100,7 @@ async function disconnectClient(connectionId) {
     await apiGatewayClient.send(command);
     console.log(`Connection ${connectionId} has been forcefully disconnected.`);
   } catch (error) {
-    console.error(`Failed to disconnect connection ${connectionId}:`, error);
+    console.log(`Failed to disconnect connection ${connectionId}:`, error);
   }
 }
 

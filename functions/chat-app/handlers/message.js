@@ -24,7 +24,7 @@ module.exports.handler = async (event) => {
     orderId = body.orderId;
     clientMessage = body.data;
   } catch (parseError) {
-    console.error(`Error parsing message from ConnectionId: ${connectionId}`, parseError);
+    console.log(`Error parsing message from ConnectionId: ${connectionId}`, parseError);
     return {
       statusCode: 400,
       body: JSON.stringify({ message: "Invalid message format" }),
@@ -56,7 +56,7 @@ module.exports.handler = async (event) => {
       }),
     };
   } catch (error) {
-    console.error(`Error processing message for ConnectionId: ${connectionId}`, error);
+    console.log(`Error processing message for ConnectionId: ${connectionId}`, error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Internal Server Error" }),

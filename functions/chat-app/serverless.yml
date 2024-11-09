@@ -40,13 +40,14 @@ provider:
         - lambda:InvokeFunction
       Resource:
         # - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-*
-        - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-disconnect # disconnect 핸들러 호출을 위한 권한
+        - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-disconnect
 
     - Effect: Allow
       Action:
         - execute-api:ManageConnections
       Resource:
         - arn:aws:execute-api:${self:provider.region}:*:*/*/@connections/*
+        -
     - Effect: Allow
       Action:
         - sqs:SendMessage
@@ -96,7 +97,7 @@ resources:
           - AttributeName: orderId
             AttributeType: S
           - AttributeName: connectionId
-            AttributeType: S  # GSI에서 사용할 connectionId 정의
+            AttributeType: S
         KeySchema:
           - AttributeName: orderId
             KeyType: HASH

@@ -12,7 +12,6 @@ module.exports.handler = async (event) => {
   const connectionId = event.requestContext.connectionId;
   const { orderId } = await getOrderIdByConnectionId(connectionId);
 
-
   try {
     if (!orderId) {
       throw new Error("orderId is missing in the event body.");
@@ -42,9 +41,7 @@ module.exports.handler = async (event) => {
     await markSessionComplete(orderId);
     console.log(`Session marked as complete for orderId: ${orderId}`);
 
-
-    console.log(
-      `Invoking disconnect handler for orderId: ${orderId}`);
+    console.log(`Invoking disconnect handler for orderId: ${orderId}`);
     await invokeDisconnectHandler(orderId, connectionId);
     console.log(
       `Disconnect handler successfully invoked for orderId: ${orderId}, connectionId: ${connectionId}`
@@ -55,12 +52,7 @@ module.exports.handler = async (event) => {
       body: `Completion process done for customer ${connectionId}`,
     };
   } catch (error) {
-    console.error(
-      `Error during completion process for customer ${
-        connectionId
-      }`,
-      error
-    );
+    console.log(`Error during completion process for customer ${connectionId}`, error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Completion - Internal Server Error" }),

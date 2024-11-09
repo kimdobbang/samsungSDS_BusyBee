@@ -1,8 +1,10 @@
 // handlers/default.js
 // 정의되지 않은 WebSocket 경로가 호출될 때 실행
-const { getSessionData } = require("../common/ddb/dynamoDbClient");
+const { getSessionData, getOrderIdByConnectionId } = require("../common/ddb/dynamoDbClient");
 
 module.exports.handler = async (event) => {
+  const connectionId = event.requestContext.connectionId;
+  const { orderId } = await getOrderIdByConnectionId(connectionId);
   const existingSessionData = await getSessionData(orderId);
   const sender = existingSessionData.sender;
   const loginUser = JSON.parse(event.body).email;

@@ -4,7 +4,7 @@ const {
   PostToConnectionCommand,
   DeleteConnectionCommand,
 } = require("@aws-sdk/client-apigatewaymanagementapi");
-const { saveChat } = require("../ddb/dynamoDbClient");
+const { saveChat, getOrderIdByConnectionId } = require("../ddb/dynamoDbClient");
 const { invokeDisconnectHandler } = require("../utils/lambdaClients");
 const apigatewayManagementApi = new ApiGatewayManagementApiClient({
   endpoint: `https://${process.env.DOMAIN_NAME}/${process.env.STAGE}`,

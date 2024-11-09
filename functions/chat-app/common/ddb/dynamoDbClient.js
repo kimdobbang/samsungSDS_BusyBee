@@ -74,9 +74,7 @@ async function updateConnection(orderId, connectionId, isSessionActive) {
   }
 }
 
-// 채팅 히스토리 저장
-// TODO: 개발 완료 후 로그를 위한 connectionId 제거
-async function saveChat(orderId, connectionId, chatMessage) {
+async function saveChat(orderId, chatMessage) {
   try {
     const command = new UpdateCommand({
       TableName: TABLE_NAME,

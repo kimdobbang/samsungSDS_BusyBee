@@ -69,7 +69,7 @@ async function updateConnection(orderId, connectionId, isSessionActive) {
     await dynamoDb.send(command);
     console.log(`Connection update 성공: ${orderId} - ${connectionId}`);
   } catch (error) {
-    console.error(`Error updating connection:${orderId} - ${connectionId}`);
+    console.log(`Error updating connection:${orderId} - ${connectionId}`);
     throw new Error("connection 업데이트 오류");
   }
 }
@@ -99,7 +99,6 @@ async function saveChat(orderId, chatMessage) {
   }
 }
 
-// 세션비활성화
 async function markSessionInactive(orderId) {
   try {
     const command = new UpdateCommand({
@@ -113,10 +112,7 @@ async function markSessionInactive(orderId) {
     await dynamoDb.send(command);
     console.log(`Session for customer ${orderId} marked as complete`);
   } catch (error) {
-    console.error(
-      `Failed to mark session complete for customer ${orderId}:`,
-      error
-    );
+    console.log(`Failed to mark session complete for customer ${orderId}:`, error);
     throw new Error("Session 비활성화 오류");
   }
 }
@@ -136,7 +132,7 @@ async function markSessionComplete(orderId) {
     await dynamoDb.send(command);
     console.log(`Session for customer ${orderId} marked as complete`);
   } catch (error) {
-    console.error(
+    console.log(
       `Failed to mark session complete for customer ${orderId}:`,
       JSON.stringify(error)
     );

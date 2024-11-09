@@ -4,6 +4,7 @@
 const {
   ApiGatewayManagementApiClient,
   PostToConnectionCommand,
+  DeleteConnectionCommand,
 } = require("@aws-sdk/client-apigatewaymanagementapi");
 const { saveChat } = require("../ddb/dynamoDbClient");
 const { invokeDisconnectHandler } = require("../utils/lambdaClients");
@@ -119,6 +120,13 @@ async function sendInformToClient(orderId, connectionId, message, senderType) {
         error
       );
     }
+async function disconnectClient(connectionId) {
+  const command = new DeleteConnectionCommand({ ConnectionId: connectionId });
+  try {
+    await apiGatewayClient.send(command);
+    console.log(`Connection ${connectionId} has been forcefully disconnected.`);
+  } catch (error) {
+    console.error(`Failed to disconnect connection ${connectionId}:`, error);
   }
 }
 
@@ -126,4 +134,5 @@ module.exports = {
   sendMessageToClient,
   sendChatHistoryToClientWithoutSave,
   sendInformToClient,
+  disconnectClient,
 };

@@ -1,37 +1,53 @@
-// handlers/message.js
-// 연결된 클라이언트로 전송되는 메시지를 처리
-// 유저 메시지를 받아 LLM에 전달하여 응답을 구성하고 클라이언트에게 전송합니다.
-// 고객이 메시지를 보낼 때마다 호출되며, validateResponse와 fetchNextMissingField 로직을 포함하여 다음 단계로 진행
-
+// handlers/message
 const { sendMessageToClient } = require("../common/utils/apiGatewayClient");
-const { validProcessWithLLM } = require("../common/utils/llmClient"); // LLM API 호출 유틸리티
-
+const { makeApiRequest } = require("../common/utils/apiRequest");
+const {
+  createChatbotRequestMessage,
+  parseChatbotResponse,
+} = require("../common/utils/requestResponseHelper");
+// {
+//   "action": "sendMessage",
+//   "orderId": "your_order_id",
+//   "data": "내가 멀 알려주면 되는디?"
+// }
 module.exports.handler = async (event) => {
   const connectionId = event.requestContext.connectionId;
+  let action;
+  let orderId;
   let clientMessage;
+  console.log("Received event:", JSON.stringify(event, null, 2));
 
   try {
-    clientMessage = JSON.parse(event.body).data; // json 파싱 시도
+    // 클라이언트 메시지 파싱
+    const body = JSON.parse(event.body);
+    action = body.action;
+    orderId = body.orderId;
+    clientMessage = body.data;
   } catch (parseError) {
-    console.error(
-      `Error parsing message from ConnectionId: ${connectionId}`,
-      parseErrorchatbot-interaction
-    );
+    console.error(`Error parsing message from ConnectionId: ${connectionId}`, parseError);
     return {
       statusCode: 400,
       body: JSON.stringify({ message: "Invalid message format" }),
     };
   }
-  console.log(
-    `Received message from ConnectionId: ${connectionId}, Data: ${clientMessage}`
-  );
-
-  // LLM에 메시지를 전달하여 응답 생성 및 검증 (현재는 유저 입력을 에코하는 형식으로 가정)
-  // 유저에게 응답받은 메세지를 LLM에게 검증 후 응답 반환할것임. 그리고 그다음 요청해야 할 정보도 물어봐야한다 (peding fields가 없을때까지)
+  if (action && orderId && clientMessage) {
+    console.log(
+      `ConnectionId: ${connectionId}, Action: ${action}, OrderId: ${orderId}, Data: ${clientMessage}`
+    );
+  }
   try {
-    // const llmValidationResponse = validProcessWithLLM(clientMessage); // TODO 개발 필요
-    const llmValidationResponse = `LLM response based on received message: ${clientMessage}`;
-    sendMessageToClient(connectionId, llmValidationResponse);
+    // API Gateway의 LLM 요청 생성
+    const requestData = createChatbotRequestMessage(clientMessage);
+    console.log("RequestData:", requestData);
+    const response = await makeApiRequest(
+      `https://nr2499od16.execute-api.ap-northeast-2.amazonaws.com/dev/llm-interaction`,
+      requestData
+    );
+    console.log("LLM Response:", response);
+
+    //  API Gateway의 LLM 응답 파싱
+    const { llmResponse } = parseChatbotResponse(response);
+    await sendMessageToClient(orderId, connectionId, llmResponse, "bot");
 
     return {
       statusCode: 200,
@@ -40,10 +56,7 @@ module.exports.handler = async (event) => {
       }),
     };
   } catch (error) {
-    console.error(
-      `Error processing message for ConnectionId: ${connectionId}`,
-      error
-    );
+    console.error(`Error processing message for ConnectionId: ${connectionId}`, error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Internal Server Error" }),

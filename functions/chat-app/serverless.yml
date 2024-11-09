@@ -8,11 +8,12 @@ provider:
 
   environment:
     #    OPENAI_API_KEY:
-    DOMAIN_NAME: t1iwynwhw3.execute-api.${self:provider.region}.amazonaws.com
+    DOMAIN_NAME: 3q2gfm3fql.execute-api.${self:provider.region}.amazonaws.com
     CHAT_SESSIONS_TABLE_NAME: ${self:service}-CustomerChatSessions
     ORDER_DATA_TABLE_NAME: estimate
     DISCONNECT_FUNCTION_NAME: ${self:service}-disconnect
     SQS_QUEUE_URL: https://sqs.${self:provider.region}.amazonaws.com/481665114066/chat-quotation-calculation-trigger
+    API_GATEWAY_URL: https://${self:custom.apiGatewayId}.execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}
     STAGE: ${self:provider.stage}
 
   iamRoleStatements:
@@ -94,9 +95,20 @@ resources:
         AttributeDefinitions:
           - AttributeName: orderId
             AttributeType: S
+          - AttributeName: connectionId
+            AttributeType: S  # GSI에서 사용할 connectionId 정의
         KeySchema:
           - AttributeName: orderId
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         StreamSpecification:
           StreamViewType: NEW_IMAGE
+        GlobalSecondaryIndexes:
+          - IndexName: ConnectionIndex
+            KeySchema:
+              - AttributeName: connectionId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+custom:
+  apiGatewayId: nr2499od16

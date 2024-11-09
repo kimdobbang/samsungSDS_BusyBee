@@ -1,18 +1,18 @@
 // utils/apiGatewayClient.js
-// WebSocket 연결을 통해 클라이언트에게 메시지를 전송하는 유틸리티 함수
-
 const {
   ApiGatewayManagementApiClient,
   PostToConnectionCommand,
+  DeleteConnectionCommand,
 } = require("@aws-sdk/client-apigatewaymanagementapi");
-const { saveChat } = require("../ddb/dynamoDbClient");
-
+const { saveChat, getOrderIdByConnectionId } = require("../ddb/dynamoDbClient");
+const { invokeDisconnectHandler } = require("../utils/lambdaClients");
 const apigatewayManagementApi = new ApiGatewayManagementApiClient({
   endpoint: `https://${process.env.DOMAIN_NAME}/${process.env.STAGE}`,
 });
 
-function sendMessageToClient(orderId, connectionId, message, senderType) {
+async function sendMessageToClient(connectionId, message, senderType) {
   try {
+    const { orderId } = await getOrderIdByConnectionId(connectionId);
     const timestamp = new Date().toISOString();
     const chatMessage = {
       timestamp,
@@ -25,25 +25,21 @@ function sendMessageToClient(orderId, connectionId, message, senderType) {
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
 
-    apigatewayManagementApi.send(command);
-    saveChat(orderId, connectionId, chatMessage);
+    await apigatewayManagementApi.send(command);
+    await saveChat(orderId, connectionId, chatMessage);
     console.log(
-      `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
-        chatMessage
-      )}`
+      `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
     );
   } catch (error) {
     if (error.$metadata?.httpStatusCode === 410) {
-      console.error(
-        `Message - Client disconnected - markSessionInactive orderId: ${orderId}`
-      );
+      console.log(`Message - Client disconnected - markSessionInactive orderId: ${orderId}`);
     } else {
-      console.error(`Error sending message to orderId: ${orderId}`, error);
+      console.log(`Error sending message to orderId: ${orderId}`, error);
     }
   }
 }
 
-function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
+async function sendChatHistoryToClientWithoutSave(orderId, connectionId, chatHistory) {
   try {
     const chatMessage = {
       timestamp: chatHistory.timestamp,
@@ -55,35 +51,21 @@ function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
       ConnectionId: connectionId,
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
-
-    apigatewayManagementApi.send(command);
+    await apigatewayManagementApi.send(command);
     console.log(
-      `History sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
-        chatMessage
-      )}`
+      `History sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
     );
   } catch (error) {
     if (error.$metadata?.httpStatusCode == 410) {
-      console.error(
-        // 연결 끊어진 경우 처리
-        // TODO: 람다트리거로 $disconnect 핸들러 호출후 로그 수정
-        `History - Client disconnected - sendChatHistoryToClient: ${connectionId}`
-      );
+      console.log(`History - Client disconnected - sendChatHistoryToClient: ${connectionId}`);
+      invokeDisconnectHandler(orderId, connectionId);
     } else {
-      console.error(
-        `Error sending message to connectionId: ${connectionId}`,
-        error
-      );
+      console.log(`Error sending message to connectionId: ${connectionId}`, error);
     }
   }
 }
 
-function sendInformToClientWithoutSave(
-  orderId,
-  connectionId,
-  message,
-  senderType
-) {
+async function sendInformToClient(orderId, connectionId, message, senderType) {
   try {
     const timestamp = new Date().toISOString();
 
@@ -97,32 +79,34 @@ function sendInformToClientWithoutSave(
       ConnectionId: connectionId,
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
-
-    apigatewayManagementApi.send(command);
-    saveChat(orderId, connectionId, chatMessage);
+    await apigatewayManagementApi.send(command);
+    await saveChat(orderId, connectionId, chatMessage);
     console.log(
-      `Inform sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
-        chatMessage
-      )}`
+      `Inform sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
     );
   } catch (error) {
     if (error.$metadata?.httpStatusCode == 410) {
-      console.error(
-        // 연결 끊어진 경우 처리
-        // TODO: 람다트리거로 $disconnect 핸들러 호출후 로그 수정
-        `Inform - Client disconnected - sendInformToClient ${connectionId}`
-      );
+      console.log(`Inform - Client disconnected - sendInformToClient ${connectionId}`);
+      invokeDisconnectHandler(orderId, connectionId);
     } else {
-      console.error(
-        `Error sending message to connectionId: ${connectionId}`,
-        error
-      );
+      console.log(`Error sending message to connectionId: ${connectionId}`, error);
     }
+  }
+}
+
+async function disconnectClient(connectionId) {
+  const command = new DeleteConnectionCommand({ ConnectionId: connectionId });
+  try {
+    await apiGatewayClient.send(command);
+    console.log(`Connection ${connectionId} has been forcefully disconnected.`);
+  } catch (error) {
+    console.error(`Failed to disconnect connection ${connectionId}:`, error);
   }
 }
 
 module.exports = {
   sendMessageToClient,
   sendChatHistoryToClientWithoutSave,
-  sendInformToClientWithoutSave,
+  sendInformToClient,
+  disconnectClient,
 };

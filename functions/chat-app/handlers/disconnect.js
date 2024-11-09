@@ -1,11 +1,15 @@
 // handlers/disconnect.js
 
-const { markSessionInactive, removeConnectionId } = require("../common/ddb/dynamoDbClient");
+const {
+  markSessionInactive,
+  removeConnectionId,
+  getOrderIdByConnectionId,
+} = require("../common/ddb/dynamoDbClient");
 const { disconnectClient } = require("../common/utils/apiGatewayClient");
 
 module.exports.handler = async (event) => {
-  const { orderId } = JSON.parse(event.body);
   const connectionId = event.requestContext.connectionId;
+  const { orderId } = await getOrderIdByConnectionId(connectionId);
   console.log(`Disconnected - ConnectionId: ${connectionId}`);
 
   try {

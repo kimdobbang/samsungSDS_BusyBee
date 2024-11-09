@@ -92,11 +92,9 @@ async function saveChat(orderId, chatMessage) {
     });
 
     await dynamoDb.send(command);
-    console.log(
-      `saved chat: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
-    );
+    console.log(`Chat saved successfully for orderId:", orderId, Data: ${JSON.stringify(chatMessage)}`);
   } catch (error) {
-    console.error("Error saving chat to DynamoDB:", JSON.stringify(error));
+    console.log("Error saving chat to DynamoDB:", error);
     throw new Error("DynamoDB 채팅 저장 오류");
   }
 }

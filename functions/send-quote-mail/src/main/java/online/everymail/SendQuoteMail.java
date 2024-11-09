@@ -32,27 +32,47 @@ public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
 
                     SQSMessageData parsedData = gson.fromJson(snsMessage.getMessage(), SQSMessageData.class);
 
+                    // 이메일 본문 생성
+                    String textBody = "안녕하세요, " + parsedData.getSender() + "님.\n"
+                            + "BusyBee의 운송 서비스를 이용해 주셔서 감사합니다. "
+                            + "요청하신 운송 견적에 대한 세부사항을 아래와 같이 안내드립니다:\n\n"
+                            + "운송 견적 세부 정보:\n"
+                            + "출발지: " + parsedData.getData().getDepartureCity() + "\n"
+                            + "도착지: " + parsedData.getData().getArrivalCity() + "\n"
+                            + "컨테이너 종류: " + getContainerName(parsedData.getData().getContainerSize()) + "\n"
+                            + "무게: " + parsedData.getData().getWeight() + "kg\n"
+                            + "출발일: " + parsedData.getData().getDepartureDate() + "\n"
+                            + "도착일: " + parsedData.getData().getArrivalDate() + "\n\n"
+                            + "총 예상 운송 비용: " + parsedData.getQuote() + "원 (VAT 별도)\n\n"
+                            + "문의 및 추가 요청: 견적과 관련하여 문의사항이 있으시거나 추가 요청 사항이 있으시면 언제든지 저희에게 연락 주시기 바랍니다.\n"
+                            + "감사합니다.\n"
+                            + "BusyBee: 010-1234-5678";
+
+                    String htmlBody = "<html><body>"
+                            + "<h2>안녕하세요, " + parsedData.getSender() + "님</h2>"
+                            + "<p>BusyBee의 운송 서비스를 이용해 주셔서 감사합니다. 요청하신 운송 견적에 대한 세부사항을 아래와 같이 안내드립니다:</p>"
+                            + "<h2>운송 견적 세부 정보</h2>"
+                            + "<ul>"
+                            + "<li><strong>출발지:</strong> " + parsedData.getData().getDepartureCity() + "</li>"
+                            + "<li><strong>도착지:</strong> " + parsedData.getData().getArrivalCity() + "</li>"
+                            + "<li><strong>컨테이너 종류:</strong> " + getContainerName(parsedData.getData().getContainerSize()) + "</li>"
+                            + "<li><strong>무게:</strong> " + parsedData.getData().getWeight() + "kg</li>"
+                            + "<li><strong>출발일:</strong> " + parsedData.getData().getDepartureDate() + "</li>"
+                            + "<li><strong>도착일:</strong> " + parsedData.getData().getArrivalDate() + "</li>"
+                            + "</ul>"
+                            + "<p><strong>총 예상 운송 비용:</strong> " + parsedData.getQuote() + "원 (VAT 별도)</p>"
+                            + "<p>문의 및 추가 요청: 견적과 관련하여 문의사항이 있으시거나 추가 요청 사항이 있으시면 언제든지 저희에게 연락 주시기 바랍니다.</p>"
+                            + "<p>감사합니다.<br>BusyBee: 010-1234-5678</p>"
+                            + "</body></html>";
+
                     // 이메일 요청 생성
                     SendEmailRequest request = new SendEmailRequest()
                             .withDestination(new Destination().withToAddresses(parsedData.getSender()))
                             .withMessage(new Message()
-                                    .withSubject(new Content().withData("[견적 결과] 귀하의 운송 요청에 대한 운송 견적 안내"))
-                                    .withBody(new Body().withText(new Content().withData(
-                                            "안녕하세요, " + parsedData.getSender() +"님.\n" +
-                                                    "BusyBee의 운송 서비스를 이용해 주셔서 감사합니다. " +
-                                                    "요청하신 운송 견적에 대한 세부사항을 아래와 같이 안내드립니다:\n\n" +
-                                                    "운송 견적 세부 정보:\n" +
-                                                    "출발지: " + parsedData.getData().getDepartureCity() + "\n" +
-                                                    "도착지: " + parsedData.getData().getArrivalCity() + "\n" +
-                                                    "컨테이너 종류: " + getContainerName(parsedData.getData().getContainerSize()) + "\n" +
-                                                    "무게: " + parsedData.getData().getWeight() + "kg\n" +
-                                                    "출발일: " + parsedData.getData().getDepartureDate() + "\n" +
-                                                    "도착일: " + parsedData.getData().getArrivalDate() + "\n\n" +
-                                                    "총 예상 운송 비용: " + parsedData.getQuote() + "원 (VAT 별도)\n\n" +
-                                                    "문의 및 추가 요청: 견적과 관련하여 문의사항이 있으시거나 추가 요청 사항이 있으시면 언제든지 저희에게 연락 주시기 바랍니다.\n" +
-                                                    "감사합니다.\n" +
-                                                    "BusyBee: 010-1234-5678"
-                                    ))))
+                                    .withSubject(new Content().withCharset("UTF-8").withData("[견적 결과] 귀하의 운송 요청에 대한 운송 견적 안내"))
+                                    .withBody(new Body()
+                                            .withHtml(new Content().withCharset("UTF-8").withData(htmlBody))
+                                            .withText(new Content().withCharset("UTF-8").withData(textBody))))
                             .withSource(emailAddress);
 
                     // 이메일 전송

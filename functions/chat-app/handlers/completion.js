@@ -46,6 +46,10 @@ module.exports.handler = async (event) => {
     console.log(
       `Invoking disconnect handler for orderId: ${orderId}`);
     await invokeDisconnectHandler(orderId, connectionId);
+    console.log(
+      `Disconnect handler successfully invoked for orderId: ${orderId}, connectionId: ${connectionId}`
+    );
+
     return {
       statusCode: 200,
       body: `Completion process done for customer ${connectionId}`,

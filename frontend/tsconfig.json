@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -18,9 +14,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "baseUrl": "src", // src를 루트 경로로 설정
+    "paths": {
+      "@features/*": ["features/*"], // 예: features 폴더 별칭 설정
+      "@shared/*": ["shared/*"], // 예: shared 폴더 별칭 설정
+      "@components/*": ["components/*"] // 다른 폴더도 필요한 경우 추가 가능
+    }
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

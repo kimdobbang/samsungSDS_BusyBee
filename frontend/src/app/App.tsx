@@ -1,8 +1,11 @@
 import styles from './page.module.scss';
 import React from 'react';
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ChatUI, Home, DetailMail, MailList, Dashboard } from 'features';
 import BoardLayout from 'features/board/ui/BoardLayout';
+// import { Auth } from '../features';
+// import { Voice } from '../features';
 
 const App: React.FC = () => {
   return (

@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import styles from './ChatUI.module.scss';
 import busybee2 from '../../../shared/assets/images/busybee2.png';
-import { Message } from '../model/Message';
+import { MessageProps } from '../model/ChatModel';
+import { Voice } from '../..';
+import useWebSocket from '../hooks/useWebSocket';
 
-const messagesData: Message[] = [
+const messagesData: MessageProps[] = [
   {
     sender: 'admin',
     content: `안녕하세요!👋
@@ -25,6 +27,11 @@ export const ChatUI = () => {
   const [input, setInput] = useState('');
   const chatRef = useRef<HTMLDivElement>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const orderId = new URLSearchParams(window.location.search).get('orderId');
+
+  const { sendMessage } = useWebSocket(orderId);
 
   useEffect(() => {
     for (let i = 0; i < localStorage.length; i++) {
@@ -43,12 +50,29 @@ export const ChatUI = () => {
     }
   }, [messages]);
 
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.scrollLeft = inputRef.current.scrollWidth;
+    }
+  }, [input]);
+
   const handleSend = () => {
     if (input.trim()) {
       setMessages([...messages, { sender: 'user', content: input }]);
+      const message = { action: 'sendMessage', message: input };
+      sendMessage(message);
       setInput('');
     }
   };
+
+  const handleTranscriptChange = (transcript: string, isFinal: boolean) => {
+    if (isFinal) {
+      setInput((prevInput) => prevInput + transcript);
+    } else if (!isFinal) {
+      setInput(transcript);
+    }
+  };
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -59,7 +83,6 @@ export const ChatUI = () => {
         </div>
         <div></div>
       </div>
-
       <div className={styles.userId}>
         {userId}
         <img src={busybee2} alt='' height={45} />
@@ -88,6 +111,7 @@ export const ChatUI = () => {
       <div className={styles.textInput}>
         <input
           type='text'
+          ref={inputRef} // inputRef 연결
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -95,6 +119,10 @@ export const ChatUI = () => {
         <div className={styles.button} onClick={handleSend}>
           보내기
         </div>
+        <Voice onTranscriptChange={handleTranscriptChange} />
+      </div>
+      <div className={styles.warningMessage}>
+        음성 녹음 시 대화가 초기화됩니다.
       </div>
     </div>
   );

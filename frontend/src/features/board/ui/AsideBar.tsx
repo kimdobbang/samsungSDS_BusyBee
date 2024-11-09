@@ -1,0 +1,33 @@
+import { useNavigate } from 'react-router-dom';
+import { ReactComponent as LetterIcon } from 'shared/assets/icons/letterbox.svg';
+import { ReactComponent as DashBoardIcon } from 'shared/assets/icons/dashboard.svg';
+import styles from './AsideBar.module.scss';
+import { emailMockData } from '../api/emailMockData';
+
+export const AsideBar: React.FC = () => {
+  const navigate = useNavigate();
+
+  return (
+    <aside className={`${styles.aside} `}>
+      <ul className={styles.list}>
+        <li className={styles.item}>
+          <button
+            className={styles.button}
+            onClick={() => navigate('mail')} // 조건부 호출
+          >
+            <LetterIcon width={24} height={24} className={styles.icon} />
+            <h1 className={styles.title}>편지함</h1>
+            <p className={styles.count}>{emailMockData.length}</p>
+          </button>
+        </li>
+        <li className={styles.item}>
+          <button className={styles.button} onClick={() => navigate('dashboard')}>
+            <DashBoardIcon width={24} height={24} className={styles.icon} />
+            <h1 className={styles.title}>대시보드</h1>
+            <p className={styles.count}>12</p>
+          </button>
+        </li>
+      </ul>
+    </aside>
+  );
+};

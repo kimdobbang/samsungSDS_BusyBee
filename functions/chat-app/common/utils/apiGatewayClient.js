@@ -62,9 +62,11 @@ async function sendChatHistoryToClientWithoutSave(orderId, connectionId, chatHis
   } catch (error) {
     if (error.$metadata?.httpStatusCode == 410) {
       console.log(`History - Client disconnected - sendChatHistoryToClient: ${connectionId}`);
-      invokeDisconnectHandler(orderId, connectionId);
+      await invokeDisconnectHandler(orderId, connectionId);
+      return;
     } else {
       console.log(`Error sending message to connectionId: ${connectionId}`, error);
+      return;
     }
   }
 }
@@ -91,9 +93,11 @@ async function sendInformToClient(orderId, connectionId, message, senderType) {
   } catch (error) {
     if (error.$metadata?.httpStatusCode == 410) {
       console.log(`Inform - Client disconnected - sendInformToClient ${connectionId}`);
-      invokeDisconnectHandler(orderId, connectionId);
+      await invokeDisconnectHandler(orderId, connectionId);
+      return;
     } else {
       console.log(`Error sending message to connectionId: ${connectionId}`, error);
+      return;
     }
   }
 }

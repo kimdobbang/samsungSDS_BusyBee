@@ -3,10 +3,9 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const {
   DynamoDBDocumentClient,
-  PutCommand,
-  // DeleteCommand,
   UpdateCommand,
   GetCommand,
+  QueryCommand
 } = require("@aws-sdk/lib-dynamodb");
 
 const client = new DynamoDBClient({ region: "ap-northeast-2" });
@@ -15,26 +14,29 @@ const TABLE_NAME = process.env.CHAT_SESSIONS_TABLE_NAME;
 
 async function saveConnection(orderId, connectionId, sessionData) {
   try {
-    console.log(`saveConnectionData:`, sessionData);
-    const command = new PutCommand({
+    const command = new QueryCommand({
       TableName: TABLE_NAME,
-      Item: {
-        orderId,
-        connectionId,
-        sender: sessionData.sender,
-        isSessionActive: sessionData.isSessionActive,
-        sessionStatus: sessionData.sessionStatus,
-        pendingFields: sessionData.pendingFields,
-        responsedData: sessionData.responsedData,
-        chatHistory: sessionData.chatHistory,
+      IndexName: "ConnectionIndex",
+      KeyConditionExpression: "connectionId = :connectionId",
+      ExpressionAttributeValues: {
+        ":connectionId": connectionId,
       },
+      ProjectionExpression: "orderId",
     });
 
     await dynamoDb.send(command);
     console.log(`saveConnection 성공: ${orderId} - ${connectionId}`);
+    const response = await dynamoDb.send(command);
+
+    if (response.Items && response.Items.length > 0) {
+      return response.Items[0];
+    } else {
+      throw new Error(`No order found for connectionId: ${connectionId}`);
   } catch (error) {
     console.error(`Error saving connection:${orderId} - ${connectionId}`);
     throw new Error("connection 저장 오류");
+    console.log(`Failed to get orderId by connectionId ${connectionId}`, error);
+    throw new Error("connectionId로 orderId 조회 오류");
   }
 }
 

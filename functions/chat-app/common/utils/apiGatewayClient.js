@@ -39,12 +39,7 @@ async function sendMessageToClient(connectionId, message, senderType) {
   }
 }
 
-// 기존 히스토리전송
-async function sendChatHistoryToClientWithoutSave(
-  orderId,
-  connectionId,
-  chatHistory
-) {
+async function sendChatHistoryToClientWithoutSave(orderId, connectionId, chatHistory) {
   try {
     const chatMessage = {
       timestamp: chatHistory.timestamp,
@@ -56,29 +51,20 @@ async function sendChatHistoryToClientWithoutSave(
       ConnectionId: connectionId,
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
-
     await apigatewayManagementApi.send(command);
     console.log(
-      `History sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
-        chatMessage
-      )}`
+      `History sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
     );
   } catch (error) {
     if (error.$metadata?.httpStatusCode == 410) {
-      console.error(
-        `History - Client disconnected - sendChatHistoryToClient: ${connectionId}`
-      );
+      console.log(`History - Client disconnected - sendChatHistoryToClient: ${connectionId}`);
       invokeDisconnectHandler(orderId, connectionId);
     } else {
-      console.error(
-        `Error sending message to connectionId: ${connectionId}`,
-        error
-      );
+      console.log(`Error sending message to connectionId: ${connectionId}`, error);
     }
   }
 }
 
-// 재접속시
 async function sendInformToClient(orderId, connectionId, message, senderType) {
   try {
     const timestamp = new Date().toISOString();
@@ -93,19 +79,14 @@ async function sendInformToClient(orderId, connectionId, message, senderType) {
       ConnectionId: connectionId,
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
-
     await apigatewayManagementApi.send(command);
     await saveChat(orderId, connectionId, chatMessage);
     console.log(
-      `Inform sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
-        chatMessage
-      )}`
+      `Inform sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
     );
   } catch (error) {
     if (error.$metadata?.httpStatusCode == 410) {
-      console.error(
-        `Inform - Client disconnected - sendInformToClient ${connectionId}`
-      );
+      console.log(`Inform - Client disconnected - sendInformToClient ${connectionId}`);
       invokeDisconnectHandler(orderId, connectionId);
     } else {
       console.log(`Error sending message to connectionId: ${connectionId}`, error);

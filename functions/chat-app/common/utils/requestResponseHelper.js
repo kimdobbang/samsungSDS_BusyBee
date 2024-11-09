@@ -1,5 +1,18 @@
 // utils/requestResponseHelper.js
 
+function parseClientMessage(eventBody) {
+  try {
+    const body = JSON.parse(eventBody);
+    const { action, data: clientMessage } = body;
+    if (!action || !clientMessage) {
+      throw new Error("Missing action or message data");
+    }
+    return { action, clientMessage };
+  } catch (error) {
+    throw new Error("Invalid message format");
+  }
+}
+
 // 요청 객체 생성
 function createChatbotRequest(inputMessage, chatHistory, pendingFields) {
   return {
@@ -29,4 +42,5 @@ module.exports = {
   createChatbotRequest,
   createChatbotRequestMessage,
   parseChatbotResponse,
+  parseClientMessage,
 };

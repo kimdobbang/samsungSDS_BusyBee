@@ -5,6 +5,7 @@ const { saveChat, getOrderIdByConnectionId } = require("../common/ddb/dynamoDbCl
 const {
   createChatbotRequestMessage,
   parseChatbotResponse,
+  parseClientMessage,
 } = require("../common/utils/requestResponseHelper");
 
 module.exports.handler = async (event) => {
@@ -21,33 +22,21 @@ module.exports.handler = async (event) => {
       };
     }
 
-    // 클라이언트 메시지 파싱
+    // 클라이언트 메시지 파싱 및 저장
     let action, clientMessage;
     try {
-      const body = JSON.parse(event.body);
-      action = body.action;
-      clientMessage = body.data;
+      ({ action, clientMessage } = parseClientMessage(event.body));
     } catch (parseError) {
       console.log(`Error parsing message for ConnectionId: ${connectionId}`, parseError);
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Invalid message format" }),
-      };
-    }
-
-    if (!action || !clientMessage) {
-      console.log(`Missing action or message data for ConnectionId: ${connectionId}`);
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: "Missing action or message data" }),
+        body: JSON.stringify({ message: parseError.message }),
       };
     }
 
     console.log(
       `Received message from ConnectionId: ${connectionId}, OrderId: ${orderId}, Action: ${action}`
     );
-
-    // 클라이언트 메시지 저장
     const clientMessageData = {
       timestamp: new Date().toISOString(),
       senderType: "customer",
@@ -55,14 +44,11 @@ module.exports.handler = async (event) => {
     };
     await saveChat(orderId, clientMessageData);
 
-    // LLMAPI 요청 및 응답
+    // LLM API 응답객체 클라이언트에 응답
     const requestData = createChatbotRequestMessage(clientMessage);
-    const llmApiUrl =
-      process.env.LLM_API_URL || "https://your-api-endpoint.com/dev/llm-interaction";
+    const llmApiUrl = `${process.env.LLM_API_URL}?orderId=${orderId}`;
+    // const llmApiUrlTest = process.env.LLM_API_URL; // postman test용 url
     const response = await makeApiRequest(llmApiUrl, requestData);
-    console.log("LLM API Response:", response);
-
-    // LLM 응답 파싱 및 클라이언트로 전송
     const { llmResponse } = parseChatbotResponse(response);
     await sendMessageToClient(connectionId, llmResponse, "bot");
 

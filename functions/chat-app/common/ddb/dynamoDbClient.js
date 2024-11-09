@@ -117,7 +117,21 @@ async function markSessionInactive(orderId) {
   }
 }
 
-// complete 처리
+async function removeConnectionId(orderId) {
+  try {
+    const command = new UpdateCommand({
+      TableName: TABLE_NAME,
+      Key: { orderId },
+      UpdateExpression: "REMOVE connectionId",
+    });
+    await dynamoDb.send(command);
+    console.log(`connectionId removed successfully for orderId: ${orderId}`);
+  } catch (error) {
+    console.log(`Error removing connectionId for orderId: ${orderId}`, error);
+    throw new Error("DynamoDB connectionId 삭제 오류");
+  }
+}
+
 async function markSessionComplete(orderId) {
   try {
     const command = new UpdateCommand({
@@ -138,30 +152,12 @@ async function markSessionComplete(orderId) {
     throw new Error("세션 완료 상태 업데이트 오류");
   }
 }
-
-// 채팅 세션 데이터 가져오기
-async function getSessionData(orderId) {
-  try {
-    const command = new GetCommand({
-      TableName: TABLE_NAME,
-      Key: { orderId },
-    });
-    const response = await dynamoDb.send(command);
-    return response.Item; // 세션 데이터 반환
-  } catch (error) {
-    console.error(
-      `Failed to get session data for customer ${orderId}:`,
-      JSON.stringify(error)
-    );
-    throw new Error("채팅세션 데이터 조회 오류");
-  }
-}
-
 module.exports = {
-  saveConnection,
+  getSessionData,
   updateConnection,
   saveChat,
   markSessionInactive,
+  removeConnectionId,
   markSessionComplete,
-  getSessionData,
+  getOrderIdByConnectionId
 };

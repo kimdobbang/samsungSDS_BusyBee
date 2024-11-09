@@ -1,19 +1,21 @@
 // handlers/message
 const { sendMessageToClient } = require("../common/utils/apiGatewayClient");
 const { makeApiRequest } = require("../common/utils/apiRequest");
+const { getOrderIdByConnectionId } = require("../common/ddb/dynamoDbClient");
+
 const {
   createChatbotRequestMessage,
   parseChatbotResponse,
 } = require("../common/utils/requestResponseHelper");
 // {
 //   "action": "sendMessage",
-//   "orderId": "your_order_id",
 //   "data": "내가 멀 알려주면 되는디?"
 // }
 module.exports.handler = async (event) => {
   const connectionId = event.requestContext.connectionId;
+  const { orderId } = await getOrderIdByConnectionId(connectionId);
+
   let action;
-  let orderId;
   let clientMessage;
   console.log("Received event:", JSON.stringify(event, null, 2));
 
@@ -21,7 +23,6 @@ module.exports.handler = async (event) => {
     // 클라이언트 메시지 파싱
     const body = JSON.parse(event.body);
     action = body.action;
-    orderId = body.orderId;
     clientMessage = body.data;
   } catch (parseError) {
     console.log(`Error parsing message from ConnectionId: ${connectionId}`, parseError);
@@ -40,6 +41,7 @@ module.exports.handler = async (event) => {
     const requestData = createChatbotRequestMessage(clientMessage);
     console.log("RequestData:", requestData);
     const response = await makeApiRequest(
+      orderId,
       `https://nr2499od16.execute-api.ap-northeast-2.amazonaws.com/dev/llm-interaction`,
       requestData
     );

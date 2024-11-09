@@ -7,8 +7,10 @@ async function invokeDisconnectHandler(orderId, connectionId) {
     FunctionName: process.env.DISCONNECT_FUNCTION_NAME,
     InvocationType: "Event",
     Payload: JSON.stringify({
+      requestContext: {
+        connectionId,
+      },
       orderId,
-      connectionId,
     }),
   });
 

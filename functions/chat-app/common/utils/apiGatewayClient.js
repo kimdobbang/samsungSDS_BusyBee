@@ -1,6 +1,4 @@
 // utils/apiGatewayClient.js
-// WebSocket 연결을 통해 클라이언트에게 메시지를 전송하는 유틸리티 함수
-
 const {
   ApiGatewayManagementApiClient,
   PostToConnectionCommand,
@@ -12,9 +10,9 @@ const apigatewayManagementApi = new ApiGatewayManagementApiClient({
   endpoint: `https://${process.env.DOMAIN_NAME}/${process.env.STAGE}`,
 });
 
-// 첫 접속시
-async function sendMessageToClient(orderId, connectionId, message, senderType) {
+async function sendMessageToClient(connectionId, message, senderType) {
   try {
+    const { orderId } = await getOrderIdByConnectionId(connectionId);
     const timestamp = new Date().toISOString();
     const chatMessage = {
       timestamp,
@@ -30,18 +28,13 @@ async function sendMessageToClient(orderId, connectionId, message, senderType) {
     await apigatewayManagementApi.send(command);
     await saveChat(orderId, connectionId, chatMessage);
     console.log(
-      `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(
-        chatMessage
-      )}`
+      `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
     );
   } catch (error) {
     if (error.$metadata?.httpStatusCode === 410) {
-      console.error(
-        `Message - Client disconnected - markSessionInactive orderId: ${orderId}`
-      );
-      await invokeDisconnectHandler(orderId, connectionId);
+      console.log(`Message - Client disconnected - markSessionInactive orderId: ${orderId}`);
     } else {
-      console.error(`Error sending message to orderId: ${orderId}`, error);
+      console.log(`Error sending message to orderId: ${orderId}`, error);
     }
   }
 }
@@ -115,11 +108,11 @@ async function sendInformToClient(orderId, connectionId, message, senderType) {
       );
       invokeDisconnectHandler(orderId, connectionId);
     } else {
-      console.error(
-        `Error sending message to connectionId: ${connectionId}`,
-        error
-      );
+      console.log(`Error sending message to connectionId: ${connectionId}`, error);
     }
+  }
+}
+
 async function disconnectClient(connectionId) {
   const command = new DeleteConnectionCommand({ ConnectionId: connectionId });
   try {

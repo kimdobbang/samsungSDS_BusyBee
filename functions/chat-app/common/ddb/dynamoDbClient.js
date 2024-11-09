@@ -104,9 +104,9 @@ async function markSessionInactive(orderId) {
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { orderId },
-      UpdateExpression: "SET isSessionActive = :active",
+      UpdateExpression: "SET isSessionActive = :inactive",
       ExpressionAttributeValues: {
-        ":active": false,
+        ":inactive": false,
       },
     });
     await dynamoDb.send(command);
@@ -123,8 +123,7 @@ async function markSessionComplete(orderId) {
     const command = new UpdateCommand({
       TableName: TABLE_NAME,
       Key: { orderId },
-      UpdateExpression:
-        "SET sessionStatus = :status, isSessionActive = :active",
+      UpdateExpression: "SET sessionStatus = :status",
       ExpressionAttributeValues: {
         ":status": "completed",
       },

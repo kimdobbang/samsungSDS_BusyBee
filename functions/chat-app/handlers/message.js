@@ -5,6 +5,7 @@ const { saveChat, getOrderIdByConnectionId } = require("../common/ddb/dynamoDbCl
 const {
   createChatbotRequestMessage,
   parseChatbotResponse,
+  parseClientMessage,
 } = require("../common/utils/requestResponseHelper");
 
 module.exports.handler = async (event) => {
@@ -24,22 +25,12 @@ module.exports.handler = async (event) => {
     // 클라이언트 메시지 파싱
     let action, clientMessage;
     try {
-      const body = JSON.parse(event.body);
-      action = body.action;
-      clientMessage = body.data;
+      ({ action, clientMessage } = parseClientMessage(event.body));
     } catch (parseError) {
       console.log(`Error parsing message for ConnectionId: ${connectionId}`, parseError);
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Invalid message format" }),
-      };
-    }
-
-    if (!action || !clientMessage) {
-      console.log(`Missing action or message data for ConnectionId: ${connectionId}`);
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: "Missing action or message data" }),
+        body: JSON.stringify({ message: parseError.message }),
       };
     }
 

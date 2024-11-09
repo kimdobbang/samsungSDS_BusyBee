@@ -43,4 +43,5 @@ module.exports = {
   createChatbotRequest,
   createChatbotRequestMessage,
   parseChatbotResponse,
+  parseClientMessage,
 };

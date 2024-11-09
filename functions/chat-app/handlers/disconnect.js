@@ -1,18 +1,22 @@
 // handlers/disconnect.js
 
-const { markSessionInactive, removeConnectionId } = require("../common/ddb/dynamoDbClient");
+const {
+  markSessionInactive,
+  removeConnectionId,
+  getOrderIdByConnectionId,
+} = require("../common/ddb/dynamoDbClient");
 const { disconnectClient } = require("../common/utils/apiGatewayClient");
 
 module.exports.handler = async (event) => {
-  const { orderId } = JSON.parse(event.body);
   const connectionId = event.requestContext.connectionId;
+  const { orderId } = await getOrderIdByConnectionId(connectionId);
   console.log(`Disconnected - ConnectionId: ${connectionId}`);
 
   try {
     await markSessionInactive(orderId);
     console.log(`Order ID ${orderId} successfully marked as inactive.`);
   } catch (error) {
-    console.error(`Failed to mark session as inactive for orderId: ${orderId}`, error);
+    console.log(`Failed to mark session as inactive for orderId: ${orderId}`, error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Error marking session as inactive" }),
@@ -23,7 +27,7 @@ module.exports.handler = async (event) => {
     await removeConnectionId(orderId);
     console.log(`connectionId field removed from DynamoDB for orderId: ${orderId}`);
   } catch (error) {
-    console.error(`Failed to remove connectionId for orderId: ${orderId}`, error);
+    console.log(`Failed to remove connectionId for orderId: ${orderId}`, error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Error removing connectionId" }),
@@ -34,7 +38,7 @@ module.exports.handler = async (event) => {
     await disconnectClient(connectionId);
     console.log(`Connection ${connectionId} has been forcefully disconnected.`);
   } catch (error) {
-    console.error(`Failed to disconnect client for connectionId: ${connectionId}`, error);
+    console.log(`Failed to disconnect client for connectionId: ${connectionId}`, error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Error disconnecting client" }),

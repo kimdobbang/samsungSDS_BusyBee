@@ -34,13 +34,12 @@ provider:
         - dynamodb:UpdateItem
       Resource:
         - arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-CustomerChatSessions
-        - arn:aws:dynamodb:${self:provider.region}:*:table/estimate
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-CustomerChatSessions/index/ConnectionIndex
     - Effect: Allow
       Action:
         - lambda:InvokeFunction
       Resource:
-        # - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-*
-        - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-disconnect # disconnect 핸들러 호출을 위한 권한
+        - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-disconnect
 
     - Effect: Allow
       Action:
@@ -96,7 +95,7 @@ resources:
           - AttributeName: orderId
             AttributeType: S
           - AttributeName: connectionId
-            AttributeType: S  # GSI에서 사용할 connectionId 정의
+            AttributeType: S
         KeySchema:
           - AttributeName: orderId
             KeyType: HASH

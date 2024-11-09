@@ -5,7 +5,7 @@ const {
   DynamoDBDocumentClient,
   UpdateCommand,
   GetCommand,
-  QueryCommand
+  QueryCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
 const client = new DynamoDBClient({ region: "ap-northeast-2" });
@@ -24,8 +24,8 @@ async function getSessionData(orderId) {
     console.log(`Failed to get session data for customer ${orderId}:`, JSON.stringify(error));
     throw new Error("채팅세션 데이터 조회 오류");
   }
-
-}async function getOrderIdByConnectionId(connectionId) {
+}
+async function getOrderIdByConnectionId(connectionId) {
   try {
     const command = new QueryCommand({
       TableName: TABLE_NAME,
@@ -92,7 +92,9 @@ async function saveChat(orderId, chatMessage) {
     });
 
     await dynamoDb.send(command);
-    console.log(`Chat saved successfully for orderId:", orderId, Data: ${JSON.stringify(chatMessage)}`);
+    console.log(
+      `Chat saved successfully for orderId:", orderId, Data: ${JSON.stringify(chatMessage)}`
+    );
   } catch (error) {
     console.log("Error saving chat to DynamoDB:", error);
     throw new Error("DynamoDB 채팅 저장 오류");
@@ -145,10 +147,7 @@ async function markSessionComplete(orderId) {
     await dynamoDb.send(command);
     console.log(`Session for customer ${orderId} marked as complete`);
   } catch (error) {
-    console.log(
-      `Failed to mark session complete for customer ${orderId}:`,
-      JSON.stringify(error)
-    );
+    console.log(`Failed to mark session complete for customer ${orderId}:`, JSON.stringify(error));
     throw new Error("세션 완료 상태 업데이트 오류");
   }
 }
@@ -159,5 +158,5 @@ module.exports = {
   markSessionInactive,
   removeConnectionId,
   markSessionComplete,
-  getOrderIdByConnectionId
+  getOrderIdByConnectionId,
 };

@@ -14,7 +14,7 @@ import online.everymail.dto.SQSMessageData;
 public class InformationMailRequest implements RequestHandler<SQSEvent, Void> {
 
     private static final AmazonSimpleEmailService sesClient = AmazonSimpleEmailServiceClientBuilder.standard()
-            .withRegion("ap-northeast-2") // 원하는 리전으로 설정
+            .withRegion("ap-northeast-2")
             .build();
     private static final Gson gson = new Gson();
     private static final String emailAddress = "no-reply@busybeemail.net";
@@ -32,15 +32,30 @@ public class InformationMailRequest implements RequestHandler<SQSEvent, Void> {
 
                     SQSMessageData parsedData = gson.fromJson(snsMessage.getMessage(), SQSMessageData.class);
 
+                    // 이메일 본문 생성
+                    String textBody = "안녕하세요, " + parsedData.getSender() + "님.\n"
+                            + "BusyBee의 운송 서비스 이용을 신청해 주셔서 감사합니다. 원활한 견적 산정을 위해 몇 가지 추가 정보가 필요합니다. "
+                            + "추가 정보 입력을 위해 아래 링크를 통해 정보를 제출해 주시기 바랍니다.\n\n"
+                            + "https://busybeemail.net/chatUI?orderId=" + parsedData.getKey() + "\n\n"
+                            + "감사합니다.\n"
+                            + "BusyBee: 010-1234-5678";
+
+                    String htmlBody = "<html><body>"
+                            + "<h2>안녕하세요, " + parsedData.getSender() + "님</h2>"
+                            + "<p>BusyBee의 운송 서비스 이용을 신청해 주셔서 감사합니다. 원활한 견적 산정을 위해 몇 가지 추가 정보가 필요합니다.</p>"
+                            + "<p>추가 정보 입력을 위해 아래 링크를 통해 정보를 제출해 주시기 바랍니다:</p>"
+                            + "<p><a href=\"https://busybeemail.net/chatUI?orderId=" + parsedData.getKey() + "\">추가 정보 입력 링크</a></p>"
+                            + "<p>감사합니다.<br>BusyBee: 010-1234-5678</p>"
+                            + "</body></html>";
+
                     // 이메일 요청 생성
                     SendEmailRequest request = new SendEmailRequest()
                             .withDestination(new Destination().withToAddresses(parsedData.getSender()))
                             .withMessage(new Message()
-                                    .withSubject(new Content().withData("요청하신 견적 건에 대하여 추가 정보 입력 요청드립니다."))
-                                    .withBody(new Body().withText(new Content().withData(
-                                            "아래 url로 접속하여 챗봇의 안내에 따라 추가 정보 입력 부탁드립니다.\n"
-                                            + "https://busybeemail.net/chatUI?orderId=" + parsedData.getKey()
-                                    ))))
+                                    .withSubject(new Content().withCharset("UTF-8").withData("[중요] 운송 견적 진행을 위한 추가 정보 요청"))
+                                    .withBody(new Body()
+                                            .withHtml(new Content().withCharset("UTF-8").withData(htmlBody))
+                                            .withText(new Content().withCharset("UTF-8").withData(textBody))))
                             .withSource(emailAddress);
 
                     // 이메일 전송

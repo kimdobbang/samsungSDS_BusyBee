@@ -26,10 +26,10 @@ async function sendMessageToClient(connectionId, message, senderType) {
     });
 
     await apigatewayManagementApi.send(command);
-    await saveChat(orderId, chatMessage);
     console.log(
       `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
     );
+    await saveChat(orderId, chatMessage);
   } catch (error) {
     if (error.$metadata?.httpStatusCode === 410) {
       console.log(`Message - Client disconnected - markSessionInactive orderId: ${orderId}`);

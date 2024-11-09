@@ -1,7 +1,8 @@
+// utils/apiRequest.js
+
 const { HttpRequest } = require("@aws-sdk/protocol-http");
 const { NodeHttpHandler } = require("@aws-sdk/node-http-handler");
 const { saveChat } = require("../common/ddb/dynamoDbClient");
-
 async function makeApiRequest(orderId, url, data) {
   const { hostname, pathname } = new URL(url);
   const request = new HttpRequest({

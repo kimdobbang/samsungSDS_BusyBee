@@ -34,12 +34,11 @@ provider:
         - dynamodb:UpdateItem
       Resource:
         - arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-CustomerChatSessions
-        - arn:aws:dynamodb:${self:provider.region}:*:table/estimate
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-CustomerChatSessions/index/ConnectionIndex
     - Effect: Allow
       Action:
         - lambda:InvokeFunction
       Resource:
-        # - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-*
         - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-disconnect
 
     - Effect: Allow
@@ -47,7 +46,6 @@ provider:
         - execute-api:ManageConnections
       Resource:
         - arn:aws:execute-api:${self:provider.region}:*:*/*/@connections/*
-        -
     - Effect: Allow
       Action:
         - sqs:SendMessage

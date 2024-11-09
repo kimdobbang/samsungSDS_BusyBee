@@ -2,18 +2,19 @@ service: mail-extraction
 
 provider:
   name: aws
-  runtime: python3.12
+  runtime: nodejs20.x
   region: ap-northeast-2
   environment:
     OPENAI_API_KEY: ${ssm:/prod/openAI/api_key} # SSM Parameter Store에서 참조
     EXTRACT_QUEUE_URL: 'https://sqs.ap-northeast-2.amazonaws.com/481665114066/information-integrity-verification-trigger'
+    MAIL_S3_BUCKET: 'mails-to-files' # S3 버킷 이름 환경 변수로 설정
 
   iam:
     role:
       statements:
         - Effect: 'Allow'
           Action:
-            - 'ssm:GetParameter' # SSM Parameter Store 접근 권한 추가
+            - 'ssm:GetParameter' # SSM Parameter Store 접근 권한
           Resource: 'arn:aws:ssm:ap-northeast-2:481665114066:parameter/prod/openAI/api_key'
         - Effect: 'Allow'
           Action:
@@ -23,12 +24,25 @@ provider:
           Resource:
             - 'arn:aws:sqs:ap-northeast-2:481665114066:mail-extraction-trigger'
             - 'arn:aws:sqs:ap-northeast-2:481665114066:information-integrity-verification-trigger'
+        - Effect: 'Allow'
+          Action:
+            - 's3:GetObject' # S3 객체 읽기 권한
+          Resource: 'arn:aws:s3:::mails-to-files/*' # S3 버킷 및 모든 객체에 대한 접근 권한
 
 functions:
   extractEmailData:
     name: mail-extraction
-    image:
-      uri: 481665114066.dkr.ecr.ap-northeast-2.amazonaws.com/mail-extraction:latest
+    timeout: 30
+    handler: handler.handler # 핸들러 설정
+    package:
+      include:
+        - handler.js # Lambda 함수 파일
+        - package.json
+        - package-lock.json
+        - node_modules/** # 종속성 포함
+    layers:
+      - arn:aws:lambda:ap-northeast-2:481665114066:layer:langchainLayer:23
+      - arn:aws:lambda:ap-northeast-2:481665114066:layer:langgraphLayer:3
     events:
       - sqs:
           arn: arn:aws:sqs:ap-northeast-2:481665114066:mail-extraction-trigger

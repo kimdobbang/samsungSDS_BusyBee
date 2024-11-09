@@ -24,7 +24,7 @@ async function makeApiRequest(url, data) {
       response.body.on("end", () => resolve(JSON.parse(data)));
       response.body.on("error", reject);
     });
-    console.log(`makeApiRequest 성공:${JSON.stringify(responseData)} `);
+    console.log(`llmResponse - makeApiRequest성공:${JSON.stringify(responseData)} `);
     return responseData;
   } catch (error) {
     console.log("API 요청 실패:", error);

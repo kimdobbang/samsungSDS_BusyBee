@@ -46,9 +46,9 @@ module.exports.handler = async (event) => {
 
     // LLM API 응답객체 클라이언트에 응답
     const requestData = createChatbotRequestMessage(clientMessage);
-    const llmApiUrl = process.env.LLM_API_URL;
+    const llmApiUrl = `${process.env.LLM_API_URL}?orderId=${orderId}`;
+    // const llmApiUrlTest = process.env.LLM_API_URL; // postman test용 url
     const response = await makeApiRequest(llmApiUrl, requestData);
-    console.log("LLM API Response:", response);
     const { llmResponse } = parseChatbotResponse(response);
     await sendMessageToClient(connectionId, llmResponse, "bot");
 

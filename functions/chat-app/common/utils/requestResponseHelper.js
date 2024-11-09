@@ -1,6 +1,5 @@
 // utils/requestResponseHelper.js
 
-// 클라이언트 메시지 파싱
 function parseClientMessage(eventBody) {
   try {
     const body = JSON.parse(eventBody);

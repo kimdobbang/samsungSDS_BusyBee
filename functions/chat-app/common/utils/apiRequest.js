@@ -2,7 +2,7 @@
 
 const { HttpRequest } = require("@aws-sdk/protocol-http");
 const { NodeHttpHandler } = require("@aws-sdk/node-http-handler");
-const { saveChat } = require("../common/ddb/dynamoDbClient");
+const { saveChat } = require("../ddb/dynamoDbClient");
 async function makeApiRequest(orderId, url, data) {
   const { hostname, pathname } = new URL(url);
   const request = new HttpRequest({
@@ -25,7 +25,7 @@ async function makeApiRequest(orderId, url, data) {
       response.body.on("end", () => resolve(JSON.parse(data)));
       response.body.on("error", reject);
     });
-    await saveChat(orderId, chatMessage);
+    await saveChat(orderId, responseData);
     console.log(`makeApiRequest 성공:${JSON.stringify(responseData)} `);
     return responseData;
   } catch (error) {

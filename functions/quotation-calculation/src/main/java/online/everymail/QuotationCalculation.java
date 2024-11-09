@@ -77,7 +77,7 @@ public class QuotationCalculation implements RequestHandler<SQSEvent, Void> {
     }
 
     // 운송 비용 계산 메서드
-    public double calculateTransportCost(int weight, int containerSize, String departureCity,
+    private double calculateTransportCost(int weight, int containerSize, String departureCity,
                                          String arrivalCity, String departureDate, String arrivalDate) {
         // 기본 요금 설정 (1,000,000원)
         double baseCost = 1_000_000.0;

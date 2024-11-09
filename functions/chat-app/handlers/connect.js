@@ -1,5 +1,4 @@
 // handlers/connect.js
-// 연결 시 DB 조회를 통해 필요한 정보를 가져와야 함
 const { formatDateTimestamp } = require("../common/utils/formatUtils");
 const { invokeDisconnectHandler } = require("../common/utils/lambdaClients");
 const { updateConnection, getSessionData } = require("../common/ddb/dynamoDbClient");
@@ -41,10 +40,11 @@ module.exports.handler = async (event) => {
     }
     await updateConnection(orderId, connectionId, isSessionActive);
     const { pendingFields, chatHistory, lastInteractionTimestamp } = existingSessionData;
+    // 모든 채팅기록 메시지 전달 후 다음 순서를 채팅으로 안내
     for (const chat of chatHistory) {
-      console.log(`Sending chat history to connection ${connectionId}:`, chat);
+      console.log(`채팅기록 보낼 예정 to connection ${connectionId}:`, chat);
       await sendChatHistoryToClientWithoutSave(orderId, connectionId, chat);
-      console.log(`Successfully sent chat history to connection ${connectionId}`);
+      console.log(`채팅기록 전달완료 to connection ${connectionId}`);
     }
 
     const formattedDateTime = formatDateTimestamp(lastInteractionTimestamp || "");

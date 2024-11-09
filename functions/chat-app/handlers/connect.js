@@ -43,12 +43,19 @@ module.exports.handler = async (event) => {
     // 모든 채팅기록 메시지 전달 후 다음 순서를 채팅으로 안내
     for (const chat of chatHistory) {
       console.log(`채팅기록 보낼 예정 to connection ${connectionId}:`, chat);
-      await sendChatHistoryToClientWithoutSave(orderId, connectionId, chat);
+      const result = await sendChatHistoryToClientWithoutSave(orderId, connectionId, chat);
+      if (!result) {
+        // 연결이 끊어진 경우 실행 중단
+        return {
+          statusCode: 200,
+          body: JSON.stringify({ message: "Client disconnected, chat history processing halted." }),
+        };
+      }
       console.log(`채팅기록 전달완료 to connection ${connectionId}`);
     }
 
     const formattedDateTime = formatDateTimestamp(lastInteractionTimestamp || "");
-    await sendInformToClient(
+    const result = await sendInformToClient(
       orderId,
       connectionId,
       `아직 제게 전달해주지 않으신 정보가 ${
@@ -56,6 +63,13 @@ module.exports.handler = async (event) => {
       }건 남아있습니다! ${formattedDateTime} 이후의 요청을 이어가겠습니다.`,
       "bot"
     );
+    if (!result) {
+      // 연결이 끊어진 경우 실행 중단
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ message: "Client disconnected, chat history processing halted." }),
+      };
+    }
 
     return {
       statusCode: 200,

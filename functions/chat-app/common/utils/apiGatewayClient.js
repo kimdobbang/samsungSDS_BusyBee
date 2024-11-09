@@ -63,12 +63,13 @@ async function sendChatHistoryToClientWithoutSave(orderId, connectionId, chatHis
     if (error.$metadata?.httpStatusCode == 410) {
       console.log(`History - Client disconnected - sendChatHistoryToClient: ${connectionId}`);
       await invokeDisconnectHandler(orderId, connectionId);
-      return;
+      return false;
     } else {
       console.log(`Error sending message to connectionId: ${connectionId}`, error);
-      return;
+      return false;
     }
   }
+  return true;
 }
 
 async function sendInformToClient(orderId, connectionId, message, senderType) {
@@ -94,18 +95,19 @@ async function sendInformToClient(orderId, connectionId, message, senderType) {
     if (error.$metadata?.httpStatusCode == 410) {
       console.log(`Inform - Client disconnected - sendInformToClient ${connectionId}`);
       await invokeDisconnectHandler(orderId, connectionId);
-      return;
+      return false;
     } else {
       console.log(`Error sending message to connectionId: ${connectionId}`, error);
-      return;
+      return false;
     }
   }
+  return true;
 }
 
 async function disconnectClient(connectionId) {
   const command = new DeleteConnectionCommand({ ConnectionId: connectionId });
   try {
-    await apiGatewayClient.send(command);
+    await apigatewayManagementApi.send(command);
     console.log(`Connection ${connectionId} has been forcefully disconnected.`);
   } catch (error) {
     console.log(`Failed to disconnect connection ${connectionId}:`, error);

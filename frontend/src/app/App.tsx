@@ -16,7 +16,7 @@ const App: React.FC = () => {
           <Route path='/' element={<Home />} />
 
           {/* 채팅 페이지 */}
-          <Route path='/chat' element={<ChatUI />} />
+          <Route path='/chatUI' element={<ChatUI />} />
 
           {/* 게시판 관련 라우트 */}
           <Route path='/board' element={<BoardLayout />}>

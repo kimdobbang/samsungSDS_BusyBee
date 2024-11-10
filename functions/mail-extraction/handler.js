@@ -106,6 +106,26 @@ const extractTextFromImages = async (imageFiles) => {
   }
   return combinedText.trim();
 };
+const XLSX = require('xlsx');
+
+// 엑셀 파일에서 텍스트 추출
+const extractTextFromExcel = (buffer) => {
+  const workbook = XLSX.read(buffer, { type: 'buffer' });
+  let extractedText = '';
+
+  // 모든 시트 순회
+  workbook.SheetNames.forEach((sheetName) => {
+    const sheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 }); // JSON으로 변환
+
+    // 각 셀의 데이터를 텍스트로 병합
+    jsonData.forEach((row) => {
+      extractedText += row.join(' ') + '\n'; // 각 행의 데이터를 공백으로 구분
+    });
+  });
+
+  return extractedText.trim();
+};
 
 // Lambda Handler
 exports.handler = async (event) => {
@@ -129,10 +149,18 @@ exports.handler = async (event) => {
         const data = await s3.getObject(params).promise();
         const fileExtension = key.split('.').pop().toLowerCase();
 
-        if (['txt', 'csv', 'docx', 'pdf'].includes(fileExtension)) {
+        if (['txt', 'csv', 'docx', 'pdf', 'doc'].includes(fileExtension)) {
           textFiles.push({ filename: key, file: data.Body });
         } else if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
           imageFiles.push(data.Body);
+        } else if (['xls', 'xlsx'].includes(fileExtension)) {
+          try {
+            const excelContent = extractTextFromExcel(data.Body);
+            textFiles.push({ filename: key, file: Buffer.from(excelContent, 'utf-8') });
+          } catch (error) {
+            console.error(`Error processing Excel file (${key}):`, error.message);
+            unsupportedFiles.push(key);
+          }
         } else {
           unsupportedFiles.push(key);
         }

@@ -12,22 +12,18 @@ const App: React.FC = () => {
     <Router>
       <div className={styles.customauthenticator}>
         <Routes>
-          {/* 홈 페이지 */}
-          <Route path='/' element={<BoardLayout />}>
-            {/* /board → /board/mail로 리다이렉트 */}
-            <Route index element={<Navigate to='mail' />} />
+          <Route path='/' element={<MailList />} />
+          {/* 게시판 관련 라우트 */}
 
-            {/* 메일 리스트 */}
-            <Route path='mail' element={<MailList />} />
+          {/* 메일 상세 페이지 (쿼리 파라미터 사용) */}
+          <Route path='mail' element={<DetailMail />} />
 
-            {/* 메일 상세 페이지 (쿼리 파라미터 사용) */}
-            <Route path='mail/detail' element={<DetailMail />} />
+          {/* 대시보드 */}
+          <Route path='dashboard' element={<Dashboard />} />
+          <Route path='*' element={<div>404 - Page Not Found</div>} />
 
-            {/* 대시보드 */}
-            <Route path='dashboard' element={<Dashboard />} />
-            <Route path='*' element={<div>404 - Page Not Found</div>} />
-          </Route>
           {/* 채팅 페이지 */}
+          <Route path='/chatUI' element={<AuthUI />} />
           <Route path='/ChatUI' element={<AuthUI />} />
         </Routes>
       </div>

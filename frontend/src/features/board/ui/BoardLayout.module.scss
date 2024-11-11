@@ -1,9 +1,11 @@
 .layout {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
   overflow-y: auto;
+  background-color: var(--bg01);
 }
 
 .mainContent {

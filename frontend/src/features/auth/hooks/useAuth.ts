@@ -3,9 +3,7 @@ import { CustomJwtPayload } from '../model/AuthToken';
 
 export function useAuth() {
   const getEmailFromIdToken = () => {
-    const idTokenKey = Object.keys(localStorage).find((key) =>
-      key.includes('idToken')
-    );
+    const idTokenKey = Object.keys(localStorage).find((key) => key.includes('idToken'));
     if (!idTokenKey) {
       console.error('No idToken found in local storage.');
       return null;

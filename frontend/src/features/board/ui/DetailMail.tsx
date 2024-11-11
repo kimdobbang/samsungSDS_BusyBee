@@ -7,6 +7,7 @@ import busybee3 from 'shared/assets/images/busybee3.png';
 import styles from './DetailMail.module.scss';
 import useMailStore from '../store/mailStore';
 import { getTagColor, getTagName } from 'shared/utils/getTag';
+import BoardLayout from './BoardLayout';
 
 // interface MailDetails {
 //   title: string;
@@ -46,17 +47,18 @@ export const DetailMail = () => {
   }
 
   return (
-    <div className={`${styles.detailMail}`}>
-      <div className={styles.header}>
-        <div className={styles.tag}>
-          <h1 style={{ backgroundColor: getTagColor(mailDetails.flag) }}>
-            {getTagName(mailDetails.flag)}
-          </h1>
-          <h1>{mailDetails.subject}</h1>
-        </div>
+    <BoardLayout>
+      <div className={`${styles.detailMail}`}>
+        <div className={styles.header}>
+          <div className={styles.tag}>
+            <h1 style={{ backgroundColor: getTagColor(mailDetails.flag) }}>
+              {getTagName(mailDetails.flag)}
+            </h1>
+            <h1>{mailDetails.subject}</h1>
+          </div>
 
-        <div className={styles.headerbuttons}>
-          {/* <button className={styles.iconButton}>
+          <div className={styles.headerbuttons}>
+            {/* <button className={styles.iconButton}>
             <StarIcon width={24} height={24} className={styles.icon} />
           </button>
           <button className={styles.iconButton}>
@@ -65,21 +67,22 @@ export const DetailMail = () => {
           <button className={styles.iconButton}>
             <ReplyIcon width={24} height={24} className={styles.icon} />
           </button> */}
+          </div>
+        </div>
+        <div className={styles.body}>
+          <div className={styles.sender}>
+            <button className={`${styles.button} ${styles.profile}`}>
+              <img src={busybee3} alt='' height={40} />
+            </button>
+            <h2>{mailDetails.nickname}</h2>
+            <h3>{mailDetails.email}</h3>
+          </div>
+          <div className={styles.content} style={{ whiteSpace: 'pre-wrap' }}>
+            {mailDetails.emailContent}
+          </div>
         </div>
       </div>
-      <div className={styles.body}>
-        <div className={styles.sender}>
-          <button className={`${styles.button} ${styles.profile}`}>
-            <img src={busybee3} alt='' height={40} />
-          </button>
-          <h2>{mailDetails.nickname}</h2>
-          <h3>{mailDetails.email}</h3>
-        </div>
-        <div className={styles.content} style={{ whiteSpace: 'pre-wrap' }}>
-          {mailDetails.emailContent}
-        </div>
-      </div>
-    </div>
+    </BoardLayout>
   );
 };
 

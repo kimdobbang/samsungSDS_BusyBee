@@ -36,7 +36,7 @@ module.exports.handler = async (event) => {
 
   try {
     await disconnectClient(connectionId);
-    console.log(`Connection ${connectionId} has been forcefully disconnected.`);
+    console.log(`정상종료 완료! ConnectionId ${connectionId} has been forcefully disconnected.`);
   } catch (error) {
     console.log(`Failed to disconnect client for connectionId: ${connectionId}`, error);
     return {

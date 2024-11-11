@@ -1,0 +1,255 @@
+@mixin h1style {
+  font-size: 20px;
+  color: var(--gray04);
+}
+
+@mixin h2style {
+  font-size: 12px;
+  color: var(--sub03);
+}
+
+.dashboard {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.top {
+  width: 100%;
+  height: 15%;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.statisticbox {
+  width: 30%;
+  height: 80%;
+  border-radius: 10px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 20px;
+}
+
+.statistics {
+  width: 80%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  h2 {
+    font-size: 12px;
+    color: var(--sub03);
+  }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray04);
+  }
+}
+
+.buttondiv {
+  width: 20%;
+  height: 100%;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}
+.iconbutton {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+
+  background-color: var(--primary);
+}
+
+.middle {
+  height: 40%; /* 기본 높이 */
+  transition: height 0.3s ease; /* 높이 변경 시 애니메이션 추가 */
+}
+
+.expanded {
+  height: auto; /* 더보기 버튼을 클릭했을 때 높이를 자동으로 확장 */
+}
+
+.quotebox {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 15px;
+  padding: 10px;
+  h1 {
+    font-size: 20px;
+    color: var(--gray04);
+  }
+
+  h2 {
+    font-size: 12px;
+    color: var(--sub03);
+  }
+  /* 테이블 전체에 글자 왼쪽 정렬 */
+  table {
+    width: 100%; /* 테이블 너비를 100%로 설정 */
+    height: 100%;
+    border-collapse: collapse; /* 테두리를 합쳐서 깔끔하게 설정 */
+    text-align: left; /* 모든 글자 왼쪽 정렬 */
+  }
+
+  th,
+  td {
+    padding: 5px;
+    border-bottom: 1px solid #ddd; /* 아래쪽 테두리 */
+  }
+}
+
+.middleHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: end;
+}
+
+.textbutton {
+  width: auto;
+  height: auto;
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary);
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.stage {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: left;
+  p {
+    font-size: 14px;
+    color: var(--primary);
+  }
+}
+
+.progressBarContainer {
+  width: 150px;
+  height: 10px;
+  background-color: var(--gray01); /* 배경 색상 */
+  border-radius: 10px; /* 둥근 모서리 */
+  overflow: hidden; /* 바깥으로 나오는 부분 숨김 */
+}
+
+.progressBar {
+  width: 60%;
+  height: 100%; /* 부모 요소 높이에 맞춤 */
+  background-color: var(--primary); /* 프로그레스바 색상 */
+  border-radius: 10px 0 0 10px; /* 좌측만 둥근 모서리 */
+  transition: width 0.3s; /* 너비 변화 애니메이션 */
+}
+
+.moreButton {
+  background-color: transparent;
+  border: 0;
+  color: var(--gray03);
+  margin-top: 5px;
+}
+
+.bottom {
+  width: 100%;
+  height: auto;
+
+  h1 {
+    font-size: 20px;
+    color: var(--gray04);
+  }
+}
+
+.detailquote {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  border-radius: 15px;
+  padding: 10px;
+
+  h1 {
+    @include h1style();
+  }
+}
+
+.iconbutton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.detail {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.left,
+.right {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  > h1 {
+    @include h1style();
+  }
+
+  > h2 {
+    @include h2style();
+  }
+
+  img {
+    width: 100px;
+    height: 100px;
+  }
+
+  > div {
+    display: flex;
+    flex-direction: row;
+    gap: 3rem;
+  }
+}
+
+.map {
+  width: 400px;
+  height: 200px;
+  background-color: var(--gray02);
+  border-radius: 15px;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  > div {
+    width: 100px;
+    height: 100px;
+    background-color: var(--primary);
+    font-size: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    border-radius: 10px;
+  }
+}

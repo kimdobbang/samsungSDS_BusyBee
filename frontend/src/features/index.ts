@@ -1,5 +1,4 @@
 //auth 부분 export
-export * from './auth/api/cognito';
 export * from './auth/hooks/useAuth';
 export * from './auth/ui/AuthUI';
 

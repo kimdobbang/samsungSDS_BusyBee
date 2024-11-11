@@ -5,6 +5,7 @@ import { getWebSocketUrl } from '../api/chatApi';
 function useWebSocket(orderId: string | null): UseWebSocketReturn {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const url = getWebSocketUrl(orderId);
+  const [receiveMessage, setReceiveMessage] = useState<WebSocketMessage[]>([]);
 
   useEffect(() => {
     if (!url) return;
@@ -13,19 +14,11 @@ function useWebSocket(orderId: string | null): UseWebSocketReturn {
 
     webSocket.onopen = () => {
       console.log('WebSocket connection opened');
-      const initialMessage: WebSocketMessage = {
-        action: 'sendOrderData',
-        orderId: orderId || '',
-      };
-      console.log(1);
-      webSocket.send(JSON.stringify(initialMessage));
-      console.log(2);
     };
 
     webSocket.onmessage = (event: MessageEvent) => {
-      console.log(event);
       const data: WebSocketMessage = JSON.parse(event.data);
-      console.log('Message received from server:', data);
+      setReceiveMessage((prevMessages) => [...prevMessages, data]);
     };
 
     webSocket.onclose = () => {
@@ -46,12 +39,13 @@ function useWebSocket(orderId: string | null): UseWebSocketReturn {
   const sendMessage = (message: WebSocketMessage) => {
     if (socket && socket.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify(message));
+      console.log(socket);
     } else {
       console.error('WebSocket is not open. Cannot send message.');
     }
   };
 
-  return { socket, sendMessage };
+  return { socket, sendMessage, receiveMessage };
 }
 
 export default useWebSocket;

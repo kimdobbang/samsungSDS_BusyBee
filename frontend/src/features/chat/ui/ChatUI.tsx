@@ -95,7 +95,7 @@ export const ChatUI = () => {
   const handleSend = () => {
     if (input.trim()) {
       setMessages([...messages, { sender: 'user', content: input }]);
-      const message = { action: 'sendMessage', message: input };
+      const message = { action: 'sendMessage', data: input };
       sendMessage(message);
       setInput('');
     }

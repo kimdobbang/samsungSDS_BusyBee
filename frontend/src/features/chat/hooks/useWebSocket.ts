@@ -18,6 +18,7 @@ function useWebSocket(orderId: string | null): UseWebSocketReturn {
 
     webSocket.onmessage = (event: MessageEvent) => {
       const data: WebSocketMessage = JSON.parse(event.data);
+      console.log(data);
       setReceiveMessage((prevMessages) => [...prevMessages, data]);
     };
 

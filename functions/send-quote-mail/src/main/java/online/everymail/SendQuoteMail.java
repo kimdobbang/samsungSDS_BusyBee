@@ -11,6 +11,8 @@ import com.google.gson.JsonSyntaxException;
 import online.everymail.dto.SNSMessageWrapper;
 import online.everymail.dto.SQSMessageData;
 
+import java.text.DecimalFormat;
+
 public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
 
     private static final AmazonSimpleEmailService sesClient = AmazonSimpleEmailServiceClientBuilder.standard()
@@ -18,6 +20,7 @@ public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
             .build();
     private static final Gson gson = new Gson();
     private static final String emailAddress = "no-reply@busybeemail.net";
+    private static final DecimalFormat decimalFormat = new DecimalFormat("#,###");
 
     @Override
     public Void handleRequest(SQSEvent event, Context context) {
@@ -43,7 +46,7 @@ public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
                             + "무게: " + parsedData.getData().getWeight() + "kg\n"
                             + "출발일: " + parsedData.getData().getDepartureDate() + "\n"
                             + "도착일: " + parsedData.getData().getArrivalDate() + "\n\n"
-                            + "총 예상 운송 비용: " + parsedData.getQuote() + "원 (VAT 별도)\n\n"
+                            + "총 예상 운송 비용: " + decimalFormat.format(parsedData.getQuote()) + "원 (VAT 별도)\n\n"
                             + "문의 및 추가 요청: 견적과 관련하여 문의사항이 있으시거나 추가 요청 사항이 있으시면 언제든지 저희에게 연락 주시기 바랍니다.\n"
                             + "감사합니다.\n"
                             + "BusyBee: 010-1234-5678";

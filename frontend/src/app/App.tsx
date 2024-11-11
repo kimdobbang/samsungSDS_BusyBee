@@ -1,8 +1,20 @@
 import styles from './page.module.scss';
 import React from 'react';
 
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ChatUI, Home, DetailMail, MailList, Dashboard } from 'features';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
+import {
+  ChatUI,
+  Home,
+  DetailMail,
+  MailList,
+  Dashboard,
+  AuthUI,
+} from 'features';
 import BoardLayout from 'features/board/ui/BoardLayout';
 // import { Auth } from '../features';
 // import { Voice } from '../features';
@@ -16,7 +28,7 @@ const App: React.FC = () => {
           <Route path='/' element={<Home />} />
 
           {/* 채팅 페이지 */}
-          <Route path='/chatUI' element={<ChatUI />} />
+          <Route path='/ChatUI' element={<AuthUI />} />
 
           {/* 게시판 관련 라우트 */}
           <Route path='/board' element={<BoardLayout />}>

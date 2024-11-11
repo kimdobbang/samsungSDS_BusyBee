@@ -18,13 +18,24 @@ async function invokeDisconnectHandler(orderId, connectionId) {
     FunctionName: process.env.DISCONNECT_FUNCTION_NAME,
     InvocationType: "Event",
     Payload: JSON.stringify({
+      requestContext: {
+        connectionId,
+      },
       orderId,
-      connectionId,
     }),
   });
 
   await lambdaClient.send(disconnectCommand);
   console.log(`$disconnect handler invoked for orderId: ${orderId}`);
 }
+// $default
+async function invokeDefaultHandler(connectionId, sessionData) {
+  const { orderId } = sessionData;
+  await invokeLambda(process.env.DEFAULT_FUNCTION_NAME, {
+    connectionId,
+    sessionData,
+  });
+  console.log(`$default handler invoked for orderId: ${orderId}`);
+}
 
-module.exports = { invokeDisconnectHandler };
+module.exports = { invokeLambda, invokeDisconnectHandler, invokeDefaultHandler };

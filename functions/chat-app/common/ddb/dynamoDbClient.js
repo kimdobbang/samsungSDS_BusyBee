@@ -11,6 +11,7 @@ const {
 const client = new DynamoDBClient({ region: "ap-northeast-2" });
 const dynamoDb = DynamoDBDocumentClient.from(client);
 const TABLE_NAME = process.env.CHAT_SESSIONS_TABLE_NAME;
+const CONNECTION_INDEX = process.env.CHAT_SESSIONS_TABLE_CONNECTION_INDEX;
 
 async function getSessionData(orderId) {
   try {
@@ -29,7 +30,7 @@ async function getOrderIdByConnectionId(connectionId) {
   try {
     const command = new QueryCommand({
       TableName: TABLE_NAME,
-      IndexName: "ConnectionIndex",
+      IndexName: CONNECTION_INDEX,
       KeyConditionExpression: "connectionId = :connectionId",
       ExpressionAttributeValues: {
         ":connectionId": connectionId,
@@ -67,7 +68,7 @@ async function updateConnection(orderId, connectionId, isSessionActive) {
     });
 
     await dynamoDb.send(command);
-    console.log(`Connection update 성공: ${orderId} - ${connectionId}`);
+    console.log(`Connection update & active 성공: ${orderId} - ${connectionId}`);
   } catch (error) {
     console.log(`Error updating connection:${orderId} - ${connectionId}`);
     throw new Error("connection 업데이트 오류");
@@ -127,7 +128,7 @@ async function removeConnectionId(orderId) {
       UpdateExpression: "REMOVE connectionId",
     });
     await dynamoDb.send(command);
-    console.log(`connectionId removed successfully for orderId: ${orderId}`);
+    console.log(`connectionId removed from DynamoDB successfully for orderId: ${orderId}`);
   } catch (error) {
     console.log(`Error removing connectionId for orderId: ${orderId}`, error);
     throw new Error("DynamoDB connectionId 삭제 오류");
@@ -153,10 +154,11 @@ async function markSessionComplete(orderId) {
 }
 module.exports = {
   getSessionData,
+  getOrderIdByConnectionId,
   updateConnection,
   saveChat,
+  markSessionInProgress,
+  markSessionComplete,
   markSessionInactive,
   removeConnectionId,
-  markSessionComplete,
-  getOrderIdByConnectionId,
 };

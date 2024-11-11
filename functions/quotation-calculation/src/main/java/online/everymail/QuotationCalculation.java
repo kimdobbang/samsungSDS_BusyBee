@@ -77,8 +77,8 @@ public class QuotationCalculation implements RequestHandler<SQSEvent, Void> {
     }
 
     // 운송 비용 계산 메서드
-    private double calculateTransportCost(int weight, int containerSize, String departureCity,
-                                         String arrivalCity, String departureDate, String arrivalDate) {
+    private double calculateTransportCost(int weight, int containerSize, String departureDate,
+                                          String arrivalDate, String departureCity, String arrivalCity) {
         // 기본 요금 설정 (1,000,000원)
         double baseCost = 1_000_000.0;
 
@@ -122,6 +122,8 @@ public class QuotationCalculation implements RequestHandler<SQSEvent, Void> {
     private double getDistance(String departureCity, String arrivalCity) {
         // 도시별 위도 및 경도 정보 설정
         HashMap<String, CityCoordinates> cityCoordinatesMap = new HashMap<>();
+
+        // Major cities
         cityCoordinatesMap.put("SEL", new CityCoordinates(37.5665, 126.9780)); // 서울
         cityCoordinatesMap.put("ICN", new CityCoordinates(37.4563, 126.7052)); // 인천
         cityCoordinatesMap.put("PUS", new CityCoordinates(35.1796, 129.0756)); // 부산
@@ -130,21 +132,77 @@ public class QuotationCalculation implements RequestHandler<SQSEvent, Void> {
         cityCoordinatesMap.put("KWJ", new CityCoordinates(35.1595, 126.8526)); // 광주
         cityCoordinatesMap.put("USN", new CityCoordinates(35.5384, 129.3114)); // 울산
         cityCoordinatesMap.put("CJU", new CityCoordinates(33.4996, 126.5312)); // 제주
-        cityCoordinatesMap.put("GMP", new CityCoordinates(37.5559, 126.8360)); // 김포
-        cityCoordinatesMap.put("KPO", new CityCoordinates(36.0190, 129.3435)); // 포항
-        cityCoordinatesMap.put("YNY", new CityCoordinates(38.0613, 128.6695)); // 양양
-        cityCoordinatesMap.put("CJJ", new CityCoordinates(36.6420, 127.4890)); // 청주
-        cityCoordinatesMap.put("WJU", new CityCoordinates(37.3420, 127.9200)); // 원주
-        cityCoordinatesMap.put("KUV", new CityCoordinates(35.9038, 126.6155)); // 군산
-        cityCoordinatesMap.put("RSU", new CityCoordinates(34.8428, 127.6161)); // 여수
-        cityCoordinatesMap.put("HIN", new CityCoordinates(35.0880, 128.0706)); // 사천
-        cityCoordinatesMap.put("MPK", new CityCoordinates(34.8118, 126.3922)); // 목포
-        cityCoordinatesMap.put("SHO", new CityCoordinates(38.2070, 128.5919)); // 속초
-        cityCoordinatesMap.put("KAG", new CityCoordinates(37.7519, 128.8761)); // 강릉
-        cityCoordinatesMap.put("CNX", new CityCoordinates(37.8813, 127.7298)); // 춘천
-        cityCoordinatesMap.put("AEO", new CityCoordinates(36.5684, 128.7294)); // 안동
-        cityCoordinatesMap.put("CHN", new CityCoordinates(35.8218, 127.1480)); // 전주
-        cityCoordinatesMap.put("SCK", new CityCoordinates(37.4499, 129.1658)); // 삼척
+        cityCoordinatesMap.put("SWU", new CityCoordinates(37.2636, 127.0286)); // 수원
+        cityCoordinatesMap.put("SNM", new CityCoordinates(37.4200, 127.1267)); // 성남
+        cityCoordinatesMap.put("CHN", new CityCoordinates(37.8813, 127.7298)); // 춘천
+        cityCoordinatesMap.put("GRN", new CityCoordinates(37.7519, 128.8761)); // 강릉
+
+        // Airports
+        cityCoordinatesMap.put("GMP", new CityCoordinates(37.5587, 126.7906)); // 김포공항
+        cityCoordinatesMap.put("CJJ", new CityCoordinates(36.7166, 127.4995)); // 청주공항
+        cityCoordinatesMap.put("RSU", new CityCoordinates(34.8428, 127.6161)); // 여수공항
+        cityCoordinatesMap.put("KPO", new CityCoordinates(36.0190, 129.3435)); // 포항공항
+        cityCoordinatesMap.put("YNY", new CityCoordinates(38.0589, 128.6695)); // 양양공항
+        cityCoordinatesMap.put("WJU", new CityCoordinates(37.4386, 127.9596)); // 원주공항
+        cityCoordinatesMap.put("MWX", new CityCoordinates(34.9914, 126.3828)); // 무안공항
+        cityCoordinatesMap.put("HIN", new CityCoordinates(35.0880, 128.0706)); // 사천공항
+
+        // Train stations
+        cityCoordinatesMap.put("SEO", new CityCoordinates(37.5547, 126.9707)); // 서울역
+        cityCoordinatesMap.put("YON", new CityCoordinates(37.5311, 126.9644)); // 용산역
+        cityCoordinatesMap.put("PSN", new CityCoordinates(35.1152, 129.0413)); // 부산역
+        cityCoordinatesMap.put("DJC", new CityCoordinates(36.3511, 127.3850)); // 대전역
+        cityCoordinatesMap.put("GWJ", new CityCoordinates(35.1517, 126.8475)); // 광주송정역
+        cityCoordinatesMap.put("DDG", new CityCoordinates(35.8801, 128.6286)); // 동대구역
+        cityCoordinatesMap.put("IKS", new CityCoordinates(35.9733, 126.7118)); // 익산역
+        cityCoordinatesMap.put("JJR", new CityCoordinates(35.8252, 127.1478)); // 전주역
+        cityCoordinatesMap.put("MKP", new CityCoordinates(34.8118, 126.3922)); // 목포역
+        cityCoordinatesMap.put("POH", new CityCoordinates(36.0194, 129.3444)); // 포항역
+
+        cityCoordinatesMap.put("INC", new CityCoordinates(37.4767, 126.6169)); // 인천역
+        cityCoordinatesMap.put("CHC", new CityCoordinates(37.8813, 127.7298)); // 춘천역
+        cityCoordinatesMap.put("GRG", new CityCoordinates(37.7644, 128.8961)); // 강릉역
+        cityCoordinatesMap.put("SUS", new CityCoordinates(37.4876, 127.1010)); // 수서역
+        cityCoordinatesMap.put("YSR", new CityCoordinates(34.7604, 127.6622)); // 여수엑스포역
+
+        // Ports
+        cityCoordinatesMap.put("BPH", new CityCoordinates(35.1045, 129.0374)); // 부산항
+        cityCoordinatesMap.put("IPH", new CityCoordinates(37.4763, 126.6198)); // 인천항
+        cityCoordinatesMap.put("UPH", new CityCoordinates(35.5019, 129.3844)); // 울산항
+        cityCoordinatesMap.put("PTH", new CityCoordinates(36.9855, 126.6046)); // 평택항
+        cityCoordinatesMap.put("YHP", new CityCoordinates(34.7418, 127.7353)); // 여수항
+        cityCoordinatesMap.put("MHP", new CityCoordinates(34.7917, 126.3886)); // 목포항
+        cityCoordinatesMap.put("SCH", new CityCoordinates(37.5665, 126.9780)); // 삼천포항/속초항
+        cityCoordinatesMap.put("MSH", new CityCoordinates(35.2026, 128.5831)); // 마산항
+        cityCoordinatesMap.put("JHH", new CityCoordinates(35.1494, 128.6838)); // 진해항
+        cityCoordinatesMap.put("GSH", new CityCoordinates(35.9673, 126.7364)); // 군산항
+
+        cityCoordinatesMap.put("PHP", new CityCoordinates(36.0325, 129.3650)); // 포항항
+        cityCoordinatesMap.put("JPH", new CityCoordinates(33.5178, 126.5261)); // 제주항
+        cityCoordinatesMap.put("GPH", new CityCoordinates(34.9333, 127.7025)); // 광양항
+        cityCoordinatesMap.put("DHH", new CityCoordinates(37.4813, 129.1259)); // 동해항
+
+        // Additional locations
+        cityCoordinatesMap.put("SSH", new CityCoordinates(36.7810, 126.4503)); // 서산항
+        cityCoordinatesMap.put("TAH", new CityCoordinates(36.7535, 126.2976)); // 태안항
+        cityCoordinatesMap.put("ULH", new CityCoordinates(37.4885, 130.9061)); // 울릉항
+        cityCoordinatesMap.put("DDH", new CityCoordinates(37.2411, 131.8644)); // 독도항
+        cityCoordinatesMap.put("CFT", new CityCoordinates(37.4670, 126.6176)); // 화물터미널
+        cityCoordinatesMap.put("ILB", new CityCoordinates(37.4639, 126.6325)); // 국제물류기지
+        cityCoordinatesMap.put("NHN", new CityCoordinates(34.8370, 127.8975)); // 남해항
+        cityCoordinatesMap.put("GJH", new CityCoordinates(34.8803, 128.6214)); // 거제항
+
+        // International Ports and Airports (for reference)
+        cityCoordinatesMap.put("SHA", new CityCoordinates(31.2304, 121.4737)); // 상하이항
+        cityCoordinatesMap.put("HKG", new CityCoordinates(22.3193, 114.1694)); // 홍콩항
+        cityCoordinatesMap.put("SIN", new CityCoordinates(1.3521, 103.8198)); // 싱가포르항
+        cityCoordinatesMap.put("TYO", new CityCoordinates(35.6895, 139.6917)); // 도쿄항
+        cityCoordinatesMap.put("NYH", new CityCoordinates(40.7128, -74.0060)); // 뉴욕항
+        cityCoordinatesMap.put("LAH", new CityCoordinates(34.0522, -118.2437)); // 로스앤젤레스항
+        cityCoordinatesMap.put("LDH", new CityCoordinates(51.5074, -0.1278)); // 런던항
+        cityCoordinatesMap.put("HAM", new CityCoordinates(53.5511, 9.9937)); // 함부르크항
+        cityCoordinatesMap.put("DXB", new CityCoordinates(25.276987, 55.296249)); // 두바이항
+
 
         // 두 도시 간의 실제 거리 계산
         CityCoordinates city1 = cityCoordinatesMap.get(departureCity);

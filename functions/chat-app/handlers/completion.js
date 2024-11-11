@@ -8,17 +8,15 @@ const sqsClient = new SQSClient({ region: "ap-northeast-2" });
 
 module.exports.handler = async (event) => {
   console.log("Received event:", JSON.stringify(event));
-  let sessionData;
-  const connectionId = event.requestContext.connectionId;
-  const { orderId } = await getOrderIdByConnectionId(connectionId);
+  orderId = event.orderId;
+  const sessionData = await getSessionData(orderId);
+  console.log(`sessionData:${JSON.stringify(sessionData)}`);
 
   try {
     if (!orderId) {
       throw new Error("orderId is missing in the event body.");
     }
 
-    sessionData = await getSessionData(orderId);
-    console.log(`sessionData:${JSON.stringify(sessionData)}`);
     if (!sessionData) {
       throw new Error(`No session data found for orderId: ${orderId}`);
     }
@@ -36,12 +34,14 @@ module.exports.handler = async (event) => {
     });
 
     await sqsClient.send(sqsMessageCommand);
+    //완료처리 후 잘 돌아가는데, sqs에 안들어가는 것 같다..? 낼 담당자에게 확인요청하기
     console.log(`Message sent to SQS: ${JSON.stringify(sqsMessageCommand)}`);
 
     await markSessionComplete(orderId);
-    console.log(`Session marked as complete for orderId: ${orderId}`);
+    console.log(`${orderId}의 세션상태 complete처리 완료`);
 
-    console.log(`Invoking disconnect handler for orderId: ${orderId}`);
+    console.log(`세션 종료하겠슴당 - Invoking disconnect handler for orderId: ${orderId}`);
+    connectionId = sessionData.connectionId;
     await invokeDisconnectHandler(orderId, connectionId);
     console.log(
       `Disconnect handler successfully invoked for orderId: ${orderId}, connectionId: ${connectionId}`
@@ -52,7 +52,7 @@ module.exports.handler = async (event) => {
       body: `Completion process done for customer ${connectionId}`,
     };
   } catch (error) {
-    console.log(`Error during completion process for customer ${connectionId}`, error);
+    console.log(`Error during completion process for orderId: ${orderId},`, error);
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Completion - Internal Server Error" }),

@@ -25,10 +25,10 @@ const App: React.FC = () => {
       <div className={styles.customauthenticator}>
         <Routes>
           {/* 홈 페이지 */}
-          <Route path='/' element={<Home />} />
+          <Route path='/' element={<AuthUI />} />
 
           {/* 채팅 페이지 */}
-          <Route path='/ChatUI' element={<AuthUI />} />
+          <Route path='/chatUI' element={<AuthUI />} />
 
           {/* 게시판 관련 라우트 */}
           <Route path='/board' element={<BoardLayout />}>

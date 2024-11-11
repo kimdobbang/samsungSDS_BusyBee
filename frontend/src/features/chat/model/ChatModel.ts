@@ -10,6 +10,7 @@ export interface WebSocketMessage {
   content?: string;
   message?: string;
   email?: string;
+  senderType?: string;
 }
 
 export interface UseWebSocketReturn {

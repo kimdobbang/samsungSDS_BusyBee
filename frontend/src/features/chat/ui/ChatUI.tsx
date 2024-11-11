@@ -22,10 +22,9 @@ export const ChatUI = () => {
   const { sendMessage, receiveMessage } = useWebSocket(
     isWebSocketConnected ? orderId : null
   );
-  const [isMessagesInitialized, setIsMessagesInitialized] = useState(false);
 
   useEffect(() => {
-    if (orderId) {
+    if (email && orderId) {
       const fetchLambdaData = async () => {
         try {
           const res = await sendDataToLambda(orderId, email);
@@ -42,32 +41,20 @@ export const ChatUI = () => {
           console.error('Error fetching data from Lambda:', error);
         }
       };
-
       fetchLambdaData();
     }
-  }, [orderId]);
+  }, [orderId, email, navigate]);
 
   useEffect(() => {
-    if (
-      !isMessagesInitialized &&
-      receiveMessage &&
-      receiveMessage.length >= 3
-    ) {
-      const newMessages: MessageProps[] = [
-        { sender: 'admin', content: receiveMessage[0].message ?? '' },
-        {
-          sender: 'admin',
-          content: receiveMessage[receiveMessage.length - 2].message ?? '',
-        },
-        {
-          sender: 'admin',
-          content: receiveMessage[receiveMessage.length - 1].message ?? '',
-        },
-      ];
-      setMessages(newMessages);
-      setIsMessagesInitialized(true); // 한 번 실행되었음을 기록
+    const latestMessage = receiveMessage[receiveMessage.length - 1];
+    if (latestMessage) {
+      const newMessage: MessageProps = {
+        sender: latestMessage.senderType === 'bot' ? 'admin' : 'user',
+        content: latestMessage.message ?? '',
+      };
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
     }
-  }, [receiveMessage, isMessagesInitialized]);
+  }, [receiveMessage]);
 
   useEffect(() => {
     for (let i = 0; i < localStorage.length; i++) {

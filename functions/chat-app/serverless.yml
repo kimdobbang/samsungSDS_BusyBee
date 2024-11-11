@@ -11,6 +11,8 @@ provider:
     CHAT_SESSIONS_TABLE_NAME: ${self:service}-CustomerChatSessions
     ORDER_DATA_TABLE_NAME: estimate
     DISCONNECT_FUNCTION_NAME: ${self:service}-disconnect
+    DEFAULT_FUNCTION_NAME: ${self:service}-default
+    CHAT_SESSIONS_TABLE_CONNECTION_INDEX: ConnectionIndex
     SQS_QUEUE_URL: https://sqs.${self:provider.region}.amazonaws.com/481665114066/chat-quotation-calculation-trigger
     LLM_API_URL: https://${self:custom.llmApiGatewayId}.execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/llm-interaction
     STAGE: ${self:provider.stage}
@@ -39,6 +41,7 @@ provider:
         - lambda:InvokeFunction
       Resource:
         - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-disconnect
+        - arn:aws:lambda:${self:provider.region}:481665114066:function:${self:service}-default
 
     - Effect: Allow
       Action:

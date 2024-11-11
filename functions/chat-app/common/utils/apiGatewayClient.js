@@ -39,15 +39,13 @@ async function sendMessageToClient(connectionId, message, senderType) {
   }
 }
 
-async function sendChatHistoryToClientWithoutSave(orderId, connectionId, chatHistory) {
+async function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
   try {
     const chatMessage = {
       timestamp: chatHistory.timestamp,
       senderType: chatHistory.senderType,
       message: chatHistory.message,
     };
-    // PostToConnectionCommand호출시 클라이언트 연결 끊어진 상태면 410오류 발생하고 catch에서 invokeDisconnectHandler호출
-
     const command = new PostToConnectionCommand({
       ConnectionId: connectionId,
       Data: Buffer.from(JSON.stringify(chatMessage)),
@@ -72,7 +70,7 @@ async function sendChatHistoryToClientWithoutSave(orderId, connectionId, chatHis
   return true;
 }
 
-async function sendInformToClient(orderId, connectionId, message, senderType) {
+async function sendInformToClient(connectionId, message, senderType) {
   try {
     const timestamp = new Date().toISOString();
 
@@ -87,7 +85,6 @@ async function sendInformToClient(orderId, connectionId, message, senderType) {
       Data: Buffer.from(JSON.stringify(chatMessage)),
     });
     await apigatewayManagementApi.send(command);
-    await saveChat(orderId, chatMessage);
     console.log(
       `Inform sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
     );

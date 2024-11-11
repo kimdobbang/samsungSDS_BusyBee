@@ -2,6 +2,17 @@
 const { LambdaClient, InvokeCommand } = require("@aws-sdk/client-lambda");
 const lambdaClient = new LambdaClient({ region: process.env.AWS_REGION });
 
+// Lambda 호출
+async function invokeLambda(functionName, payload) {
+  const command = new InvokeCommand({
+    FunctionName: functionName,
+    InvocationType: "Event",
+    Payload: JSON.stringify(payload),
+  });
+  await lambdaClient.send(command);
+  console.log(`Lambda function invoked: ${functionName}`);
+}
+
 async function invokeDisconnectHandler(orderId, connectionId) {
   const disconnectCommand = new InvokeCommand({
     FunctionName: process.env.DISCONNECT_FUNCTION_NAME,

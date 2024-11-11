@@ -1,11 +1,12 @@
 // handlers/message
-const { sendMessageToClient } = require("../common/utils/apiGatewayClient");
+const { sendMessageToClient, sendInformToClient } = require("../common/utils/apiGatewayClient");
 const { makeApiRequest } = require("../common/utils/apiRequest");
 const { saveChat, getOrderIdByConnectionId } = require("../common/ddb/dynamoDbClient");
 const {
   createChatbotRequestMessage,
   parseChatbotResponse,
   parseClientMessage,
+  ClientError,
 } = require("../common/utils/requestResponseHelper");
 
 module.exports.handler = async (event) => {
@@ -18,25 +19,26 @@ module.exports.handler = async (event) => {
       console.log(`OrderId not found for ConnectionId: ${connectionId}`);
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "Order not found" }),
+        body: JSON.stringify({ message: "OrderId not found" }),
       };
     }
 
-    // 클라이언트 메시지 파싱 및 저장
+    // 클라이언트 메시지 파싱 및 공백검사 후 저장
     let action, clientMessage;
     try {
       ({ action, clientMessage } = parseClientMessage(event.body));
-    } catch (parseError) {
-      console.log(`Error parsing message for ConnectionId: ${connectionId}`, parseError);
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: parseError.message }),
-      };
+    } catch (error) {
+      if (error instanceof ClientError) {
+        console.log(`Client error for ConnectionId: ${connectionId}`, error);
+        await sendInformToClient(connectionId, error.message, "bot");
+        return {
+          statusCode: 400,
+          body: JSON.stringify({ message: error.message }),
+        };
+      }
+      throw error;
     }
 
-    console.log(
-      `Received message from ConnectionId: ${connectionId}, OrderId: ${orderId}, Action: ${action}`
-    );
     const clientMessageData = {
       timestamp: new Date().toISOString(),
       senderType: "customer",
@@ -44,10 +46,10 @@ module.exports.handler = async (event) => {
     };
     await saveChat(orderId, clientMessageData);
 
-    // LLM API 응답객체 클라이언트에 응답
+    // LLM API 응답 클라이언트에 전달
     const requestData = createChatbotRequestMessage(clientMessage);
     const llmApiUrl = `${process.env.LLM_API_URL}?orderId=${orderId}`;
-    // const llmApiUrlTest = process.env.LLM_API_URL; // postman test용 url
+    console.log(`Sending message to LLM API for orderId: ${orderId}, URL: ${llmApiUrl}`);
     const response = await makeApiRequest(llmApiUrl, requestData);
     const { llmResponse } = parseChatbotResponse(response);
     await sendMessageToClient(connectionId, llmResponse, "bot");

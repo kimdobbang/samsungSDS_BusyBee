@@ -24,7 +24,7 @@ module.exports.responsedDataReplication = async (event) => {
           Weight === 0 ||
           ContainerSize === 0 ||
           [DepartureDate, ArrivalDate, DepartureCity, ArrivalCity].some(
-            (field) => field === "" || field === "unknown"
+            (field) => field === "" || field.toLowerCase() === "unknown"
           )
         ) {
           console.log("조건에 맞는 데이터 발견");
@@ -32,9 +32,8 @@ module.exports.responsedDataReplication = async (event) => {
           const formattedData = {
             orderId: newData.Id,
             sender: newData.sender,
-            connectionId: "",
             isSessionActive: false,
-            sessionStatus: "inProgress",
+            sessionStatus: "init",
             chatHistory: [],
             lastInteractionTimestamp: "",
             pendingFields: {},

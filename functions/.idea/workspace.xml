@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c59a873c-40ad-4b40-90fe-a0727b1d620a" name="Changes" comment="Feat: 클라이언트 메세지 에러를 채팅으로 반환하고 LLM에 request 보내지 않음" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 6
+}]]></component>
+  <component name="ProjectId" id="2oh0j0XWaNVuvyn6ij9lYJhpS6F" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "feature-chat-app",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-WS-242.23726.96" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c59a873c-40ad-4b40-90fe-a0727b1d620a" name="Changes" comment="" />
+      <created>1731306632360</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1731306632360</updated>
+      <workItem from="1731306633773" duration="569000" />
+    </task>
+    <task id="LOCAL-00001" summary="Feat: history 저장하지 않도록 수정, disconnect apigateway 수정">
+      <option name="closed" value="true" />
+      <created>1731306699374</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1731306699374</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Feat: apiRequest.js 수정">
+      <option name="closed" value="true" />
+      <created>1731306733860</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1731306733860</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Refactor: 완료핸들러 수정">
+      <option name="closed" value="true" />
+      <created>1731306765639</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1731306765639</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Refactor: connect 핸들러가 연결 역할만 수행하도록 수정">
+      <option name="closed" value="true" />
+      <created>1731306798435</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1731306798435</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Refactor: connect 핸들러에서 연결 이외 부분을 default핸들러에서 수행">
+      <option name="closed" value="true" />
+      <created>1731306817122</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1731306817122</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Feat:getOrderIdByConnectionId를 위한 보조 인덱스 생성">
+      <option name="closed" value="true" />
+      <created>1731306862127</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1731306862127</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Feat:최초 실행후 상태 변경을 위한 매서드 생성">
+      <option name="closed" value="true" />
+      <created>1731306892751</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1731306892751</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Feat:람다트리거를 위한 공통invokeLambda 생성">
+      <option name="closed" value="true" />
+      <created>1731306918694</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1731306918694</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Feat:connect에서 연결 완료시 default 핸들러를 람다트리거하는 invokeDefaultHandler생성">
+      <option name="closed" value="true" />
+      <created>1731306964851</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1731306964851</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Docs: 보조인덱스 생성, default 핸들러 invoke 권한 부여">
+      <option name="closed" value="true" />
+      <created>1731307007070</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1731307007070</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Feat: 클라이언트 입력 데이터 공백 유효성검증 및 글자수 제한하는 error메시지를 클라이언트에 그대로 반환">
+      <option name="closed" value="true" />
+      <created>1731307104525</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1731307104525</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Refactor: 섬세한 처리를 위해 액션, 클라이언트 메시지 유무 검사에서 액션유무, 클라이언트 메시지 undefined로 변경">
+      <option name="closed" value="true" />
+      <created>1731307150356</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1731307150356</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Feat: 클라이언트 메세지 에러를 채팅으로 반환하고 LLM에 request 보내지 않음">
+      <option name="closed" value="true" />
+      <created>1731307200463</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1731307200463</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Feat: history 저장하지 않도록 수정, disconnect apigateway 수정" />
+    <MESSAGE value="Feat: apiRequest.js 수정" />
+    <MESSAGE value="Refactor: 완료핸들러 수정" />
+    <MESSAGE value="Refactor: connect 핸들러가 연결 역할만 수행하도록 수정" />
+    <MESSAGE value="Refactor: connect 핸들러에서 연결 이외 부분을 default핸들러에서 수행" />
+    <MESSAGE value="Feat:getOrderIdByConnectionId를 위한 보조 인덱스 생성" />
+    <MESSAGE value="Feat:최초 실행후 상태 변경을 위한 매서드 생성" />
+    <MESSAGE value="Feat:람다트리거를 위한 공통invokeLambda 생성" />
+    <MESSAGE value="Feat:connect에서 연결 완료시 default 핸들러를 람다트리거하는 invokeDefaultHandler생성" />
+    <MESSAGE value="Docs: 보조인덱스 생성, default 핸들러 invoke 권한 부여" />
+    <MESSAGE value="Feat: 클라이언트 입력 데이터 공백 유효성검증 및 글자수 제한하는 error메시지를 클라이언트에 그대로 반환" />
+    <MESSAGE value="Refactor: 섬세한 처리를 위해 액션, 클라이언트 메시지 유무 검사에서 액션유무, 클라이언트 메시지 undefined로 변경" />
+    <MESSAGE value="Feat: 클라이언트 메세지 에러를 채팅으로 반환하고 LLM에 request 보내지 않음" />
+    <option name="LAST_COMMIT_MESSAGE" value="Feat: 클라이언트 메세지 에러를 채팅으로 반환하고 LLM에 request 보내지 않음" />
+  </component>
+</project>

@@ -14,8 +14,6 @@ function parseClientMessage(eventBody) {
   try {
     const body = JSON.parse(eventBody);
     const { action, data: clientMessage } = body;
-    if (!action || !clientMessage) {
-      throw new Error("Missing action or message data");
 
     if (!action || clientMessage === undefined) {
       throw new ClientError("Missing action or message data");

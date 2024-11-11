@@ -63,7 +63,7 @@ public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
                             + "<li><strong>출발일:</strong> " + parsedData.getData().getDepartureDate() + "</li>"
                             + "<li><strong>도착일:</strong> " + parsedData.getData().getArrivalDate() + "</li>"
                             + "</ul>"
-                            + "<p><strong>총 예상 운송 비용:</strong> " + parsedData.getQuote() + "원 (VAT 별도)</p>"
+                            + "<p><strong>총 예상 운송 비용:</strong> " + decimalFormat.format(parsedData.getQuote()) + "원 (VAT 별도)</p>"
                             + "<p>문의 및 추가 요청: 견적과 관련하여 문의사항이 있으시거나 추가 요청 사항이 있으시면 언제든지 저희에게 연락 주시기 바랍니다.</p>"
                             + "<p>감사합니다.<br>BusyBee: 010-1234-5678</p>"
                             + "</body></html>";

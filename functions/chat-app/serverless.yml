@@ -7,10 +7,14 @@ provider:
   stage: dev
 
   environment:
-    #    OPENAI_API_KEY:
-    DOMAIN_NAME: t1iwynwhw3.execute-api.${self:provider.region}.amazonaws.com
+    DOMAIN_NAME: ${self:custom.websocketApiGatewayId}.execute-api.${self:provider.region}.amazonaws.com
     CHAT_SESSIONS_TABLE_NAME: ${self:service}-CustomerChatSessions
     ORDER_DATA_TABLE_NAME: estimate
+    DISCONNECT_FUNCTION_NAME: ${self:service}-disconnect
+    DEFAULT_FUNCTION_NAME: ${self:service}-default
+    CHAT_SESSIONS_TABLE_CONNECTION_INDEX: ConnectionIndex
+    SQS_QUEUE_URL: https://sqs.${self:provider.region}.amazonaws.com/481665114066/chat-quotation-calculation-trigger
+    LLM_API_URL: https://${self:custom.llmApiGatewayId}.execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/llm-interaction
     STAGE: ${self:provider.stage}
 
   iamRoleStatements:
@@ -31,17 +35,25 @@ provider:
         - dynamodb:UpdateItem
       Resource:
         - arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-CustomerChatSessions
-        - arn:aws:dynamodb:${self:provider.region}:*:table/estimate
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-CustomerChatSessions/index/ConnectionIndex
     - Effect: Allow
       Action:
         - lambda:InvokeFunction
       Resource:
-        - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-*
+        - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-disconnect
+        - arn:aws:lambda:${self:provider.region}:481665114066:function:${self:service}-default
+
     - Effect: Allow
       Action:
         - execute-api:ManageConnections
       Resource:
         - arn:aws:execute-api:${self:provider.region}:*:*/*/@connections/*
+    - Effect: Allow
+      Action:
+        - sqs:SendMessage
+      Resource:
+        - arn:aws:sqs:${self:provider.region}:*:chat-quotation-calculation-trigger
+
 functions:
   connect:
     name: ${self:service}-connect
@@ -84,13 +96,21 @@ resources:
         AttributeDefinitions:
           - AttributeName: orderId
             AttributeType: S
-          # - AttributeName: timestamp
-          #   AttributeType: S
+          - AttributeName: connectionId
+            AttributeType: S
         KeySchema:
           - AttributeName: orderId
             KeyType: HASH
-          # - AttributeName: timestamp
-          #   KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         StreamSpecification:
           StreamViewType: NEW_IMAGE
+        GlobalSecondaryIndexes:
+          - IndexName: ConnectionIndex
+            KeySchema:
+              - AttributeName: connectionId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+custom:
+  websocketApiGatewayId: 3q2gfm3fql
+  llmApiGatewayId: nr2499od16

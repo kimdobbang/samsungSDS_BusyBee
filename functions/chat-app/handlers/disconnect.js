@@ -1,31 +1,56 @@
 // handlers/disconnect.js
-// WebSocket 연결이 해제될 때 호출
-// 세션 상태를 isSessionActive = false로 업데이트
-const { markSessionInactive } = require("../common/ddb/dynamoDbClient");
 
-const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const {
+  markSessionInactive,
+  removeConnectionId,
+  getOrderIdByConnectionId,
+} = require("../common/ddb/dynamoDbClient");
+const { disconnectClient } = require("../common/utils/apiGatewayClient");
 
 module.exports.handler = async (event) => {
   const connectionId = event.requestContext.connectionId;
-  // const orderId = event.queryStringParameters.orderId;
-  const orderId = "testdata2"; // 임시 하드코딩
+  const { orderId } = await getOrderIdByConnectionId(connectionId);
   console.log(`Disconnected - ConnectionId: ${connectionId}`);
 
   try {
     await markSessionInactive(orderId);
-    console.log(`orderId ${orderId} successfully disconnect`);
-    return {
-      statusCode: 200,
-      body: `Disconnected - orderId: ${orderId}`,
-    };
+    console.log(`Order ID ${orderId} successfully marked as inactive.`);
   } catch (error) {
-    console.error(
-      `Error during disconnect process for orderId: ${orderId}`,
-      error
-    );
+    console.log(`Failed to mark session as inactive for orderId: ${orderId}`, error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: "Internal Server Error" }),
+      body: JSON.stringify({ message: "Error marking session as inactive" }),
     };
   }
+
+  try {
+    await removeConnectionId(orderId);
+    console.log(`connectionId field removed from DynamoDB for orderId: ${orderId}`);
+  } catch (error) {
+    console.log(`Failed to remove connectionId for orderId: ${orderId}`, error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: "Error removing connectionId" }),
+    };
+  }
+
+  try {
+    await disconnectClient(connectionId);
+    console.log(`정상종료 완료! ConnectionId ${connectionId} has been forcefully disconnected.`);
+  } catch (error) {
+    console.log(`Failed to disconnect client for connectionId: ${connectionId}`, error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: "Error disconnecting client" }),
+    };
+  }
+
+  return {
+    statusCode: 200,
+    body: `완죠니 연결종료 - orderId: ${JSON.stringify(orderId)}`,
+  };
+};
+
+module.exports.disconnectSession = async function (orderId, connectionId) {
+  return await module.exports.handler({ body: JSON.stringify({ orderId, connectionId }) });
 };

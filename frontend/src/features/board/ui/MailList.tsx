@@ -1,39 +1,46 @@
-import React from 'react';
-import { ReactComponent as StarIcon } from 'shared/assets/icons/star.svg';
-import { ReactComponent as ReplyIcon } from 'shared/assets/icons/reply.svg';
-import { ReactComponent as ArrowIcon } from 'shared/assets/icons/arrow.svg';
-import { ReactComponent as LetterIcon } from 'shared/assets/icons/letterbox.svg';
-import { emailMockData } from '../api/emailMockData';
+import React, { useEffect } from 'react';
+import { fetchEmailsByReceiver } from 'features/board/api/boardApi'; // API 호출 함수
+import { Mail } from '@shared/types/board';
 import styles from './MailList.module.scss';
+import useMailStore from '../store/mailStore';
 
 interface MailListProps {
   className?: string;
 }
 
 export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
+  // Zustand Store에서 상태 가져오기
+  const mails = useMailStore((state) => state.mails);
+  const setMails = useMailStore((state) => state.setMails);
+
+  useEffect(() => {
+    const loadMails = async () => {
+      try {
+        // API 호출하여 메일 데이터를 가져옵니다.
+        const data: Mail[] = await fetchEmailsByReceiver('test@busybeemail.net');
+        setMails(data); // 메일 데이터를 Zustand Store에 저장
+      } catch (error) {
+        console.error('Error fetching emails:', error);
+      }
+    };
+
+    // 메일 목록이 비어 있는 경우에만 데이터를 로드합니다.
+    if (mails.length === 0) {
+      loadMails();
+    }
+  }, [mails, setMails]);
+
+  // 데이터 구조 확인을 위해 콘솔 로그 출력
+  if (mails.length > 0) {
+    console.log('MAILS: ', mails);
+  }
+
   return (
     <div className={`${styles.mailList} ${className}`}>
-      <div className={styles.header}>
-        <div className={styles.actions}>
-          <input type='checkbox' />
-          <button className={styles.button}>
-            <ReplyIcon width={24} height={24} />
-          </button>
-        </div>
-        <div className={styles.pageInfo}>
-          <p>10000개 중 1-50</p>
-          <button className={styles.navButton}>
-            <ArrowIcon width={24} height={24} />
-          </button>
-          <button className={`${styles.navButton} ${styles.rotate}`}>
-            <ArrowIcon width={24} height={24} />
-          </button>
-        </div>
-      </div>
       <table className={styles.table}>
         <thead>
           <tr>
-            <th> {''}</th>
+            <th>{''}</th>
             <th>보낸 사람</th>
             <th>태그</th>
             <th>제목</th>
@@ -41,19 +48,23 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
           </tr>
         </thead>
         <tbody>
-          {emailMockData.map((email) => (
-            <tr key={email.Key}>
+          {mails.map((mail, index) => (
+            <tr key={index}>
               <td>
                 <input type='checkbox' />
               </td>
-              <td className={styles.sender}>{email.senderName}</td>
-              <td className={styles.tag}>{'견적요청'}</td>
+              <td className={styles.sender}>{mail.sender}</td>{' '}
+              {/* 값이 제대로 렌더링되지 않으면 확인 */}
+              <td className={styles.tag}>{mail.flag}</td>
               <td className={styles.subject}>
-                <a href={`/board/mail/${email.Key}`}>{email.title} </a>
+                <a
+                  href={`/board/mail/detail?receiver=${mail.receiver}&received_date=${mail.received_date}`}
+                >
+                  {mail.subject}
+                </a>
+                {/* 값이 제대로 렌더링되지 않으면 확인 */}
               </td>
-              <td className={styles.timestamp}>
-                {email.LastModified ? new Date(email.LastModified).toLocaleString() : 'Unknown'}
-              </td>
+              <td className={styles.timestamp}>{mail.received_date || 'Unknown'}</td>
             </tr>
           ))}
         </tbody>
@@ -61,3 +72,5 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
     </div>
   );
 };
+
+export default MailList;

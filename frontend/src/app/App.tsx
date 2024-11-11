@@ -26,8 +26,8 @@ const App: React.FC = () => {
             {/* 메일 리스트 */}
             <Route path='mail' element={<MailList />} />
 
-            {/* 메일 상세 페이지 */}
-            <Route path='mail/:id' element={<DetailMail />} />
+            {/* 메일 상세 페이지 (쿼리 파라미터 사용) */}
+            <Route path='mail/detail' element={<DetailMail />} />
 
             {/* 대시보드 */}
             <Route path='dashboard' element={<Dashboard />} />

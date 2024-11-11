@@ -75,6 +75,28 @@ async function updateConnection(orderId, connectionId, isSessionActive) {
   }
 }
 
+async function markSessionInProgress(orderId) {
+  try {
+    const command = new UpdateCommand({
+      TableName: TABLE_NAME,
+      Key: { orderId },
+      UpdateExpression: "SET sessionStatus = :status",
+      ExpressionAttributeValues: {
+        ":status": "inProgress",
+      },
+    });
+
+    await dynamoDb.send(command);
+    console.log(`Session for customer ${orderId} marked as inProgress`);
+  } catch (error) {
+    console.log(
+      `Failed to mark session inProgress for customer ${orderId}:`,
+      JSON.stringify(error)
+    );
+    throw new Error("Session status 업데이트 오류");
+  }
+}
+
 async function saveChat(orderId, chatMessage) {
   try {
     const command = new UpdateCommand({
@@ -93,9 +115,7 @@ async function saveChat(orderId, chatMessage) {
     });
 
     await dynamoDb.send(command);
-    console.log(
-      `Chat saved successfully for orderId:", orderId, Data: ${JSON.stringify(chatMessage)}`
-    );
+    console.log(`Chat saved successfully for orderId:", orderId}`);
   } catch (error) {
     console.log("Error saving chat to DynamoDB:", error);
     throw new Error("DynamoDB 채팅 저장 오류");

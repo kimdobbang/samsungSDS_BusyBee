@@ -87,7 +87,7 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
               </td>
               <td className={styles.subject}>
                 <a
-                  href={`/board/mail/detail?receiver=${mail.receiver}&received_date=${mail.received_date}`}
+                  href={`/mail/detail?receiver=${mail.receiver}&received_date=${mail.received_date}`}
                 >
                   {mail.subject}
                 </a>

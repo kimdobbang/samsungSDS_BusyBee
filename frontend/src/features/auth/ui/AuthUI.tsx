@@ -9,6 +9,7 @@ import './page.module.scss';
 import { useAuth } from '../..';
 import { ChatUI } from '../..';
 import { MailList } from '../..';
+import BoardLayout from 'features/board/ui/BoardLayout';
 
 // AWS Amplify 초기화
 Amplify.configure({ ...awsConfig });

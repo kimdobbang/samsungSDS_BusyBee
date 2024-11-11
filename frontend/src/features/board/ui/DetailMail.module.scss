@@ -36,7 +36,10 @@
 
       &:first-child {
         // 첫 번째 h1에만 적용
-        background-color: #fed531;
+        border-radius: 10px;
+        width: auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
       }
     }
     display: flex;

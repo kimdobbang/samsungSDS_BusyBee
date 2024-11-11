@@ -1,5 +1,4 @@
 //auth 부분 export
-export * from './auth/api/cognito';
 export * from './auth/hooks/useAuth';
 export * from './auth/ui/AuthUI';
 
@@ -20,10 +19,8 @@ export * from './chat/api/chatApi';
 export * from './chat/model/ChatModel';
 export * from './chat/ui/ChatUI';
 
-
 //home 부분
 export * from './home/ui/Home';
 
 //voce 부분 export
 export * from './voice/ui/Voice';
-

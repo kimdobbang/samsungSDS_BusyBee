@@ -3,35 +3,71 @@ import styles from './ChatUI.module.scss';
 import busybee2 from '../../../shared/assets/images/busybee2.png';
 import { MessageProps } from '../model/ChatModel';
 import { Voice } from '../..';
+import { useAuth } from '../..';
 import useWebSocket from '../hooks/useWebSocket';
-
-const messagesData: MessageProps[] = [
-  {
-    sender: 'admin',
-    content: `안녕하세요!👋
-물류 견적 요청을 도와드릴 챗봇입니다. 이메일로 보내주신 요청을 확인했습니다.
-아래는 견적 요청 메일을 통해 파악한 정보입니다
-표
-견적 산출을 위해 추가적인 정보가 몇 가지 필요f합니다
-지금부터 필요한 정보를 하나씩 요청드리겠습니다.`,
-  },
-  {
-    sender: 'admin',
-    content: `누락정보 요청
-먼저 누락된 무게를 입력해주세요.`,
-  },
-];
+import { sendDataToLambda } from '../..';
+import { useNavigate } from 'react-router-dom';
 
 export const ChatUI = () => {
-  const [messages, setMessages] = useState(messagesData);
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState<MessageProps[]>([]);
   const [input, setInput] = useState('');
   const chatRef = useRef<HTMLDivElement>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
+  const [, authEmail] = useAuth() || [];
+  const email = typeof authEmail === 'string' ? authEmail : '';
+  const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
   const orderId = new URLSearchParams(window.location.search).get('orderId');
+  const { sendMessage, receiveMessage } = useWebSocket(
+    isWebSocketConnected ? orderId : null
+  );
+  const [isMessagesInitialized, setIsMessagesInitialized] = useState(false);
 
-  const { sendMessage } = useWebSocket(orderId);
+  useEffect(() => {
+    if (orderId) {
+      const fetchLambdaData = async () => {
+        try {
+          const res = await sendDataToLambda(orderId, email);
+          console.log(res);
+
+          if (res) {
+            setIsWebSocketConnected(true);
+          } else {
+            console.log('세션 만료 - 로그아웃 및 리다이렉트');
+            localStorage.clear();
+            navigate('/');
+          }
+        } catch (error) {
+          console.error('Error fetching data from Lambda:', error);
+        }
+      };
+
+      fetchLambdaData();
+    }
+  }, [orderId]);
+
+  useEffect(() => {
+    if (
+      !isMessagesInitialized &&
+      receiveMessage &&
+      receiveMessage.length >= 3
+    ) {
+      const newMessages: MessageProps[] = [
+        { sender: 'admin', content: receiveMessage[0].message ?? '' },
+        {
+          sender: 'admin',
+          content: receiveMessage[receiveMessage.length - 2].message ?? '',
+        },
+        {
+          sender: 'admin',
+          content: receiveMessage[receiveMessage.length - 1].message ?? '',
+        },
+      ];
+      setMessages(newMessages);
+      setIsMessagesInitialized(true); // 한 번 실행되었음을 기록
+    }
+  }, [receiveMessage, isMessagesInitialized]);
 
   useEffect(() => {
     for (let i = 0; i < localStorage.length; i++) {

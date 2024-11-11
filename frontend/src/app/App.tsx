@@ -1,15 +1,26 @@
 import styles from './page.module.scss';
 import React from 'react';
+<<<<<<< HEAD
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { AuthUI } from '../features';
+=======
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ChatUI, Home, DetailMail, MailList, Dashboard } from 'features';
 import BoardLayout from 'features/board/ui/BoardLayout';
 // import { Auth } from '../features';
+>>>>>>> eaccedc30dd99865767d8531432a6919f8c1819d
 // import { Voice } from '../features';
 
 const App: React.FC = () => {
   return (
     <Router>
+<<<<<<< HEAD
+      <Routes>
+        <Route path='/' element={<AuthUI />} />
+        <Route path='/ChatUI' element={<AuthUI />} />
+      </Routes>
+=======
       <div className={styles.customauthenticator}>
         <Routes>
           {/* 홈 페이지 */}
@@ -35,6 +46,7 @@ const App: React.FC = () => {
           </Route>
         </Routes>
       </div>
+>>>>>>> eaccedc30dd99865767d8531432a6919f8c1819d
     </Router>
   );
 };

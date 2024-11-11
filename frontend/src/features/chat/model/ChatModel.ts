@@ -5,12 +5,15 @@ export type MessageProps = {
 };
 
 export interface WebSocketMessage {
-  action: string;
+  action?: string;
   orderId?: string;
+  content?: string;
   message?: string;
+  email?: string;
 }
 
 export interface UseWebSocketReturn {
   socket: WebSocket | null;
   sendMessage: (message: WebSocketMessage) => void;
+  receiveMessage: WebSocketMessage[];
 }

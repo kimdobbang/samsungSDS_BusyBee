@@ -12,7 +12,7 @@ const App: React.FC = () => {
     <Router>
       <div className={styles.customauthenticator}>
         <Routes>
-          <Route path='/' element={<MailList />} />
+          <Route path='/' element={<AuthUI />} />
           {/* 게시판 관련 라우트 */}
 
           {/* 메일 상세 페이지 (쿼리 파라미터 사용) */}

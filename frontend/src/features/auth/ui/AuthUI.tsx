@@ -7,9 +7,9 @@ import { Authenticator, ThemeProvider } from '@aws-amplify/ui-react';
 import { myTheme } from '../../../shared/theme/cognitoTheme';
 import '@aws-amplify/ui-react/styles.css';
 import './page.module.scss';
+import { Dashboard } from 'features';
 import { useAuth } from '../..';
 import { ChatUI } from '../..';
-import { MailList } from '../..';
 
 // AWS Amplify 초기화
 Amplify.configure({ ...awsConfig });
@@ -37,7 +37,7 @@ export const AuthUI: React.FC = () => {
   useEffect(() => {
     if (group !== undefined) {
       if (group?.includes('Admin')) {
-        setContent(<MailList />);
+        setContent(<Dashboard />);
       } else if (group?.includes('Users')) {
         setContent(<ChatUI />);
       }

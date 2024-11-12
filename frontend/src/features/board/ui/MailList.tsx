@@ -109,7 +109,9 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
                     {getTagName(mail.flag)}
                   </td>
                   <td className={styles.subject}>
-                    <a href={`/mail?receiver=${mail.receiver}&received_date=${mail.received_date}`}>
+                    <a
+                      href={`/mail/detail?receiver=${mail.receiver}&received_date=${mail.received_date}`}
+                    >
                       {mail.subject}
                     </a>
                     {/* 값이 제대로 렌더링되지 않으면 확인 */}

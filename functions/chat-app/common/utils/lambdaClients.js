@@ -1,12 +1,12 @@
 // utils/lambdaClient.js
-const { LambdaClient, InvokeCommand } = require("@aws-sdk/client-lambda");
+const { LambdaClient, InvokeCommand } = require('@aws-sdk/client-lambda');
 const lambdaClient = new LambdaClient({ region: process.env.AWS_REGION });
 
 // Lambda 호출
 async function invokeLambda(functionName, payload) {
   const command = new InvokeCommand({
     FunctionName: functionName,
-    InvocationType: "Event",
+    InvocationType: 'Event',
     Payload: JSON.stringify(payload),
   });
   await lambdaClient.send(command);
@@ -16,7 +16,7 @@ async function invokeLambda(functionName, payload) {
 async function invokeDisconnectHandler(orderId, connectionId) {
   const disconnectCommand = new InvokeCommand({
     FunctionName: process.env.DISCONNECT_FUNCTION_NAME,
-    InvocationType: "Event",
+    InvocationType: 'Event',
     Payload: JSON.stringify({
       requestContext: {
         connectionId,
@@ -37,5 +37,19 @@ async function invokeDefaultHandler(connectionId, sessionData) {
   });
   console.log(`$default handler invoked for orderId: ${orderId}`);
 }
+async function invokeCompletionHandler(orderId) {
+  const completionCommand = new InvokeCommand({
+    FunctionName: process.env.COMPLETION_FUNCTION_NAME,
+    InvocationType: 'Event',
+    Payload: JSON.stringify({ orderId }),
+  });
 
-module.exports = { invokeLambda, invokeDisconnectHandler, invokeDefaultHandler };
+  await lambdaClient.send(completionCommand);
+  console.log(`Completion handler invoked for orderId: ${orderId}`);
+}
+module.exports = {
+  invokeLambda,
+  invokeDisconnectHandler,
+  invokeDefaultHandler,
+  invokeCompletionHandler,
+};

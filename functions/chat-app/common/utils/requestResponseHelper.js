@@ -1,12 +1,12 @@
 // utils/requestResponseHelper.js
 
 const MAX_MESSAGE_LENGTH = 300;
-const validActions = ["sendMessage", "getQuestion"];
+const validActions = ['sendMessage', 'getQuestion'];
 
 class ClientError extends Error {
   constructor(message) {
     super(message);
-    this.name = "ClientError";
+    this.name = 'ClientError';
   }
 }
 
@@ -16,14 +16,14 @@ function parseClientMessage(eventBody) {
     const { action, data: clientMessage } = body;
 
     if (!action || clientMessage === undefined) {
-      throw new ClientError("Missing action or message data");
+      throw new ClientError('Missing action or message data');
     }
 
-    if (typeof clientMessage !== "string" || clientMessage.trim() === "") {
-      throw new ClientError("빈 문자열을 입력하셨습니다. 다시 입력 바랍니다.");
+    if (typeof clientMessage !== 'string' || clientMessage.trim() === '') {
+      throw new ClientError('빈 문자열을 입력하셨습니다. 다시 입력 바랍니다.');
     }
     if (clientMessage.length > MAX_MESSAGE_LENGTH) {
-      throw new ClientError("허용된 입력 글자수를 초과하였습니다. 다시 입력 바랍니다.");
+      throw new ClientError('허용된 입력 글자수를 초과하였습니다. 다시 입력 바랍니다.');
     }
     if (!validActions.includes(action)) {
       throw new ClientError(`Invalid action type - ${action}`);
@@ -33,7 +33,7 @@ function parseClientMessage(eventBody) {
   } catch (error) {
     // JSON 구문 오류일 경우에도 오류 메시지 구체적으로 전달
     if (error instanceof SyntaxError) {
-      return { action: null, clientMessage: null, error: "JSON 형식이 잘못되었습니다." };
+      return { action: null, clientMessage: null, error: 'JSON 형식이 잘못되었습니다.' };
     }
     throw error;
   }
@@ -51,18 +51,38 @@ function createChatbotRequest(inputMessage, chatHistory, pendingFields) {
 }
 
 // 요청 메시지 생성
-function createChatbotRequestMessage(inputMessage) {
+function createChatbotRequestMessage(inputMessage, pendingFields) {
   return {
     inputMessage,
+    pendingFields,
   };
 }
 
 // 응답 객체 파싱
 function parseChatbotResponse(response) {
-  const { llmResponse, validatedFields } = response;
+  const { intent, language, response: botResponse } = response;
+
+  if (!botResponse) {
+    throw new Error("Response does not contain a valid 'response' field.");
+  }
+
+  let parsedUpdatedFields = {};
+  try {
+    // JSON 문자열 파싱
+    const parsedBotResponse = JSON.parse(botResponse);
+
+    if (parsedBotResponse.updatedFields) {
+      parsedUpdatedFields = parsedBotResponse.updatedFields;
+    }
+  } catch (error) {
+    console.error('Failed to parse botResponse as JSON:', error.message);
+  }
+
   return {
-    llmResponse,
-    validatedFields: validatedFields || {},
+    botResponse,
+    language: language || 'korean',
+    intent: intent || '3',
+    updatedFields: parsedUpdatedFields,
   };
 }
 

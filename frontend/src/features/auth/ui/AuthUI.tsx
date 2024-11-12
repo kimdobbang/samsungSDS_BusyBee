@@ -7,8 +7,7 @@ import { Authenticator, ThemeProvider } from '@aws-amplify/ui-react';
 import { myTheme } from '../../../shared/theme/cognitoTheme';
 import '@aws-amplify/ui-react/styles.css';
 import './page.module.scss';
-import { Dashboard } from 'features';
-import { useAuth } from '../..';
+import { Dashboard, useAuth } from '../..';
 import { ChatUI } from '../..';
 
 // AWS Amplify 초기화
@@ -45,7 +44,10 @@ export const AuthUI: React.FC = () => {
   }, [stateChange]);
 
   return (
-    <div className='custom-authenticator' style={{ width: '100%', height: '100%' }}>
+    <div
+      className='custom-authenticator'
+      style={{ width: '100%', height: '100%' }}
+    >
       <ThemeProvider theme={myTheme}>
         <Authenticator
           hideSignUp={false}

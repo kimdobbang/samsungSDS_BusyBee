@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 // import { ReactComponent as ReplyIcon } from 'shared/assets/icons/reply.svg';
 import { ReactComponent as ArrowIcon } from 'shared/assets/icons/arrow.svg';
 import { fetchEmailsByReceiver } from 'features/board/api/boardApi'; // API 호출 함수
-import { Mail } from '@shared/types/board';
 import styles from './MailList.module.scss';
 import useMailStore from '../store/mailStore';
 import { getNickname } from 'shared/utils/getNickname';

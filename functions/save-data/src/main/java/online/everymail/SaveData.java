@@ -38,6 +38,8 @@ public class SaveData implements RequestHandler<SQSEvent, Void> {
                     Map<String, AttributeValue> item = new HashMap<>();
                     item.put("Id", new AttributeValue(parsedData.getKey()));
                     item.put("sender", new AttributeValue(parsedData.getSender()));
+                    item.put("receiver", new AttributeValue(parsedData.getReceiver()));
+                    item.put("received_date", new AttributeValue(parsedData.getReceivedDate()));
                     item.put("data", new AttributeValue().withS(gson.toJson(parsedData.getData())));
                     item.put("status", new AttributeValue().withN(String.valueOf(parsedData.getStatus())));
                     item.put("quote", new AttributeValue().withN(String.valueOf(parsedData.getQuote())));

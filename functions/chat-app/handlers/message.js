@@ -17,7 +17,11 @@ const {
 
   ClientError,
 } = require('../common/utils/requestResponseHelper');
-
+const {
+  fieldTranslation,
+  formatFieldValue,
+  generateMissingFieldsMessage,
+} = require('../common/utils/formatUtils');
 module.exports.handler = async (event) => {
   console.log('Received event:', JSON.stringify(event, null, 2));
   const connectionId = event.requestContext.connectionId;
@@ -91,16 +95,39 @@ module.exports.handler = async (event) => {
       case '2': // 누락된 필드 제공
         console.log('Handling missing logistics details.');
 
+        // 도시 필드 키
+        const cityFields = ['DepartureCity', 'ArrivalCity'];
+
+        // unknown 값이 있는 도시 필드 확인
+        const hasUnknownCity = Object.entries(updatedFields).some(
+          ([key, value]) => cityFields.includes(key) && value === 'unknown',
+        );
+
+        if (hasUnknownCity) {
+          console.log('Updated fields contain unsupported cities.');
+
+          await sendMessageToClient(
+            connectionId,
+            '지원하지 않는 도시가 포함되어 있습니다. 다시 입력해주세요.',
+            'bot',
+          );
+          break;
+        }
+
         // 누락된 필드 업데이트
         await updatePendingFields(orderId, updatedFields);
 
         const updatedFieldsMessage = Object.entries(updatedFields)
-          .map(([key, value]) => `${key}: ${value}`)
+          .map(([key, value]) => {
+            const translatedKey = fieldTranslation[key] || key; // 필드명 번역
+            const formattedValue = formatFieldValue(key, value); // 값 변환
+            return `${translatedKey}: ${formattedValue}`;
+          })
           .join('\n');
 
         await sendMessageToClient(
           connectionId,
-          `입력한 정보가 다음과 같이 업데이트되었습니다:\n${updatedFieldsMessage}\n\n입력한 정보가 맞나요? 예/아니오로 응답해주세요.`,
+          `정보를 다음과 같이 업데이트했습니다:\n${updatedFieldsMessage}\n\n입력한 정보가 정확한지 확인해주세요. 맞다면 "예", 아니라면 "아니오"로 응답해주세요.`,
           'bot',
         );
         break;
@@ -108,7 +135,6 @@ module.exports.handler = async (event) => {
       case '4_yes': // "예" 응답
         console.log('Handling Yes response.');
 
-        // pendingFields에서 omission 또는 unknown이 아닌 필드 확인
         const fieldsToConfirm = Object.entries(pendingFields).filter(
           ([_, value]) => value !== 'omission' && value !== 'unknown',
         );
@@ -116,33 +142,26 @@ module.exports.handler = async (event) => {
         if (fieldsToConfirm.length > 0) {
           const confirmedFields = Object.fromEntries(fieldsToConfirm);
 
-          // responsedData 업데이트 및 pendingFields 제거
           await updateResponsedDataAndRemovePendingFields(orderId, confirmedFields);
 
           await sendMessageToClient(connectionId, '정보가 성공적으로 업데이트되었습니다.', 'bot');
 
-          // 남아 있는 필드 확인
           const sessionDataAfterUpdate = await getSessionData(orderId);
-          const remainingFields = Object.entries(sessionDataAfterUpdate.pendingFields || {}).filter(
-            ([_, value]) => value === 'omission' || value === 'unknown',
+          const remainingFieldsMessage = generateMissingFieldsMessage(
+            sessionDataAfterUpdate.pendingFields || {},
           );
 
-          if (remainingFields.length === 0) {
+          if (!remainingFieldsMessage.includes('입력되지 않은 정보는')) {
             await sendMessageToClient(
               connectionId,
               '요청드린 모든 정보 제공에 협조해 주셔서 감사합니다! 담당자님의 이메일로 견적을 발송해드리겠습니다.',
               'bot',
             );
 
-            // 완료 Lambda 호출
             console.log(`Invoking completion Lambda for orderId: ${orderId}`);
             await invokeCompletionHandler(orderId);
           } else {
-            await sendMessageToClient(
-              connectionId,
-              `남아 있는 정보: ${remainingFields.map(([field]) => field).join(', ')}`,
-              'bot',
-            );
+            await sendMessageToClient(connectionId, remainingFieldsMessage, 'bot');
           }
         } else {
           console.log('No fields to confirm. Sending default response.');
@@ -157,13 +176,11 @@ module.exports.handler = async (event) => {
       case '4_no': // "아니오" 응답
         console.log('Handling No response.');
 
-        // pendingFields에서 omission 또는 unknown이 아닌 필드 확인
         const fieldsToReset = Object.keys(pendingFields).filter(
           (key) => pendingFields[key] !== 'omission' && pendingFields[key] !== 'unknown',
         );
 
         if (fieldsToReset.length > 0) {
-          // 확인되지 않은 필드 reset
           await resetPendingFields(orderId, fieldsToReset);
 
           await sendMessageToClient(connectionId, '정보를 다시 입력해주세요.', 'bot');
@@ -176,29 +193,35 @@ module.exports.handler = async (event) => {
           );
         }
         break;
+
       case '4_unknown': // "알 수 없는 응답"
         console.log('Handling Unknown response.');
 
-        // 현재 채워진 필드 필터링
         const filledFields = Object.entries(pendingFields)
           .filter(([_, value]) => value !== 'omission' && value !== 'unknown')
-          .map(([key, value]) => `${key}: ${value}`)
+          .map(([key, value]) => {
+            const translatedKey = fieldTranslation[key] || key; // 필드명 번역
+            const formattedValue = formatFieldValue(key, value); // 값 변환
+            return `${translatedKey}: ${formattedValue}`;
+          })
           .join('\n');
 
         if (filledFields.length > 0) {
           console.log('Already filled fields:', filledFields);
 
-          // 채워진 필드를 사용자에게 알려주고 다시 예/아니오 요구
           await sendMessageToClient(
             connectionId,
-            `현재 채워진 정보는 다음과 같습니다:\n${filledFields}\n\n입력한 정보가 맞는지 예/아니오로 응답해주세요.`,
+            `현재 다음 정보가 입력되었습니다:\n${filledFields}\n\n입력한 정보가 정확한지 확인해주세요. 맞다면 "예", 아니라면 "아니오"로 응답해주세요.`,
             'bot',
           );
         } else {
           console.log('No fields filled yet. Sending default response.');
+
+          const missingFieldsMessage = generateMissingFieldsMessage(pendingFields);
           await sendMessageToClient(
             connectionId,
-            '현재 입력된 정보가 없습니다. 정보를 입력해 주시고 예/아니오로 응답해주세요.',
+            missingFieldsMessage ||
+              '현재 입력된 정보가 없습니다. 필요한 정보를 입력하신 후 "예" 또는 "아니오"로 응답해주세요.',
             'bot',
           );
         }
@@ -218,6 +241,19 @@ module.exports.handler = async (event) => {
     };
   } catch (error) {
     console.error(`Error processing message for ConnectionId: ${connectionId}`, error);
+    try {
+      await sendMessageToClient(
+        connectionId,
+        '요청을 처리하는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        'bot',
+      );
+    } catch (sendError) {
+      console.error(
+        `Failed to send error message to client for ConnectionId: ${connectionId}`,
+        sendError,
+      );
+    }
+
     return {
       statusCode: 500,
       body: JSON.stringify({ message: 'Internal Server Error' }),

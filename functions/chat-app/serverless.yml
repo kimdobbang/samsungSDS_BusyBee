@@ -16,7 +16,7 @@ provider:
 
     CHAT_SESSIONS_TABLE_CONNECTION_INDEX: ConnectionIndex
     SQS_QUEUE_URL: https://sqs.${self:provider.region}.amazonaws.com/481665114066/chat-quotation-calculation-trigger
-    LLM_API_URL: https://${self:custom.llmApiGatewayId}.execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/llm-interaction-test
+    LLM_API_URL: https://${self:custom.llmApiGatewayId}.execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/llm-interaction
     STAGE: ${self:provider.stage}
 
   iamRoleStatements:
@@ -117,4 +117,4 @@ resources:
               ProjectionType: ALL
 custom:
   websocketApiGatewayId: 00v93zeny4
-  llmApiGatewayId: pbkwbskjx5
+  llmApiGatewayId: nr2499od16

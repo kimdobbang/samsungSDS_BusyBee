@@ -16,10 +16,11 @@ const App: React.FC = () => {
           {/* 게시판 관련 라우트 */}
 
           {/* 메일 상세 페이지 (쿼리 파라미터 사용) */}
-          <Route path='mail' element={<DetailMail />} />
+          <Route path='mail' element={<MailList />} />
+          <Route path='mail/detail' element={<DetailMail />} />
 
           {/* 대시보드 */}
-          <Route path='dashboard' element={<Dashboard />} />
+          {/* <Route path='dashboard' element={<Dashboard />} /> */}
           <Route path='*' element={<div>404 - Page Not Found</div>} />
 
           {/* 채팅 페이지 */}

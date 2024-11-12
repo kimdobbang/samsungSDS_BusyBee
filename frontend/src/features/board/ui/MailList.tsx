@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 // import { ReactComponent as ReplyIcon } from 'shared/assets/icons/reply.svg';
 import { ReactComponent as ArrowIcon } from 'shared/assets/icons/arrow.svg';
 import { fetchEmailsByReceiver } from 'features/board/api/boardApi'; // API 호출 함수
-import { Mail } from '@shared/types/board';
 import styles from './MailList.module.scss';
 import useMailStore from '../utils/mailStore';
 import { getNickname } from 'shared/utils/getNickname';
@@ -113,7 +112,7 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
                   </td>
                   <td className={styles.subject}>
                     <a
-                      href={`/mail?receiver=${mail.receiver}&received_date=${mail.received_date}`}
+                      href={`/mail/detail?receiver=${mail.receiver}&received_date=${mail.received_date}`}
                     >
                       {mail.subject}
                     </a>

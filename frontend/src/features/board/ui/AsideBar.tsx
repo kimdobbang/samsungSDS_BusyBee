@@ -13,7 +13,7 @@ export const AsideBar: React.FC = () => {
         <li className={styles.item}>
           <button
             className={styles.button}
-            onClick={() => navigate('/')} // 조건부 호출
+            onClick={() => navigate('/mail')} // 조건부 호출
           >
             <LetterIcon width={24} height={24} className={styles.icon} />
             <h1 className={styles.title}>편지함</h1>
@@ -21,10 +21,7 @@ export const AsideBar: React.FC = () => {
           </button>
         </li>
         <li className={styles.item}>
-          <button
-            className={styles.button}
-            onClick={() => navigate('/dashboard')}
-          >
+          <button className={styles.button} onClick={() => navigate('/')}>
             <DashBoardIcon width={24} height={24} className={styles.icon} />
             <h1 className={styles.title}>대시보드</h1>
             <p className={styles.count}></p>

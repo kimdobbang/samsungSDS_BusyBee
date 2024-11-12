@@ -9,7 +9,6 @@ import '@aws-amplify/ui-react/styles.css';
 import './page.module.scss';
 import { Dashboard, useAuth } from '../..';
 import { ChatUI } from '../..';
-import { MailList } from '../..';
 
 // AWS Amplify 초기화
 Amplify.configure({ ...awsConfig });

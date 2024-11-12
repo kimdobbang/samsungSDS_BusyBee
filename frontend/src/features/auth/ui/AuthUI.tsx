@@ -45,7 +45,7 @@ export const AuthUI: React.FC = () => {
   }, [stateChange]);
 
   return (
-    <div className='custom-authenticator'>
+    <div className='custom-authenticator' style={{ width: '100%', height: '100%' }}>
       <ThemeProvider theme={myTheme}>
         <Authenticator
           hideSignUp={false}

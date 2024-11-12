@@ -11,7 +11,7 @@ export * from './board/ui/MailList';
 export * from './board/ui/Dashboard';
 export * from './board/api/boardApi';
 export * from './board/api/emailMockData';
-export * from './board/hooks/useBoard';
+// export * from './board/hooks/useBoard';
 
 //chat 부분 export
 export * from './chat/api/chatApi';

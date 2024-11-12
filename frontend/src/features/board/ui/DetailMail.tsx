@@ -1,73 +1,64 @@
 // ./app/board/[id]/DetailMail.tsx
-import { useEffect, useState } from 'react';
-import { ReactComponent as StarIcon } from 'shared/assets/icons/star.svg';
-import { ReactComponent as FaceIcon } from 'shared/assets/icons/face.svg';
-import { ReactComponent as ReplyIcon } from 'shared/assets/icons/reply.svg';
+import { useSearchParams } from 'react-router-dom';
+// import { ReactComponent as StarIcon } from 'shared/assets/icons/star.svg';
+// import { ReactComponent as FaceIcon } from 'shared/assets/icons/face.svg';
+// import { ReactComponent as ReplyIcon } from 'shared/assets/icons/reply.svg';
 import busybee3 from 'shared/assets/images/busybee3.png';
 import styles from './DetailMail.module.scss';
-import { emailMockData } from '../api/emailMockData';
+import useMailStore from '../store/mailStore';
+import { getTagColor, getTagName } from 'shared/utils/getTag';
+import BoardLayout from './BoardLayout';
 
-interface MailDetails {
-  title: string;
-  senderName: string;
-  senderEmail: string;
-  body: string;
-}
+// interface MailDetails {
+//   title: string;
+//   senderName: string;
+//   senderEmail: string;
+//   body: string;
+// }
 
-interface DetailMailProps {
-  id?: string;
-  isAsideVisible?: boolean;
-}
+export const DetailMail = () => {
+  const [searchParams] = useSearchParams();
+  const receiver = searchParams.get('receiver');
+  const received_date = searchParams.get('received_date');
 
-export const DetailMail = ({ id, isAsideVisible }: DetailMailProps) => {
-  const [mailDetails, setMailDetails] = useState<MailDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // URL 인코딩된 received_date를 디코딩
+  const decodedReceivedDate = received_date ? decodeURIComponent(received_date) : null;
 
-  useEffect(() => {
-    async function loadMailDetails() {
-      try {
-        setLoading(true);
-        const details = await emailMockData[0];
-        if (details) {
-          setMailDetails(details);
-        } else {
-          setError('No email details found.');
-        }
-      } catch (err) {
-        // TypeScript에서 err를 Error 타입으로 명시
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load email details';
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    }
+  // receiver와 decodedReceivedDate가 null일 경우 빈 문자열로 처리
+  const getMail = useMailStore((state) => state.getMail);
 
-    loadMailDetails();
-  }, [id]);
+  // 디버깅: receiver와 decodedReceivedDate 값 출력
+  console.log('Receiver from URL:', receiver);
+  console.log('Received Date from URL (decoded):', decodedReceivedDate);
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  // 디버깅: mails 배열 출력
+  const mails = useMailStore((state) => state.mails);
+  console.log('Current mails in store:', mails);
 
-  if (error) {
-    return <p>{error}</p>;
-  }
+  const mailDetails =
+    receiver && decodedReceivedDate ? getMail(receiver.trim(), decodedReceivedDate.trim()) : null;
 
-  // mailDetails가 null이 아닐 때만 렌더링되도록 조건부 렌더링
-  if (!mailDetails) {
-    return null; // 또는 대체 내용을 표시할 수 있음
+  // 디버깅: getMail 결과 출력
+  console.log('getMails result:', mailDetails);
+
+  // 메일을 찾지 못한 경우
+  if (!receiver || !decodedReceivedDate || !mailDetails) {
+    return <div>Invalid or missing email details</div>;
   }
 
   return (
-    <div className={`${styles.detailMail} ${isAsideVisible ? styles.narrow : styles.wide}`}>
-      <div className={styles.header}>
-        <div className={styles.tag}>
-          <h1>견적 요청 {id}</h1>
-          <h1>{mailDetails.title}</h1>
-        </div>
-        <div className={styles.headerbuttons}>
-          <button className={styles.iconButton}>
+    <BoardLayout>
+      <div className={`${styles.detailMail}`}>
+        <div className={styles.header}>
+          <div className={styles.tag}>
+            <h1 style={{ backgroundColor: getTagColor(mailDetails.flag) }}>
+              {getTagName(mailDetails.flag)}
+            </h1>
+            <h1>{mailDetails.subject}</h1>
+          </div>
+
+          <div className={styles.headerbuttons}>
+            {/* <button className={styles.iconButton}>
             <StarIcon width={24} height={24} className={styles.icon} />
           </button>
           <button className={styles.iconButton}>
@@ -75,20 +66,23 @@ export const DetailMail = ({ id, isAsideVisible }: DetailMailProps) => {
           </button>
           <button className={styles.iconButton}>
             <ReplyIcon width={24} height={24} className={styles.icon} />
-          </button>
+          </button> */}
+          </div>
+        </div>
+        <div className={styles.body}>
+          <div className={styles.sender}>
+            <button className={`${styles.button} ${styles.profile}`}>
+              <img src={busybee3} alt='' height={40} />
+            </button>
+            <h2>{mailDetails.nickname}</h2>
+            <h3>{mailDetails.email}</h3>
+          </div>
+          <div className={styles.content} style={{ whiteSpace: 'pre-wrap' }}>
+            {mailDetails.emailContent}
+          </div>
         </div>
       </div>
-      <div className={styles.body}>
-        <div className={styles.sender}>
-          <button className={`${styles.button} ${styles.profile}`}>
-            <img src={busybee3} alt='' height={40} />
-          </button>
-          <h2>{mailDetails.senderName}</h2>
-          <h3>{mailDetails.senderEmail}</h3>
-        </div>
-        <div className={styles.content}>{mailDetails.body}</div>
-      </div>
-    </div>
+    </BoardLayout>
   );
 };
 

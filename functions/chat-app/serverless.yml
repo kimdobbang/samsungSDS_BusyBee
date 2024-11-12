@@ -112,5 +112,5 @@ resources:
             Projection:
               ProjectionType: ALL
 custom:
-  websocketApiGatewayId: 3q2gfm3fql
+  websocketApiGatewayId: 00v93zeny4
   llmApiGatewayId: nr2499od16

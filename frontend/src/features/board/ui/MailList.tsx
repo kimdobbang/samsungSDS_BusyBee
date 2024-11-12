@@ -4,7 +4,7 @@ import { ReactComponent as ArrowIcon } from 'shared/assets/icons/arrow.svg';
 import { fetchEmailsByReceiver } from 'features/board/api/boardApi'; // API 호출 함수
 import { Mail } from '@shared/types/board';
 import styles from './MailList.module.scss';
-import useMailStore from '../store/mailStore';
+import useMailStore from '../utils/mailStore';
 import { getNickname } from 'shared/utils/getNickname';
 import { getTagColor, getTagName } from 'shared/utils/getTag';
 import BoardLayout from 'features/board/ui/BoardLayout';
@@ -105,16 +105,23 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
                     {mail.email}
                   </td>
                   {/* 값이 제대로 렌더링되지 않으면 확인 */}
-                  <td className={styles.tag} style={{ backgroundColor: getTagColor(mail.flag) }}>
+                  <td
+                    className={styles.tag}
+                    style={{ backgroundColor: getTagColor(mail.flag) }}
+                  >
                     {getTagName(mail.flag)}
                   </td>
                   <td className={styles.subject}>
-                    <a href={`/mail?receiver=${mail.receiver}&received_date=${mail.received_date}`}>
+                    <a
+                      href={`/mail?receiver=${mail.receiver}&received_date=${mail.received_date}`}
+                    >
                       {mail.subject}
                     </a>
                     {/* 값이 제대로 렌더링되지 않으면 확인 */}
                   </td>
-                  <td className={styles.timestamp}>{mail.received_date || 'Unknown'}</td>
+                  <td className={styles.timestamp}>
+                    {mail.received_date || 'Unknown'}
+                  </td>
                 </tr>
               ))}
             </tbody>

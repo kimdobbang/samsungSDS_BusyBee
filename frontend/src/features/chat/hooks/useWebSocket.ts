@@ -17,7 +17,7 @@ function useWebSocket(orderId: string | null): UseWebSocketReturn {
     };
 
     webSocket.onmessage = (event: MessageEvent) => {
-      // console.log(event)
+      console.log(event);
       const data: WebSocketMessage = JSON.parse(event.data);
       console.log(data);
       setReceiveMessage((prevMessages) => [...prevMessages, data]);
@@ -39,7 +39,9 @@ function useWebSocket(orderId: string | null): UseWebSocketReturn {
   }, [url]);
 
   const sendMessage = (message: WebSocketMessage) => {
+    console.log(1);
     if (socket && socket.readyState === WebSocket.OPEN) {
+      console.log(2);
       socket.send(JSON.stringify(message));
       console.log(socket);
     } else {

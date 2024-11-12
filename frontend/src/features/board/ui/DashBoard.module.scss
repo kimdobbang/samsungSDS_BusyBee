@@ -110,6 +110,9 @@ td {
   border-bottom: 1px solid #ddd; /* 아래쪽 테두리 */
 }
 
+.selected {
+  background-color: var(--sub01); // 하늘색 배경
+}
 .middleHeader {
   display: flex;
   flex-direction: row;

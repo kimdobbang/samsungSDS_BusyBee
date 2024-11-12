@@ -10,10 +10,6 @@ export const Dashboard = () => {
   const [showMore, setShowMore] = useState(false);
   const [selectIndex, setSelectIndex] = useState<number | null>(null);
 
-  const selectedStyle = {
-    backgroundColor: 'var(--sub01)', // 하늘색 배경
-  };
-
   // 샘플 데이터
   const rows = [
     { requester: 'dd@gmail.com', date: '2024.11.05', stage: '60%', status: '진행중' },
@@ -82,8 +78,7 @@ export const Dashboard = () => {
                 {displayedRows.map((row, index) => (
                   <tr
                     key={index}
-                    className={styles.line}
-                    style={selectIndex === index ? selectedStyle : {}}
+                    className={`${styles.line} ${selectIndex === index ? styles.selected : ''}`}
                     onClick={() => setSelectIndex(index)}
                   >
                     <td>dd@gmail.com</td>

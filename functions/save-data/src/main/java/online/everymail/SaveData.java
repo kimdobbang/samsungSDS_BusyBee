@@ -33,7 +33,7 @@ public class SaveData implements RequestHandler<SQSEvent, Void> {
                     context.getLogger().log("Received SNS message: " + snsMessage.getMessage());
 
                     SQSMessageData parsedData = gson.fromJson(snsMessage.getMessage(), SQSMessageData.class);
-
+                    System.out.println(new AttributeValue(parsedData.getReceiver()));
                     // DynamoDB에 저장할 데이터 구성
                     Map<String, AttributeValue> item = new HashMap<>();
                     item.put("Id", new AttributeValue(parsedData.getKey()));

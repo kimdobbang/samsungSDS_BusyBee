@@ -1,13 +1,58 @@
-body {
+/* 웹폰트 Pretendard 설정 */
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff')
+    format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+:root {
+  --primary: #6bcef5;
+  --hover: #1177ff;
+  --bg01: #f6f8fc;
+  --sub02: #d3e3fd;
+  --sub01: #e4f5ff;
+  --gray01: #f4f4f4;
+  --gray04: #202124;
+  --sub03: #a0aec0;
+  --gray02: #d7d7d7;
+  --gray03: #5f6368;
+  --red01: #f57d6b;
+  --yellow01: #ffd700;
+}
+
+/* 모든 요소의 기본 마진과 패딩을 제거 */
+* {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  padding: 0;
+  box-sizing: border-box; /* 박스 크기 계산을 쉽게 하기 위해 box-sizing 설정 */
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* HTML과 body 기본 스타일 리셋 */
+html,
+body {
+  margin: 0;
+  height: 100%; /* 전체 높이를 100%로 설정 */
+  font-size: 100%; /* 폰트 크기를 기본 값으로 설정 */
+  line-height: 1.5; /* 줄 간격을 설정 */
+  background-color: white; /* 배경색 기본값 설정 */
+  color: black; /* 텍스트 색상 기본값 설정 */
+}
+
+/* 리스트 스타일 제거 */
+ul,
+ol {
+  list-style: none;
+}
+
+/* 링크 스타일 제거 */
+a {
+  text-decoration: none;
+  color: inherit;
 }

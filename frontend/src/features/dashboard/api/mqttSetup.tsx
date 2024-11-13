@@ -2,7 +2,7 @@
 import mqtt from 'mqtt';
 
 export function setupMqtt() {
-  const brokerUrl = 'wss://<your-mqtt-broker-url>:443/mqtt'; // MQTT 브로커 URL
+  const brokerUrl = 'ws://52.78.28.1:8080'; // MQTT 브로커 URL
 
   const client = mqtt.connect(brokerUrl, {
     clientId: 'myMqttClient',
@@ -11,7 +11,7 @@ export function setupMqtt() {
 
   client.on('connect', () => {
     console.log('Connected to MQTT broker');
-    client.subscribe('my/topic');
+    client.subscribe('sensor/data'); // 구독할 주제
   });
 
   client.on('message', (topic, message) => {

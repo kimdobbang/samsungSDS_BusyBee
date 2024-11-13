@@ -12,13 +12,13 @@ public class MessageData {
     private int status;
     private int quote;
 
-    public MessageData(SQSMessageData sqsMessageData, int quote) {
+    public MessageData(SQSMessageData sqsMessageData, int status, int quote) {
         this.key = sqsMessageData.getKey();
         this.sender = sqsMessageData.getSender();
         this.receiver = sqsMessageData.getReceiver();
         this.receivedDate = sqsMessageData.getReceivedDate();
         this.data = sqsMessageData.getData();
-        this.status = sqsMessageData.getStatus();
+        this.status = status;
         this.quote = quote;
     }
 }

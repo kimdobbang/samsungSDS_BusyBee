@@ -90,7 +90,7 @@ module.exports.handler = async (event) => {
       case '1': // 최신 물류 정보 요청
       case '3': // 기타 요청
         console.log(`Intent ${intent} 처리 완료: 봇 응답 전송.`);
-        await sendMessageToClient(connectionId, botResponse, 'bot');
+        await sendMessageToClient(connectionId, botResponse, 'bot', language);
         break;
 
       case '2': // 누락된 필드 제공
@@ -111,6 +111,7 @@ module.exports.handler = async (event) => {
             connectionId,
             '지원하지 않는 도시가 포함되어 있습니다. 다시 입력해주세요.',
             'bot',
+            language,
           );
           break;
         }
@@ -134,6 +135,7 @@ module.exports.handler = async (event) => {
           connectionId,
           `정보를 다음과 같이 업데이트했습니다:\n${updatedFieldsMessage}\n\n입력한 정보가 정확한지 확인해주세요. 맞다면 "예", 아니라면 "아니오"로 응답해주세요.`,
           'bot',
+          language,
         );
         break;
 
@@ -149,7 +151,12 @@ module.exports.handler = async (event) => {
 
           await updateResponsedDataAndRemovePendingFields(orderId, confirmedFields);
 
-          await sendMessageToClient(connectionId, '정보가 성공적으로 업데이트되었습니다.', 'bot');
+          await sendMessageToClient(
+            connectionId,
+            '정보가 성공적으로 업데이트되었습니다.',
+            'bot',
+            language,
+          );
 
           const sessionDataAfterUpdate = await getSessionData(orderId);
           const remainingFieldsMessage = generateMissingFieldsMessage(
@@ -161,12 +168,13 @@ module.exports.handler = async (event) => {
               connectionId,
               '요청드린 모든 정보 제공에 협조해 주셔서 감사합니다! 담당자님의 이메일로 견적을 발송해드리겠습니다.',
               'bot',
+              language,
             );
 
             console.log(`Invoking completion Lambda for orderId: ${orderId}`);
             await invokeCompletionHandler(orderId);
           } else {
-            await sendMessageToClient(connectionId, remainingFieldsMessage, 'bot');
+            await sendMessageToClient(connectionId, remainingFieldsMessage, 'bot', language);
           }
         } else {
           console.log('No fields to confirm. Sending default response.');
@@ -174,6 +182,7 @@ module.exports.handler = async (event) => {
             connectionId,
             '확인할 정보가 없습니다. 다른 정보를 입력해주세요.',
             'bot',
+            language,
           );
         }
         break;
@@ -188,13 +197,14 @@ module.exports.handler = async (event) => {
         if (fieldsToReset.length > 0) {
           await resetPendingFields(orderId, fieldsToReset);
 
-          await sendMessageToClient(connectionId, '정보를 다시 입력해주세요.', 'bot');
+          await sendMessageToClient(connectionId, '정보를 다시 입력해주세요.', 'bot', language);
         } else {
           console.log('No fields to reset. Sending default response.');
           await sendMessageToClient(
             connectionId,
             '다시 입력할 정보가 없습니다. 다른 정보를 입력해주세요.',
             'bot',
+            language,
           );
         }
         break;
@@ -218,6 +228,7 @@ module.exports.handler = async (event) => {
             connectionId,
             `현재 다음 정보가 입력되었습니다:\n${filledFields}\n\n입력한 정보가 정확한지 확인해주세요. 맞다면 "예", 아니라면 "아니오"로 응답해주세요.`,
             'bot',
+            language,
           );
         } else {
           console.log('No fields filled yet. Sending default response.');
@@ -228,6 +239,7 @@ module.exports.handler = async (event) => {
             missingFieldsMessage ||
               '현재 입력된 정보가 없습니다. 필요한 정보를 입력하신 후 "예" 또는 "아니오"로 응답해주세요.',
             'bot',
+            language,
           );
         }
         break;

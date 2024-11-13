@@ -1,23 +1,57 @@
-// utils/apiGatewayClient.js
 const {
   ApiGatewayManagementApiClient,
   PostToConnectionCommand,
   DeleteConnectionCommand,
-} = require("@aws-sdk/client-apigatewaymanagementapi");
-const { saveChat, getOrderIdByConnectionId } = require("../ddb/dynamoDbClient");
-const { invokeDisconnectHandler } = require("../utils/lambdaClients");
+} = require('@aws-sdk/client-apigatewaymanagementapi');
+const { TranslateClient, TranslateTextCommand } = require('@aws-sdk/client-translate');
+const { saveChat, getOrderIdByConnectionId } = require('../ddb/dynamoDbClient');
+const { invokeDisconnectHandler } = require('../utils/lambdaClients');
+
+// API Gateway 클라이언트 초기화
 const apigatewayManagementApi = new ApiGatewayManagementApiClient({
   endpoint: `https://${process.env.DOMAIN_NAME}/${process.env.STAGE}`,
 });
 
-async function sendMessageToClient(connectionId, message, senderType) {
+// AWS Translate 클라이언트 초기화
+const translateClient = new TranslateClient({
+  region: process.env.AWS_REGION || 'ap-northeast-2',
+});
+
+// 번역 함수
+async function translateText(text, targetLanguage = 'ko') {
+  // TargetLanguage가 ko이면 번역 생략
+  if (targetLanguage === 'ko') {
+    console.log('Target language is Korean. Skipping translation.');
+    return text;
+  }
+
+  try {
+    const command = new TranslateTextCommand({
+      Text: text,
+      SourceLanguageCode: 'ko',
+      TargetLanguageCode: targetLanguage,
+    });
+    const response = await translateClient.send(command);
+    return response.TranslatedText;
+  } catch (error) {
+    console.error('Error during translation:', error);
+    return text; // 번역 실패 시 원문 반환
+  }
+}
+
+// 클라이언트에게 메시지 전송
+async function sendMessageToClient(connectionId, message, senderType, targetLanguage = 'ko') {
   try {
     const { orderId } = await getOrderIdByConnectionId(connectionId);
     const timestamp = new Date().toISOString();
+
+    // 메시지를 입력된 언어로 번역
+    const translatedMessage = await translateText(message, targetLanguage);
+
     const chatMessage = {
       timestamp,
       senderType,
-      message,
+      message: translatedMessage, // 번역된 메시지
     };
 
     const command = new PostToConnectionCommand({
@@ -27,7 +61,7 @@ async function sendMessageToClient(connectionId, message, senderType) {
 
     await apigatewayManagementApi.send(command);
     console.log(
-      `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
+      `Message sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`,
     );
     await saveChat(orderId, chatMessage);
   } catch (error) {
@@ -54,8 +88,8 @@ async function sendChatHistoryToClientWithoutSave(connectionId, chatHistory) {
     await apigatewayManagementApi.send(command);
     console.log(
       `Successfully sent chat history to ConnectionId:   ${connectionId}, Data: ${JSON.stringify(
-        chatMessage
-      )}`
+        chatMessage,
+      )}`,
     );
   } catch (error) {
     if (error.$metadata?.httpStatusCode == 410) {
@@ -86,7 +120,7 @@ async function sendInformToClient(connectionId, message, senderType) {
     });
     await apigatewayManagementApi.send(command);
     console.log(
-      `Inform sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`
+      `Inform sent to ConnectionId: ${connectionId}, Data: ${JSON.stringify(chatMessage)}`,
     );
   } catch (error) {
     if (error.$metadata?.httpStatusCode == 410) {

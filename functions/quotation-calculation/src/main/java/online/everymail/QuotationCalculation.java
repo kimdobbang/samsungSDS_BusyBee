@@ -52,7 +52,7 @@ public class QuotationCalculation implements RequestHandler<SQSEvent, Void> {
                     int quote = (int) Math.round(calculateTransportCost(
                             weight, containerSize, departureDate, arrivalDate, departureCity, arrivalCity));
 
-                    MessageData newData = new MessageData(parsedData, quote);
+                    MessageData newData = new MessageData(parsedData, 2, quote);
 
                     String newMessageBody = gson.toJson(newData);
 

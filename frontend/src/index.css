@@ -9,6 +9,7 @@
 
 :root {
   --primary: #6bcef5;
+  --hover: #1177ff;
   --bg01: #f6f8fc;
   --sub02: #d3e3fd;
   --sub01: #e4f5ff;
@@ -29,8 +30,9 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box; /* 박스 크기 계산을 쉽게 하기 위해 box-sizing 설정 */
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

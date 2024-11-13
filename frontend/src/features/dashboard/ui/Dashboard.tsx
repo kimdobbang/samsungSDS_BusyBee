@@ -6,7 +6,6 @@ import BoardLayout from 'shared/components/BoardLayout';
 import styles from './DashBoard.module.scss';
 
 import { Map } from 'features';
-import { Step } from './Step';
 import { sendToLambda, useAuth } from '../..';
 import { CountByDate } from '../../../shared/utils/getCountByDate';
 // import { CountInProgressQuotes } from 'features/mail/utils/estimate';
@@ -232,9 +231,7 @@ export const Dashboard = () => {
                   </tr>
                 </tbody>
               </table>
-              <div className={styles.barSection}>
-                <Step currentStep={3} />
-              </div>
+              <div className={styles.barSection}></div>
               <div className={styles.detail}>
                 <div className={styles.detailTop}>
                   <div className={styles.topHalf}>

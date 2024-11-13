@@ -5,11 +5,11 @@ const path = require("path");
 
 const s3 = new AWS.S3();
 const sqs = new AWS.SQS();
-const attachmentKeys = [];
 
 module.exports.unzip = async (event) => {
   try {
     for (const record of event.Records) {
+      const attachmentKeys = []; // 전역 대신 함수 내부에서 관리
       const message = JSON.parse(record.body);
       const key = message.key;
       const bucketName = "request-mail";
@@ -25,7 +25,8 @@ module.exports.unzip = async (event) => {
           console.log(`Unzipping attachment: ${attachment.filename}`);
           await processZipFile(
             attachment.content,
-            `${key.split("/").slice(1).join("/")}/${attachment.filename}`
+            `${key.split("/").slice(1).join("/")}/${attachment.filename}`,
+            attachmentKeys // 함수에 전달
           );
         } else if (isAllowedExtension(attachment.filename)) {
           const targetBucketName = "mails-to-files";
@@ -49,25 +50,25 @@ module.exports.unzip = async (event) => {
             `Skipping file: ${attachment.filename} (unsupported extension)`
           );
         }
-
-        // SQS 메시지 전송
-        const sqsParams = {
-          QueueUrl:
-            "https://sqs.ap-northeast-2.amazonaws.com/481665114066/zip-mail-classification-trigger",
-          MessageBody: JSON.stringify({
-            key: key,
-            sender: message.sender,
-            receiver: message.receiver,
-            subject: message.subject,
-            email_content: message.email_content,
-            received_date: message.received_date,
-            attachments: attachmentKeys,
-          }),
-        };
-
-        await sqs.sendMessage(sqsParams).promise();
-        console.log("SQS message sent successfully:", sqsParams.MessageBody);
       }
+
+      // SQS 메시지 전송
+      const sqsParams = {
+        QueueUrl:
+          "https://sqs.ap-northeast-2.amazonaws.com/481665114066/zip-mail-classification-trigger",
+        MessageBody: JSON.stringify({
+          key: key,
+          sender: message.sender,
+          receiver: message.receiver,
+          subject: message.subject,
+          email_content: message.email_content,
+          received_date: message.received_date,
+          attachments: attachmentKeys, // 함수 내에서 생성된 키
+        }),
+      };
+
+      await sqs.sendMessage(sqsParams).promise();
+      console.log("SQS message sent successfully:", sqsParams.MessageBody);
     }
   } catch (error) {
     console.error("Error processing SQS message:", error);
@@ -76,7 +77,7 @@ module.exports.unzip = async (event) => {
 };
 
 // ZIP 파일을 처리하고 모든 엔트리를 탐색하는 함수
-const processZipFile = async (zipContent, basePath) => {
+const processZipFile = async (zipContent, basePath, attachmentKeys) => {
   const zip = new AdmZip(zipContent);
   const zipEntries = zip.getEntries();
 
@@ -93,7 +94,7 @@ const processZipFile = async (zipContent, basePath) => {
       if (entry.entryName.endsWith(".zip")) {
         console.log(`Found nested ZIP file: ${entry.entryName}`);
         const nestedZipContent = entry.getData();
-        await processZipFile(nestedZipContent, entryPath);
+        await processZipFile(nestedZipContent, entryPath, attachmentKeys);
       } else if (isAllowedExtension(entry.entryName)) {
         await s3
           .putObject({
@@ -103,7 +104,7 @@ const processZipFile = async (zipContent, basePath) => {
           })
           .promise();
 
-        attachmentKeys.push(entryPath);
+        attachmentKeys.push(entryPath); // 함수에 전달된 키 관리
         console.log(`File ${entry.entryName} saved to S3`);
       } else {
         console.log(

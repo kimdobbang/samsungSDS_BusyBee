@@ -2,15 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { ReactComponent as MailCheckIcon } from 'shared/assets/icons/mail-check.svg';
 import { ReactComponent as CalendarIcon } from 'shared/assets/icons/calendar.svg';
 // import busybee3 from 'shared/assets/images/busybee2.png';
-import BoardLayout from './BoardLayout';
+import BoardLayout from 'shared/components/BoardLayout';
 import styles from './DashBoard.module.scss';
+
+import { Map } from 'features';
+import { Step } from './Step';
 import { sendToLambda, useAuth } from '../..';
 import { CountByDate } from '../../../shared/utils/getCountByDate';
-import { getTodayOrderMail } from '../utils/estimate';
-import { getMonthOrderMail } from '../utils/estimate';
-import { Map, MultiStepProgress } from 'features';
+// import { CountInProgressQuotes } from 'features/mail/utils/estimate';
+import { getTodayOrderMail } from 'features/mail/utils/estimate';
+import { getMonthOrderMail } from 'features/mail/utils/estimate';
 import { RowData } from '../model/boardmodel';
-import { sortByReceivedDate } from '../utils/sort';
+import { sortByReceivedDate } from 'features/mail/utils/sort';
 
 export const Dashboard = () => {
   const [, authEmail] = useAuth() || [];
@@ -22,13 +25,13 @@ export const Dashboard = () => {
   const [originalRows, setOriginalRows] = useState<RowData[]>([]);
   const [monthRows, setMonthRows] = useState<RowData[]>([]);
   const [paginatedRows, setPaginatedRows] = useState<RowData[]>([]);
-  const [detailEstimateView, setDetailEstimateView] = useState<RowData | null>(
-    null
-  );
+  const [detailEstimateView, setDetailEstimateView] = useState<RowData | null>(null);
   const [detailData, setDetailData] = useState<any | null>(null);
 
   const itemsPerPage = 10;
   const [showAll, setShowAll] = useState(false);
+  const [selectIndex, setSelectIndex] = useState<number | null>(null);
+  const [visibleCount, setVisibleCount] = useState(3);
 
   useEffect(() => {
     const fetchLambdaData = async () => {
@@ -63,9 +66,6 @@ export const Dashboard = () => {
       setDetailData(JSON.parse(detailEstimateView.data.S));
     }
   }, [detailEstimateView]);
-
-  const [selectIndex, setSelectIndex] = useState<number | null>(null);
-  const [visibleCount, setVisibleCount] = useState(3);
 
   const selectedStyle = {
     backgroundColor: 'var(--sub01)', // 하늘색 배경
@@ -107,13 +107,10 @@ export const Dashboard = () => {
     }
   };
 
-  // 원하는 위치의 위도와 경도를 설정합니다.
-  const latitude = 37.5665; // 예: 서울시청 위도
-  const longitude = 126.978; // 예: 서울시청 경도
-
   return (
     <BoardLayout>
-      <div className={styles.dashboard}>
+      <div className={`${styles.dashboard} ${detailEstimateView ? styles.withDetail : ''}`}>
+        {/* 상단 섹션 */}
         <div className={styles.top}>
           <div className={styles.statisticbox}>
             <div className={styles.statistics}>
@@ -121,10 +118,7 @@ export const Dashboard = () => {
               <h3>{countToday}건</h3>
             </div>
             <div className={styles.buttondiv}>
-              <button
-                onClick={handleTodayMailClick}
-                className={styles.iconbutton}
-              >
+              <button onClick={handleTodayMailClick} className={styles.iconbutton}>
                 <MailCheckIcon width={28} height={28} />
               </button>
             </div>
@@ -134,14 +128,13 @@ export const Dashboard = () => {
               <h2>월간 요청 메일</h2>
               <h3>{countMonthly}건</h3>
             </div>
-            <button
-              onClick={handleMonthMailClick}
-              className={styles.iconbutton}
-            >
+            <button onClick={handleMonthMailClick} className={styles.iconbutton}>
               <CalendarIcon width={32} height={32} />
             </button>
           </div>
         </div>
+
+        {/* 중앙 섹션 */}
         <div className={styles.middle}>
           <div className={styles.quotebox}>
             <div className={styles.middleHeader}>
@@ -161,33 +154,32 @@ export const Dashboard = () => {
                 <th>완료여부</th>
               </thead>
               <tbody>
-                {paginatedRows
-                  .slice(0, visibleCount)
-                  .map((row: RowData, index) => (
-                    <tr
-                      key={index}
-                      className={styles.line}
-                      style={selectIndex === index ? selectedStyle : {}}
-                      onClick={() => setSelectIndex(index)}
-                    >
-                      <td>{row.sender.S}</td>
-                      <td>{row.received_date.S}</td>
-                      <td>
-                        <div className={styles.stage}>
-                          <p>{row.status.N * 20} %</p>
-                          <div className={styles.progressBarContainer}>
-                            <div
-                              className={styles.progressBar}
-                              style={{ width: `${row.status.N * 20}%` }}
-                            ></div>
-                          </div>
+                {paginatedRows.slice(0, visibleCount).map((row: RowData, index) => (
+                  <tr
+                    key={index}
+                    className={styles.line}
+                    style={selectIndex === index ? selectedStyle : {}}
+                    onClick={() => setSelectIndex(index)}
+                  >
+                    <td>{row.sender.S}</td>
+                    <td>{row.received_date.S}</td>
+                    <td>
+                      <div className={styles.stage}>
+                        <p>{row.status.N * 20} %</p>
+                        <div className={styles.progressBarContainer}>
+                          <div
+                            className={styles.progressBar}
+                            style={{ width: `${row.status.N * 20}%` }}
+                          ></div>
                         </div>
-                      </td>
-                      <td> {row.status.N === 5 ? '완료' : '진행중'} </td>
-                    </tr>
-                  ))}
+                      </div>
+                    </td>
+                    <td> {row.status.N === 5 ? '완료' : '진행중'} </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
+
             {showAll ? (
               <button onClick={handleClose} className={styles.moreButton}>
                 닫기
@@ -199,70 +191,70 @@ export const Dashboard = () => {
             )}
           </div>
         </div>
-        <div className={styles.bottom}>
-          <div className={styles.detailquote}>
-            <div>
-              <h1>ss@gmail.com 님의 견적 요청 자세히보기</h1>
-              <button className={styles.textbutton}>메일보내기</button>
-            </div>
-            <table>
-              <thead>
-                <th>무게</th>
-                <th>컨테이너 사이즈</th>
-                <th>출발 날짜</th>
-                <th>도착 날짜</th>
-                <th>출발 도시</th>
-                <th>도착 도시</th>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{detailData?.Weight}</td>
-                  <td>{detailData?.ContainerSize}</td>
-                  <td>{detailData?.DepartureDate}</td>
-                  <td>{detailData?.ArrivalDate}</td>
-                  <td>{detailData?.DepartureCity}</td>
-                  <td>{detailData?.DepartureCity}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div className={styles.barSection}>
-              <MultiStepProgress
-                status={
-                  selectIndex !== null ? originalRows[selectIndex].status.N : 0
-                }
-              />
-            </div>
-            <div className={styles.detail}>
-              <div className={styles.detailTop}>
-                <div className={styles.topHalf}>
-                  <h1>현재 위치</h1>
-                </div>
-                <div className={styles.topHalf}>
-                  <h1>운송 상태</h1>
-                </div>
+
+        {/* 하단 섹션 (견적 요청이 선택된 경우에만 표시) */}
+        {detailEstimateView && (
+          <div className={styles.bottom}>
+            <div className={styles.detailquote}>
+              <div>
+                <h1>ss@gmail.com 님의 견적 요청 자세히보기</h1>
+                <button className={styles.textbutton}>메일보내기</button>
               </div>
-              <div className={styles.detailBottom}>
-                <div className={styles.map}>
-                  <Map latitude={latitude} longitude={longitude} />
+              <table>
+                <thead>
+                  <th>무게</th>
+                  <th>컨테이너 사이즈</th>
+                  <th>출발 날짜</th>
+                  <th>도착 날짜</th>
+                  <th>출발 도시</th>
+                  <th>도착 도시</th>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{detailData?.Weight}</td>
+                    <td>{detailData?.ContainerSize}</td>
+                    <td>{detailData?.DepartureDate}</td>
+                    <td>{detailData?.ArrivalDate}</td>
+                    <td>{detailData?.DepartureCity}</td>
+                    <td>{detailData?.DepartureCity}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div className={styles.barSection}>
+                <Step currentStep={3} />
+              </div>
+              <div className={styles.detail}>
+                <div className={styles.detailTop}>
+                  <div className={styles.topHalf}>
+                    <h1>현재 위치</h1>
+                  </div>
+                  <div className={styles.topHalf}>
+                    <h1>운송 상태</h1>
+                  </div>
                 </div>
-                <div className={styles.bottomRight}>
-                  <div className={styles.col}>
-                    <h2>열림 감지</h2>
-                    <div className={styles.square}>ON</div>
+                <div className={styles.detailBottom}>
+                  <div className={styles.map}>
+                    <Map />
                   </div>
-                  <div className={styles.col}>
-                    <h2>내부 온도</h2>
-                    <div className={styles.square}>25도</div>
-                  </div>
-                  <div className={styles.col}>
-                    <h2>내부 습도</h2>
-                    <div className={styles.square}>23%</div>
+                  <div className={styles.bottomRight}>
+                    <div className={styles.col}>
+                      <h2>열림 감지</h2>
+                      <div className={styles.square}>ON</div>
+                    </div>
+                    <div className={styles.col}>
+                      <h2>내부 온도</h2>
+                      <div className={styles.square}>25도</div>
+                    </div>
+                    <div className={styles.col}>
+                      <h2>내부 습도</h2>
+                      <div className={styles.square}>23%</div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </BoardLayout>
   );

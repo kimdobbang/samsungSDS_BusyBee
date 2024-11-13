@@ -86,8 +86,19 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  width: 75%;
+  width: auto;
   margin-left: 10px;
+
+  > h1 {
+    color: black;
+    font-size: 20px;
+    font-weight: 700;
+  }
+}
+
+.logo img {
+  height: 40px; /* 이미지의 높이 고정 */
+  width: auto; /* 비율에 맞게 너비 자동 조정 */
 }
 
 .profile {

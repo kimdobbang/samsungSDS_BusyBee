@@ -3,15 +3,12 @@ export * from './auth/hooks/useAuth';
 export * from './auth/ui/AuthUI';
 
 //board 부분 export
-export * from './board/ui/AsideBar';
-export * from './board/ui/BoardHeader';
-export * from './board/ui/BoardLayout';
-export * from './board/ui/DetailMail';
-export * from './board/ui/MailList';
-export * from './board/ui/Dashboard';
-export * from './board/api/boardApi';
-export * from './board/ui/MultiStepProgress';
-export * from './board/ui/Map';
+export * from './mail/ui/DetailMail';
+export * from './mail/ui/MailList';
+export * from './mail/api/emailApi';
+
+export * from './dashboard/ui/Dashboard';
+export * from './dashboard/ui/Map';
 // export * from './board/api/emailMockData';
 // export * from './board/hooks/useBoard';
 

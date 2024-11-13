@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { Mail } from '@shared/types/board';
+import { Mail } from 'shared/types/board';
 
 interface MailStoreProps {
   mails: Mail[];

@@ -5,9 +5,9 @@ import { useSearchParams } from 'react-router-dom';
 // import { ReactComponent as ReplyIcon } from 'shared/assets/icons/reply.svg';
 import busybee3 from 'shared/assets/images/busybee3.png';
 import styles from './DetailMail.module.scss';
-import useMailStore from '../utils/mailStore';
+import useMailStore from 'features/mail/utils/mailStore';
 import { getTagColor, getTagName } from 'shared/utils/getTag';
-import BoardLayout from './BoardLayout';
+import BoardLayout from 'shared/components/BoardLayout';
 
 // interface MailDetails {
 //   title: string;
@@ -22,9 +22,7 @@ export const DetailMail = () => {
   const received_date = searchParams.get('received_date');
 
   // URL 인코딩된 received_date를 디코딩
-  const decodedReceivedDate = received_date
-    ? decodeURIComponent(received_date)
-    : null;
+  const decodedReceivedDate = received_date ? decodeURIComponent(received_date) : null;
 
   // receiver와 decodedReceivedDate가 null일 경우 빈 문자열로 처리
   const getMail = useMailStore((state) => state.getMail);
@@ -38,9 +36,7 @@ export const DetailMail = () => {
   console.log('Current mails in store:', mails);
 
   const mailDetails =
-    receiver && decodedReceivedDate
-      ? getMail(receiver.trim(), decodedReceivedDate.trim())
-      : null;
+    receiver && decodedReceivedDate ? getMail(receiver.trim(), decodedReceivedDate.trim()) : null;
 
   // 디버깅: getMail 결과 출력
   console.log('getMails result:', mailDetails);

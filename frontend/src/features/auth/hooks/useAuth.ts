@@ -9,7 +9,9 @@ export function useAuth() {
       return null;
     }
 
+    // console.log('idTokenKey: ', idTokenKey);
     const idToken = localStorage.getItem(idTokenKey);
+
     if (!idToken) {
       console.error('Token not found.');
       return null;
@@ -19,10 +21,14 @@ export function useAuth() {
       const decodedToken = jwtDecode<CustomJwtPayload>(idToken);
       const group = decodedToken['cognito:groups'];
       const email = decodedToken.email;
+      const loginId = decodedToken['cognito:username'];
 
-      const authInfo = [group, email];
+      // console.log('Decoded Token, Login ID: ', loginId);
 
-      if (email && group) {
+      // console.log('토큰, 그룹, 메일: ', decodedToken, group, email);
+      const authInfo = [group, email, loginId];
+
+      if (email && group && loginId) {
         return authInfo;
       } else {
         return null;

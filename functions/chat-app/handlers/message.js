@@ -21,6 +21,7 @@ const {
   fieldTranslation,
   formatFieldValue,
   generateMissingFieldsMessage,
+  convertCityIdentifier,
 } = require('../common/utils/formatUtils');
 module.exports.handler = async (event) => {
   console.log('Received event:', JSON.stringify(event, null, 2));
@@ -114,16 +115,20 @@ module.exports.handler = async (event) => {
           break;
         }
 
-        // 누락된 필드 업데이트
-        await updatePendingFields(orderId, updatedFields);
-
+        // 필드명 및 값 변환 (코드 -> 이름 변환 포함)
         const updatedFieldsMessage = Object.entries(updatedFields)
           .map(([key, value]) => {
             const translatedKey = fieldTranslation[key] || key; // 필드명 번역
-            const formattedValue = formatFieldValue(key, value); // 값 변환
+            const formattedValue =
+              cityFields.includes(key) && value !== 'unknown'
+                ? convertCityIdentifier(value) // 도시 코드 -> 이름 변환
+                : formatFieldValue(key, value); // 다른 값 변환
             return `${translatedKey}: ${formattedValue}`;
           })
           .join('\n');
+
+        // 누락된 필드 업데이트
+        await updatePendingFields(orderId, updatedFields);
 
         await sendMessageToClient(
           connectionId,

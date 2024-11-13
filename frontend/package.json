@@ -4,9 +4,6 @@
   "private": true,
   "dependencies": {
     "@aws-amplify/ui-react": "^6.5.5",
-    "@chakra-ui/react": "^3.1.1",
-    "@emotion/react": "^11.13.3",
-    "@emotion/styled": "^11.13.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -17,7 +14,6 @@
     "aws-amplify": "^6.8.0",
     "aws-iot-device-sdk": "^2.2.15",
     "axios": "^1.7.7",
-    "framer-motion": "^11.11.13",
     "jwt-decode": "^4.0.0",
     "lucide": "^0.454.0",
     "lucide-react": "^0.454.0",

@@ -6,7 +6,6 @@ import BoardLayout from 'shared/components/BoardLayout';
 import styles from './DashBoard.module.scss';
 
 import { Map } from 'features';
-import { Step } from './Step';
 import { sendToLambda, useAuth } from '../..';
 import { CountByDate } from '../../../shared/utils/getCountByDate';
 // import { CountInProgressQuotes } from 'features/mail/utils/estimate';
@@ -14,6 +13,7 @@ import { getTodayOrderMail } from 'features/mail/utils/estimate';
 import { getMonthOrderMail } from 'features/mail/utils/estimate';
 import { RowData } from '../model/boardmodel';
 import { sortByReceivedDate } from 'features/mail/utils/sort';
+import { setupMqtt } from 'features/dashboard/api/mqttSetup';
 
 export const Dashboard = () => {
   const [, authEmail] = useAuth() || [];
@@ -32,6 +32,17 @@ export const Dashboard = () => {
   const [showAll, setShowAll] = useState(false);
   const [selectIndex, setSelectIndex] = useState<number | null>(null);
   const [visibleCount, setVisibleCount] = useState(3);
+
+  // MQTT 연결
+  useEffect(() => {
+    // MQTT 클라이언트 설정 및 연결
+    const client = setupMqtt();
+
+    // 컴포넌트가 언마운트될 때 연결 해제
+    return () => {
+      client.end();
+    };
+  }, []);
 
   useEffect(() => {
     const fetchLambdaData = async () => {
@@ -220,9 +231,7 @@ export const Dashboard = () => {
                   </tr>
                 </tbody>
               </table>
-              <div className={styles.barSection}>
-                <Step currentStep={3} />
-              </div>
+              <div className={styles.barSection}></div>
               <div className={styles.detail}>
                 <div className={styles.detailTop}>
                   <div className={styles.topHalf}>

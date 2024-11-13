@@ -26,7 +26,7 @@ module.exports.handler = async (event) => {
       key: sessionData.orderId,
       sender: sessionData.sender,
       receiver: sessionData.receiver,
-      received_date: sessionData.received_date,
+      receivedDate: sessionData.received_date,
     };
     console.log(`sqsMessagePayload:${JSON.stringify(sqsMessagePayload)}`);
 

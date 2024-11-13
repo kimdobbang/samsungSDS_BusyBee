@@ -34,10 +34,11 @@ public class InformationIntegrityVerification implements RequestHandler<SQSEvent
 
                     SQSMessageData parsedData = gson.fromJson(originalMessageBody, SQSMessageData.class);
 
+                    MessageData messageData = new MessageData(parsedData, 1);
+
                     if (isDataValid(parsedData)) {
                         context.getLogger().log("All data is valid. Preparing to send to the success queue.");
 
-                        MessageData messageData = new MessageData(parsedData, 2);
                         SendMessageRequest sendMsgRequest = new SendMessageRequest()
                                 .withQueueUrl(sqsUrl)
                                 .withMessageBody(gson.toJson(messageData));
@@ -47,7 +48,6 @@ public class InformationIntegrityVerification implements RequestHandler<SQSEvent
                     } else {
                         context.getLogger().log("Invalid data. Sending to SNS for further handling.");
 
-                        MessageData messageData = new MessageData(parsedData, 1);
                         PublishRequest publishRequest = new PublishRequest()
                                 .withTopicArn(snsTopicArn)
                                 .withMessage(gson.toJson(messageData));

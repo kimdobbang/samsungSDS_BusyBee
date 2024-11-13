@@ -6,58 +6,106 @@ import BoardLayout from './BoardLayout';
 import styles from './DashBoard.module.scss';
 import { sendToLambda, useAuth } from '../..';
 import { CountByDate } from '../../../shared/utils/getCountByDate';
-import { CountInProgressQuotes } from '../utils/estimate';
+import { getTodayOrderMail } from '../utils/estimate';
+import { getMonthOrderMail } from '../utils/estimate';
 import { Map, MultiStepProgress } from 'features';
+import { RowData } from '../model/boardmodel';
+import { sortByReceivedDate } from '../utils/sort';
 
 export const Dashboard = () => {
   const [, authEmail] = useAuth() || [];
   const email = typeof authEmail === 'string' ? authEmail : '';
-  const [showMore, setShowMore] = useState(false);
   const [countToday, setTodayCount] = useState(0);
   const [countMonthly, setMonthlyCount] = useState(0);
-  const [inProgressCount, setInProgressCount] = useState(0);
+  const [orderCount, setOrderCount] = useState(0);
+  const [todayRows, setTodayRows] = useState<RowData[]>([]);
+  const [originalRows, setOriginalRows] = useState<RowData[]>([]);
+  const [monthRows, setMonthRows] = useState<RowData[]>([]);
+  const [paginatedRows, setPaginatedRows] = useState<RowData[]>([]);
+  const [detailEstimateView, setDetailEstimateView] = useState<RowData | null>(
+    null
+  );
+  const [detailData, setDetailData] = useState<any | null>(null);
+
+  const itemsPerPage = 10;
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchLambdaData = async () => {
       try {
         const res = await sendToLambda(email);
 
-        console.log(res);
-        const { todayCount, monthCount } = CountByDate(res);
+        const sortRes = sortByReceivedDate(res);
+        const { todayCount, monthCount } = CountByDate(sortRes);
         setTodayCount(todayCount);
         setMonthlyCount(monthCount);
+        setOrderCount(sortRes.length);
 
-        const inProgressQuotesCount = CountInProgressQuotes(res);
-        setInProgressCount(inProgressQuotesCount);
+        const TodayOrderMail = getTodayOrderMail(sortRes);
+        const MonthOrderMail = getMonthOrderMail(sortRes);
+
+        setOriginalRows(sortRes);
+        setTodayRows(TodayOrderMail);
+        setMonthRows(MonthOrderMail);
       } catch (error) {
         console.error('Error fetching data from Lambda:', error);
       }
     };
     fetchLambdaData();
-  });
+  }, [email, itemsPerPage]);
+
+  useEffect(() => {
+    setPaginatedRows(originalRows);
+  }, [originalRows]);
+
+  useEffect(() => {
+    if (detailEstimateView?.data?.S) {
+      setDetailData(JSON.parse(detailEstimateView.data.S));
+    }
+  }, [detailEstimateView]);
+
   const [selectIndex, setSelectIndex] = useState<number | null>(null);
+  const [visibleCount, setVisibleCount] = useState(3);
 
   const selectedStyle = {
     backgroundColor: 'var(--sub01)', // 하늘색 배경
   };
 
-  // 샘플 데이터
-  const rows = [
-    {
-      requester: 'dd@gmail.com',
-      date: '2024.11.05',
-      stage: '60%',
-      status: '진행중',
-    },
-    {
-      requester: 'aa@gmail.com',
-      date: '2024.11.06',
-      stage: '30%',
-      status: '대기중',
-    },
-  ];
+  const handleTodayMailClick = () => {
+    setPaginatedRows(todayRows);
+    setVisibleCount(3);
+    setShowAll(false);
+    setSelectIndex(null);
+  };
 
-  const displayedRows = showMore ? rows : rows.slice(0, 3);
+  const handleMonthMailClick = () => {
+    setPaginatedRows(monthRows);
+    setVisibleCount(3);
+    setShowAll(false);
+    setSelectIndex(null);
+  };
+
+  const handleShowMore = () => {
+    const newVisibleCount = visibleCount + itemsPerPage;
+    setVisibleCount(newVisibleCount);
+
+    if (newVisibleCount >= paginatedRows.length) {
+      setShowAll(true);
+    }
+  };
+
+  const handleClose = () => {
+    setPaginatedRows(paginatedRows);
+    setVisibleCount(3);
+    setShowAll(false);
+  };
+
+  const detailEstimate = () => {
+    if (selectIndex !== null) {
+      const selectedEstimate = paginatedRows[selectIndex];
+      setDetailEstimateView(selectedEstimate);
+    }
+  };
 
   // 원하는 위치의 위도와 경도를 설정합니다.
   const latitude = 37.5665; // 예: 서울시청 위도
@@ -73,9 +121,12 @@ export const Dashboard = () => {
               <h3>{countToday}건</h3>
             </div>
             <div className={styles.buttondiv}>
-              <div className={styles.iconbutton}>
+              <button
+                onClick={handleTodayMailClick}
+                className={styles.iconbutton}
+              >
                 <MailCheckIcon width={28} height={28} />
-              </div>
+              </button>
             </div>
           </div>
           <div className={styles.statisticbox}>
@@ -83,19 +134,24 @@ export const Dashboard = () => {
               <h2>월간 요청 메일</h2>
               <h3>{countMonthly}건</h3>
             </div>
-            <div className={styles.iconbutton}>
+            <button
+              onClick={handleMonthMailClick}
+              className={styles.iconbutton}
+            >
               <CalendarIcon width={32} height={32} />
-            </div>
+            </button>
           </div>
         </div>
-        <div className={`${styles.middle} ${showMore ? styles.expanded : ''}`}>
+        <div className={styles.middle}>
           <div className={styles.quotebox}>
             <div className={styles.middleHeader}>
               <div>
                 <h1>진행중인 견적</h1>
-                <h2>{inProgressCount}건 발급 진행중</h2>
+                <h2>{orderCount}건 발급 진행중</h2>
               </div>
-              <button className={styles.textbutton}>조회하기</button>
+              <button onClick={detailEstimate} className={styles.textbutton}>
+                조회하기
+              </button>
             </div>
             <table>
               <thead>
@@ -105,42 +161,40 @@ export const Dashboard = () => {
                 <th>완료여부</th>
               </thead>
               <tbody>
-                {displayedRows.map((row, index) => (
-                  <tr
-                    key={index}
-                    className={styles.line}
-                    style={selectIndex === index ? selectedStyle : {}}
-                    onClick={() => setSelectIndex(index)}
-                  >
-                    <td>dd@gmail.com</td>
-                    <td>2024.11.05</td>
-                    <td>
-                      <div className={styles.stage}>
-                        <p>60%</p>
-                        <div className={styles.progressBarContainer}>
-                          <div className={styles.progressBar}></div>
+                {paginatedRows
+                  .slice(0, visibleCount)
+                  .map((row: RowData, index) => (
+                    <tr
+                      key={index}
+                      className={styles.line}
+                      style={selectIndex === index ? selectedStyle : {}}
+                      onClick={() => setSelectIndex(index)}
+                    >
+                      <td>{row.sender.S}</td>
+                      <td>{row.received_date.S}</td>
+                      <td>
+                        <div className={styles.stage}>
+                          <p>{row.status.N * 20} %</p>
+                          <div className={styles.progressBarContainer}>
+                            <div
+                              className={styles.progressBar}
+                              style={{ width: `${row.status.N * 20}%` }}
+                            ></div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>진행중</td>
-                  </tr>
-                ))}
+                      </td>
+                      <td> {row.status.N === 5 ? '완료' : '진행중'} </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
-            {!showMore && (
-              <button
-                onClick={() => setShowMore(!showMore)}
-                className={styles.moreButton}
-              >
-                더보기
-              </button>
-            )}
-            {showMore && (
-              <button
-                onClick={() => setShowMore(!showMore)}
-                className={styles.moreButton}
-              >
+            {showAll ? (
+              <button onClick={handleClose} className={styles.moreButton}>
                 닫기
+              </button>
+            ) : (
+              <button onClick={handleShowMore} className={styles.moreButton}>
+                더보기
               </button>
             )}
           </div>
@@ -162,17 +216,21 @@ export const Dashboard = () => {
               </thead>
               <tbody>
                 <tr>
-                  <td>770</td>
-                  <td>2</td>
-                  <td>2024-11-10</td>
-                  <td>2023-11-15</td>
-                  <td>DCC</td>
-                  <td>ICN</td>
+                  <td>{detailData?.Weight}</td>
+                  <td>{detailData?.ContainerSize}</td>
+                  <td>{detailData?.DepartureDate}</td>
+                  <td>{detailData?.ArrivalDate}</td>
+                  <td>{detailData?.DepartureCity}</td>
+                  <td>{detailData?.DepartureCity}</td>
                 </tr>
               </tbody>
             </table>
             <div className={styles.barSection}>
-              <MultiStepProgress status={3} />
+              <MultiStepProgress
+                status={
+                  selectIndex !== null ? originalRows[selectIndex].status.N : 0
+                }
+              />
             </div>
             <div className={styles.detail}>
               <div className={styles.detailTop}>

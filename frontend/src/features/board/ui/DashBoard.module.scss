@@ -62,11 +62,21 @@
   align-items: center;
 }
 .iconbutton {
+  border-style: none;
   width: 50px;
   height: 50px;
   border-radius: 8px;
 
   background-color: var(--primary);
+}
+
+.iconbutton:hover {
+  background: var(--hover);
+}
+
+.iconbutton:active {
+  position: relative;
+  top: -1px;
 }
 
 .middle {
@@ -132,6 +142,15 @@ td {
   cursor: pointer;
 }
 
+.textbutton:hover {
+  background: var(--hover);
+}
+
+.textbutton:active {
+  position: relative;
+  top: -1px;
+}
+
 .stage {
   height: 100%;
   display: flex;
@@ -152,7 +171,6 @@ td {
 }
 
 .progressBar {
-  width: 60%;
   height: 100%; /* 부모 요소 높이에 맞춤 */
   background-color: var(--primary); /* 프로그레스바 색상 */
   border-radius: 10px 0 0 10px; /* 좌측만 둥근 모서리 */

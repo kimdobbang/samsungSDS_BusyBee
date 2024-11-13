@@ -25,12 +25,15 @@ export const Dashboard = () => {
   const [originalRows, setOriginalRows] = useState<RowData[]>([]);
   const [monthRows, setMonthRows] = useState<RowData[]>([]);
   const [paginatedRows, setPaginatedRows] = useState<RowData[]>([]);
-  const [detailEstimateView, setDetailEstimateView] = useState<RowData | null>(null);
+  const [detailEstimateView, setDetailEstimateView] = useState<RowData | null>(
+    null
+  );
   const [detailData, setDetailData] = useState<any | null>(null);
 
   const itemsPerPage = 10;
   const [showAll, setShowAll] = useState(false);
   const [selectIndex, setSelectIndex] = useState<number | null>(null);
+  const [selectIndexCopy, setSelectIndexCopy] = useState<number | null>(null);
   const [visibleCount, setVisibleCount] = useState(3);
 
   useEffect(() => {
@@ -46,6 +49,7 @@ export const Dashboard = () => {
 
         const TodayOrderMail = getTodayOrderMail(sortRes);
         const MonthOrderMail = getMonthOrderMail(sortRes);
+        console.log(sortRes);
 
         setOriginalRows(sortRes);
         setTodayRows(TodayOrderMail);
@@ -60,6 +64,8 @@ export const Dashboard = () => {
   useEffect(() => {
     setPaginatedRows(originalRows);
   }, [originalRows]);
+
+  useEffect(() => {}, [selectIndex]);
 
   useEffect(() => {
     if (detailEstimateView?.data?.S) {
@@ -76,6 +82,7 @@ export const Dashboard = () => {
     setVisibleCount(3);
     setShowAll(false);
     setSelectIndex(null);
+    setDetailEstimateView(null);
   };
 
   const handleMonthMailClick = () => {
@@ -83,6 +90,7 @@ export const Dashboard = () => {
     setVisibleCount(3);
     setShowAll(false);
     setSelectIndex(null);
+    setDetailEstimateView(null);
   };
 
   const handleShowMore = () => {
@@ -101,15 +109,21 @@ export const Dashboard = () => {
   };
 
   const detailEstimate = () => {
-    if (selectIndex !== null) {
-      const selectedEstimate = paginatedRows[selectIndex];
+    if (selectIndexCopy !== null) {
+      setSelectIndex(selectIndexCopy);
+      const selectedEstimate = paginatedRows[selectIndexCopy];
       setDetailEstimateView(selectedEstimate);
+      console.log(originalRows[selectIndexCopy].sender.S);
     }
   };
 
   return (
     <BoardLayout>
-      <div className={`${styles.dashboard} ${detailEstimateView ? styles.withDetail : ''}`}>
+      <div
+        className={`${styles.dashboard} ${
+          detailEstimateView ? styles.withDetail : ''
+        }`}
+      >
         {/* 상단 섹션 */}
         <div className={styles.top}>
           <div className={styles.statisticbox}>
@@ -118,7 +132,10 @@ export const Dashboard = () => {
               <h3>{countToday}건</h3>
             </div>
             <div className={styles.buttondiv}>
-              <button onClick={handleTodayMailClick} className={styles.iconbutton}>
+              <button
+                onClick={handleTodayMailClick}
+                className={styles.iconbutton}
+              >
                 <MailCheckIcon width={28} height={28} />
               </button>
             </div>
@@ -128,7 +145,10 @@ export const Dashboard = () => {
               <h2>월간 요청 메일</h2>
               <h3>{countMonthly}건</h3>
             </div>
-            <button onClick={handleMonthMailClick} className={styles.iconbutton}>
+            <button
+              onClick={handleMonthMailClick}
+              className={styles.iconbutton}
+            >
               <CalendarIcon width={32} height={32} />
             </button>
           </div>
@@ -154,29 +174,31 @@ export const Dashboard = () => {
                 <th>완료여부</th>
               </thead>
               <tbody>
-                {paginatedRows.slice(0, visibleCount).map((row: RowData, index) => (
-                  <tr
-                    key={index}
-                    className={styles.line}
-                    style={selectIndex === index ? selectedStyle : {}}
-                    onClick={() => setSelectIndex(index)}
-                  >
-                    <td>{row.sender.S}</td>
-                    <td>{row.received_date.S}</td>
-                    <td>
-                      <div className={styles.stage}>
-                        <p>{row.status.N * 20} %</p>
-                        <div className={styles.progressBarContainer}>
-                          <div
-                            className={styles.progressBar}
-                            style={{ width: `${row.status.N * 20}%` }}
-                          ></div>
+                {paginatedRows
+                  .slice(0, visibleCount)
+                  .map((row: RowData, index) => (
+                    <tr
+                      key={index}
+                      className={styles.line}
+                      style={selectIndexCopy === index ? selectedStyle : {}}
+                      onClick={() => setSelectIndexCopy(index)}
+                    >
+                      <td>{row.sender.S}</td>
+                      <td>{row.received_date.S}</td>
+                      <td>
+                        <div className={styles.stage}>
+                          <p>{row.status.N * 20} %</p>
+                          <div className={styles.progressBarContainer}>
+                            <div
+                              className={styles.progressBar}
+                              style={{ width: `${row.status.N * 20}%` }}
+                            ></div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td> {row.status.N === 5 ? '완료' : '진행중'} </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td> {row.status.N === 5 ? '완료' : '진행중'} </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
 
@@ -197,7 +219,12 @@ export const Dashboard = () => {
           <div className={styles.bottom}>
             <div className={styles.detailquote}>
               <div>
-                <h1>ss@gmail.com 님의 견적 요청 자세히보기</h1>
+                <h1>
+                  {selectIndex !== null
+                    ? originalRows[selectIndex].sender.S
+                    : 0}
+                  님의 견적 요청 자세히보기
+                </h1>
                 <button className={styles.textbutton}>메일보내기</button>
               </div>
               <table>
@@ -211,17 +238,57 @@ export const Dashboard = () => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td>{detailData?.Weight}</td>
-                    <td>{detailData?.ContainerSize}</td>
-                    <td>{detailData?.DepartureDate}</td>
-                    <td>{detailData?.ArrivalDate}</td>
-                    <td>{detailData?.DepartureCity}</td>
-                    <td>{detailData?.DepartureCity}</td>
+                    <td
+                      className={detailData?.Weight ? '' : styles.missingData}
+                    >
+                      {detailData?.Weight || '미기입'}
+                    </td>
+                    <td
+                      className={
+                        detailData?.ContainerSize ? '' : styles.missingData
+                      }
+                    >
+                      {detailData?.ContainerSize || '미기입'}
+                    </td>
+                    <td
+                      className={
+                        detailData?.DepartureDate ? '' : styles.missingData
+                      }
+                    >
+                      {detailData?.DepartureDate || '미기입'}
+                    </td>
+                    <td
+                      className={
+                        detailData?.ArrivalDate ? '' : styles.missingData
+                      }
+                    >
+                      {detailData?.ArrivalDate || '미기입'}
+                    </td>
+                    <td
+                      className={
+                        detailData?.DepartureCity ? '' : styles.missingData
+                      }
+                    >
+                      {detailData?.DepartureCity || '미기입'}
+                    </td>
+                    <td
+                      className={
+                        detailData?.ArrivalCity ? '' : styles.missingData
+                      }
+                    >
+                      {detailData?.ArrivalCity || '미기입'}
+                    </td>
                   </tr>
                 </tbody>
               </table>
               <div className={styles.barSection}>
-                <Step currentStep={3} />
+                <Step
+                  currentStep={
+                    selectIndex !== null
+                      ? originalRows[selectIndex].status.N
+                      : 0
+                  }
+                />
               </div>
               <div className={styles.detail}>
                 <div className={styles.detailTop}>

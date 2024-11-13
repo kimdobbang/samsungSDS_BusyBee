@@ -1,4 +1,4 @@
-import { RowData } from '../model/boardmodel';
+import { RowData } from '../../dashboard/model/boardmodel';
 import { ParseDate } from 'shared/utils/getChangeDate';
 
 export const sortByReceivedDate = (data: RowData[]): RowData[] => {

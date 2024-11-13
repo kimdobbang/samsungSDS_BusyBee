@@ -18,11 +18,8 @@
   --sub03: #a0aec0;
   --gray02: #d7d7d7;
   --gray03: #5f6368;
-  --red01: #ef4444;
+  --red01: #f57d6b;
   --yellow01: #ffd700;
-  --green01: #22c55e;
-  --blue01: #06b6d4;
-  --orange01: #f97316;
 }
 
 /* 모든 요소의 기본 마진과 패딩을 제거 */
@@ -30,18 +27,17 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box; /* 박스 크기 계산을 쉽게 하기 위해 box-sizing 설정 */
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* HTML과 body 기본 스타일 리셋 */
 html,
-body,
-#root {
+body {
   margin: 0;
-  width: 100%;
   height: 100%; /* 전체 높이를 100%로 설정 */
   font-size: 100%; /* 폰트 크기를 기본 값으로 설정 */
   line-height: 1.5; /* 줄 간격을 설정 */

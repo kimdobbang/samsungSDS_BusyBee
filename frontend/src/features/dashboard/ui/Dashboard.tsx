@@ -30,10 +30,6 @@ export const Dashboard = () => {
   // 첫 3개 행만 보여주고, 나머지는 더보기 버튼으로 제어
   const displayedRows = showMore ? rows : rows.slice(0, 3);
 
-  // 원하는 위치의 위도와 경도를 설정합니다.
-  const latitude = 37.5665; // 예: 서울시청 위도
-  const longitude = 126.978; // 예: 서울시청 경도
-
   return (
     <BoardLayout>
       <div className={styles.dashboard}>
@@ -149,7 +145,7 @@ export const Dashboard = () => {
               </div>
               <div className={styles.detailBottom}>
                 <div className={styles.map}>
-                  <Map latitude={latitude} longitude={longitude} />
+                  <Map />
                 </div>
                 <div className={styles.bottomRight}>
                   <div className={styles.col}>

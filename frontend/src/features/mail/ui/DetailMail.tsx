@@ -7,7 +7,7 @@ import busybee3 from 'shared/assets/images/busybee3.png';
 import styles from './DetailMail.module.scss';
 import useMailStore from '../store/mailStore';
 import { getTagColor, getTagName } from 'shared/utils/getTag';
-import BoardLayout from './BoardLayout';
+import BoardLayout from 'shared/components/BoardLayout';
 
 // interface MailDetails {
 //   title: string;

@@ -1,7 +1,7 @@
 import React from 'react';
 // import { Outlet } from 'react-router-dom';
-import { BoardHeader } from 'features/board/ui/BoardHeader'; // Header 컴포넌트 경로에 맞게 수정
-import { AsideBar } from 'features/board/ui/AsideBar';
+import { BoardHeader } from 'shared/components/BoardHeader'; // Header 컴포넌트 경로에 맞게 수정
+import { AsideBar } from 'shared/components/AsideBar';
 import styles from './BoardLayout.module.scss'; // 레이아웃 스타일링
 
 interface BoardLayoutProps {

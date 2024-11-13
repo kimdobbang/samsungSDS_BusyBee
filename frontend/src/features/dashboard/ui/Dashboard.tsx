@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ReactComponent as MailCheckIcon } from 'shared/assets/icons/mail-check.svg';
 import { ReactComponent as CalendarIcon } from 'shared/assets/icons/calendar.svg';
 // import busybee3 from 'shared/assets/images/busybee2.png';
-import BoardLayout from './BoardLayout';
+import BoardLayout from 'shared/components/BoardLayout';
 import styles from './DashBoard.module.scss';
 import { Map } from 'features';
 import { Step } from './Step';

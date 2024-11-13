@@ -3,7 +3,6 @@ import React from 'react';
 import { Provider } from 'components/ui/provider';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ChatUI, Home, DetailMail, MailList, Dashboard, AuthUI } from 'features';
-import BoardLayout from 'features/board/ui/BoardLayout';
 // import { Auth } from '../features';
 // import { Voice } from '../features';
 

@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 // import { ReactComponent as ReplyIcon } from 'shared/assets/icons/reply.svg';
 import { ReactComponent as ArrowIcon } from 'shared/assets/icons/arrow.svg';
-import { fetchEmailsByReceiver } from 'features/board/api/boardApi'; // API 호출 함수
+import { fetchEmailsByReceiver } from 'features/mail/api/emailApi'; // API 호출 함수
 import styles from './MailList.module.scss';
 import useMailStore from '../store/mailStore';
 import { getNickname } from 'shared/utils/getNickname';
 import { getTagColor, getTagName } from 'shared/utils/getTag';
-import BoardLayout from 'features/board/ui/BoardLayout';
+import BoardLayout from 'shared/components/BoardLayout';
 import { useAuth } from 'features/auth/hooks/useAuth';
 
 interface MailListProps {

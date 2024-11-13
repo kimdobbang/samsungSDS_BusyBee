@@ -1,20 +1,20 @@
 // functions\chat-app\handlers\completion.js
 // 모든 정보가 수집되고 세션이 정상적으로 종료될 때 호출.
-const { markSessionComplete } = require("../common/ddb/dynamoDbClient");
-const { invokeDisconnectHandler } = require("../common/utils/lambdaClients");
-const { getSessionData, getOrderIdByConnectionId } = require("../common/ddb/dynamoDbClient"); // getSessionData 누락 추가
-const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs");
-const sqsClient = new SQSClient({ region: "ap-northeast-2" });
+const { markSessionComplete } = require('../common/ddb/dynamoDbClient');
+const { invokeDisconnectHandler } = require('../common/utils/lambdaClients');
+const { getSessionData, getOrderIdByConnectionId } = require('../common/ddb/dynamoDbClient'); // getSessionData 누락 추가
+const { SendMessageCommand, SQSClient } = require('@aws-sdk/client-sqs');
+const sqsClient = new SQSClient({ region: 'ap-northeast-2' });
 
 module.exports.handler = async (event) => {
-  console.log("Received event:", JSON.stringify(event));
+  console.log('Received event:', JSON.stringify(event));
   orderId = event.orderId;
   const sessionData = await getSessionData(orderId);
   console.log(`sessionData:${JSON.stringify(sessionData)}`);
 
   try {
     if (!orderId) {
-      throw new Error("orderId is missing in the event body.");
+      throw new Error('orderId is missing in the event body.');
     }
 
     if (!sessionData) {
@@ -25,6 +25,8 @@ module.exports.handler = async (event) => {
       data: sessionData.responsedData,
       key: sessionData.orderId,
       sender: sessionData.sender,
+      receiver: sessionData.receiver,
+      received_date: sessionData.received_date,
     };
     console.log(`sqsMessagePayload:${JSON.stringify(sqsMessagePayload)}`);
 
@@ -44,7 +46,7 @@ module.exports.handler = async (event) => {
     connectionId = sessionData.connectionId;
     await invokeDisconnectHandler(orderId, connectionId);
     console.log(
-      `Disconnect handler successfully invoked for orderId: ${orderId}, connectionId: ${connectionId}`
+      `Disconnect handler successfully invoked for orderId: ${orderId}, connectionId: ${connectionId}`,
     );
 
     return {
@@ -55,7 +57,7 @@ module.exports.handler = async (event) => {
     console.log(`Error during completion process for orderId: ${orderId},`, error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: "Completion - Internal Server Error" }),
+      body: JSON.stringify({ message: 'Completion - Internal Server Error' }),
     };
   }
 };

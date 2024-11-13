@@ -30,6 +30,8 @@ export const Dashboard = () => {
 
   const itemsPerPage = 10;
   const [showAll, setShowAll] = useState(false);
+  const [selectIndex, setSelectIndex] = useState<number | null>(null);
+  const [visibleCount, setVisibleCount] = useState(3);
 
   useEffect(() => {
     const fetchLambdaData = async () => {
@@ -64,25 +66,6 @@ export const Dashboard = () => {
       setDetailData(JSON.parse(detailEstimateView.data.S));
     }
   }, [detailEstimateView]);
-
-  const [selectIndex, setSelectIndex] = useState<number | null>(null);
-  const [visibleCount, setVisibleCount] = useState(3);
-
-  // // 샘플 데이터
-  // const rows = [
-  //   {
-  //     requester: 'dd@gmail.com',
-  //     date: '2024.11.05',
-  //     stage: '60%',
-  //     status: '진행중',
-  //   },
-  //   {
-  //     requester: 'aa@gmail.com',
-  //     date: '2024.11.06',
-  //     stage: '30%',
-  //     status: '대기중',
-  //   },
-  // ];
 
   const selectedStyle = {
     backgroundColor: 'var(--sub01)', // 하늘색 배경
@@ -126,7 +109,8 @@ export const Dashboard = () => {
 
   return (
     <BoardLayout>
-      <div className={styles.dashboard}>
+      <div className={`${styles.dashboard} ${detailEstimateView ? styles.withDetail : ''}`}>
+        {/* 상단 섹션 */}
         <div className={styles.top}>
           <div className={styles.statisticbox}>
             <div className={styles.statistics}>
@@ -149,6 +133,8 @@ export const Dashboard = () => {
             </button>
           </div>
         </div>
+
+        {/* 중앙 섹션 */}
         <div className={styles.middle}>
           <div className={styles.quotebox}>
             <div className={styles.middleHeader}>
@@ -205,66 +191,70 @@ export const Dashboard = () => {
             )}
           </div>
         </div>
-        <div className={styles.bottom}>
-          <div className={styles.detailquote}>
-            <div>
-              <h1>ss@gmail.com 님의 견적 요청 자세히보기</h1>
-              <button className={styles.textbutton}>메일보내기</button>
-            </div>
-            <table>
-              <thead>
-                <th>무게</th>
-                <th>컨테이너 사이즈</th>
-                <th>출발 날짜</th>
-                <th>도착 날짜</th>
-                <th>출발 도시</th>
-                <th>도착 도시</th>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>{detailData?.Weight}</td>
-                  <td>{detailData?.ContainerSize}</td>
-                  <td>{detailData?.DepartureDate}</td>
-                  <td>{detailData?.ArrivalDate}</td>
-                  <td>{detailData?.DepartureCity}</td>
-                  <td>{detailData?.DepartureCity}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div className={styles.barSection}>
-              <Step currentStep={3} />
-            </div>
-            <div className={styles.detail}>
-              <div className={styles.detailTop}>
-                <div className={styles.topHalf}>
-                  <h1>현재 위치</h1>
-                </div>
-                <div className={styles.topHalf}>
-                  <h1>운송 상태</h1>
-                </div>
+
+        {/* 하단 섹션 (견적 요청이 선택된 경우에만 표시) */}
+        {detailEstimateView && (
+          <div className={styles.bottom}>
+            <div className={styles.detailquote}>
+              <div>
+                <h1>ss@gmail.com 님의 견적 요청 자세히보기</h1>
+                <button className={styles.textbutton}>메일보내기</button>
               </div>
-              <div className={styles.detailBottom}>
-                <div className={styles.map}>
-                  <Map />
+              <table>
+                <thead>
+                  <th>무게</th>
+                  <th>컨테이너 사이즈</th>
+                  <th>출발 날짜</th>
+                  <th>도착 날짜</th>
+                  <th>출발 도시</th>
+                  <th>도착 도시</th>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{detailData?.Weight}</td>
+                    <td>{detailData?.ContainerSize}</td>
+                    <td>{detailData?.DepartureDate}</td>
+                    <td>{detailData?.ArrivalDate}</td>
+                    <td>{detailData?.DepartureCity}</td>
+                    <td>{detailData?.DepartureCity}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div className={styles.barSection}>
+                <Step currentStep={3} />
+              </div>
+              <div className={styles.detail}>
+                <div className={styles.detailTop}>
+                  <div className={styles.topHalf}>
+                    <h1>현재 위치</h1>
+                  </div>
+                  <div className={styles.topHalf}>
+                    <h1>운송 상태</h1>
+                  </div>
                 </div>
-                <div className={styles.bottomRight}>
-                  <div className={styles.col}>
-                    <h2>열림 감지</h2>
-                    <div className={styles.square}>ON</div>
+                <div className={styles.detailBottom}>
+                  <div className={styles.map}>
+                    <Map />
                   </div>
-                  <div className={styles.col}>
-                    <h2>내부 온도</h2>
-                    <div className={styles.square}>25도</div>
-                  </div>
-                  <div className={styles.col}>
-                    <h2>내부 습도</h2>
-                    <div className={styles.square}>23%</div>
+                  <div className={styles.bottomRight}>
+                    <div className={styles.col}>
+                      <h2>열림 감지</h2>
+                      <div className={styles.square}>ON</div>
+                    </div>
+                    <div className={styles.col}>
+                      <h2>내부 온도</h2>
+                      <div className={styles.square}>25도</div>
+                    </div>
+                    <div className={styles.col}>
+                      <h2>내부 습도</h2>
+                      <div className={styles.square}>23%</div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </BoardLayout>
   );

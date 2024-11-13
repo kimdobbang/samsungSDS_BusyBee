@@ -4,7 +4,8 @@ import { ReactComponent as CalendarIcon } from 'shared/assets/icons/calendar.svg
 // import busybee3 from 'shared/assets/images/busybee2.png';
 import BoardLayout from './BoardLayout';
 import styles from './DashBoard.module.scss';
-import { Map, MultiStepProgress } from 'features';
+import { Map } from 'features';
+import { Step } from './Step';
 
 export const Dashboard = () => {
   const [showMore, setShowMore] = useState(false);
@@ -135,7 +136,7 @@ export const Dashboard = () => {
               </tbody>
             </table>
             <div className={styles.barSection}>
-              <MultiStepProgress status={3} />
+              <Step currentStep={3} />
             </div>
             <div className={styles.detail}>
               <div className={styles.detailTop}>

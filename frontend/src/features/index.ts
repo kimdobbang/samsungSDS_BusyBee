@@ -10,7 +10,6 @@ export * from './board/ui/DetailMail';
 export * from './board/ui/MailList';
 export * from './board/ui/Dashboard';
 export * from './board/api/boardApi';
-export * from './board/ui/MultiStepProgress';
 export * from './board/ui/Map';
 // export * from './board/api/emailMockData';
 // export * from './board/hooks/useBoard';

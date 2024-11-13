@@ -36,10 +36,13 @@
 
       &:first-child {
         // 첫 번째 h1에만 적용
-        border-radius: 10px;
-        width: auto;
+        border-radius: 20px;
+        width: 80px;
         padding-left: 1rem;
         padding-right: 1rem;
+        color: white;
+        display: flex;
+        justify-content: center;
       }
     }
     display: flex;

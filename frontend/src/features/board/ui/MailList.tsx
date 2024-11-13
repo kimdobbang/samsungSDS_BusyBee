@@ -19,17 +19,18 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
   const setMails = useMailStore((state) => state.setMails);
 
   // useAuth 훅을 사용하여 이메일 가져오기
-  const [, email] = useAuth() || []; // 구조 분해 할당으로 이메일만 가져옴
+  const [, , loginId] = useAuth() || []; // 구조 분해 할당으로 이메일만 가져옴
 
   useEffect(() => {
     const loadMails = async () => {
       // email이 없으면 메일을 로드하지 않음
-      if (!email) return;
+      if (!loginId) return;
 
       try {
-        // email이 배열일 경우 첫 번째 값을 사용하거나, 기본 이메일 주소를 사용
-        // const singleEmail = Array.isArray(email) ? email[0] : email;
-        const data = await fetchEmailsByReceiver('test@busybeemail.net');
+        console.log('로그인 아이디: ', loginId);
+
+        const receiver = loginId + '@busybeemail.net';
+        const data = await fetchEmailsByReceiver(receiver || 'test@busybeemail.net');
 
         // API 응답 구조 출력
         console.log('Fetched data:', data);
@@ -52,10 +53,10 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
     };
 
     // 컴포넌트가 마운트될 때 딱 한 번만 메일을 로드
-    if (email) {
+    if (loginId) {
       loadMails();
     }
-  }, [email]); // email이 설정될 때만 호출
+  }, [loginId]); // loginId 설정될 때만 호출
 
   // 데이터 구조 확인을 위해 콘솔 로그 출력
   if (mails.length > 0) {
@@ -104,8 +105,10 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
                     {mail.email}
                   </td>
                   {/* 값이 제대로 렌더링되지 않으면 확인 */}
-                  <td className={styles.tag} style={{ backgroundColor: getTagColor(mail.flag) }}>
-                    {getTagName(mail.flag)}
+                  <td className={styles.tagCol}>
+                    <div style={{ backgroundColor: getTagColor(mail.flag) }} className={styles.tag}>
+                      {getTagName(mail.flag)}
+                    </div>
                   </td>
                   <td className={styles.subject}>
                     <a

@@ -63,6 +63,7 @@
 /* 테이블 스타일 */
 .table {
   width: 100%;
+  height: auto;
   border-collapse: collapse;
   margin-top: 15px;
 }
@@ -89,8 +90,18 @@
   width: 15%;
 }
 
-.tag {
+.tagCol {
   width: 10%;
+}
+
+.tag {
+  width: 70px;
+  padding: 2px;
+  border-radius: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
 }
 
 .subject {

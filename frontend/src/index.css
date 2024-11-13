@@ -17,8 +17,11 @@
   --sub03: #a0aec0;
   --gray02: #d7d7d7;
   --gray03: #5f6368;
-  --red01: #f57d6b;
+  --red01: #ef4444;
   --yellow01: #ffd700;
+  --green01: #22c55e;
+  --blue01: #06b6d4;
+  --orange01: #f97316;
 }
 
 /* 모든 요소의 기본 마진과 패딩을 제거 */

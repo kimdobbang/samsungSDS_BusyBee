@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ReactComponent as LetterIcon } from 'shared/assets/icons/letterbox.svg';
 import { ReactComponent as DashBoardIcon } from 'shared/assets/icons/dashboard.svg';
 import styles from './AsideBar.module.scss';
-import useMailStore from 'features/mail/store/mailStore';
+import useMailStore from 'features/mail/utils/mailStore';
 
 export const AsideBar: React.FC = () => {
   const navigate = useNavigate();

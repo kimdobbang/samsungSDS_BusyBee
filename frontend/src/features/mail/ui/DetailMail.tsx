@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 // import { ReactComponent as ReplyIcon } from 'shared/assets/icons/reply.svg';
 import busybee3 from 'shared/assets/images/busybee3.png';
 import styles from './DetailMail.module.scss';
-import useMailStore from '../store/mailStore';
+import useMailStore from 'features/mail/utils/mailStore';
 import { getTagColor, getTagName } from 'shared/utils/getTag';
 import BoardLayout from 'shared/components/BoardLayout';
 

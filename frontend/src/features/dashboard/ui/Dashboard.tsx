@@ -1,33 +1,60 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ReactComponent as MailCheckIcon } from 'shared/assets/icons/mail-check.svg';
 import { ReactComponent as CalendarIcon } from 'shared/assets/icons/calendar.svg';
 // import busybee3 from 'shared/assets/images/busybee2.png';
 import BoardLayout from 'shared/components/BoardLayout';
 import styles from './DashBoard.module.scss';
+
 import { Map } from 'features';
 import { Step } from './Step';
+import { sendToLambda, useAuth } from '../..';
+import { CountByDate } from '../../../shared/utils/getCountByDate';
+import { CountInProgressQuotes } from 'features/mail/utils/estimate';
 
 export const Dashboard = () => {
+  const [, authEmail] = useAuth() || [];
+  const email = typeof authEmail === 'string' ? authEmail : '';
   const [showMore, setShowMore] = useState(false);
+  const [countToday, setTodayCount] = useState(0);
+  const [countMonthly, setMonthlyCount] = useState(0);
+  const [inProgressCount, setInProgressCount] = useState(0);
+
+  useEffect(() => {
+    const fetchLambdaData = async () => {
+      try {
+        const res = await sendToLambda(email);
+
+        console.log(res);
+        const { todayCount, monthCount } = CountByDate(res);
+        setTodayCount(todayCount);
+        setMonthlyCount(monthCount);
+
+        const inProgressQuotesCount = CountInProgressQuotes(res);
+        setInProgressCount(inProgressQuotesCount);
+      } catch (error) {
+        console.error('Error fetching data from Lambda:', error);
+      }
+    };
+    fetchLambdaData();
+  });
   const [selectIndex, setSelectIndex] = useState<number | null>(null);
 
   // 샘플 데이터
   const rows = [
-    { requester: 'dd@gmail.com', date: '2024.11.05', stage: '60%', status: '진행중' },
-    { requester: 'aa@gmail.com', date: '2024.11.06', stage: '30%', status: '대기중' },
-    { requester: 'bb@gmail.com', date: '2024.11.07', stage: '90%', status: '완료' },
-    { requester: 'cc@gmail.com', date: '2024.11.08', stage: '20%', status: '대기중' },
-    { requester: 'ee@gmail.com', date: '2024.11.09', stage: '75%', status: '진행중' },
-    { requester: 'ff@gmail.com', date: '2024.11.10', stage: '100%', status: '완료' },
-    { requester: 'gg@gmail.com', date: '2024.11.11', stage: '45%', status: '진행중' },
-    { requester: 'hh@gmail.com', date: '2024.11.12', stage: '15%', status: '대기중' },
-    { requester: 'ii@gmail.com', date: '2024.11.13', stage: '85%', status: '진행중' },
-    { requester: 'jj@gmail.com', date: '2024.11.14', stage: '50%', status: '진행중' },
-    { requester: 'kk@gmail.com', date: '2024.11.15', stage: '40%', status: '대기중' },
-    // 더 많은 데이터 추가 가능
+    {
+      requester: 'dd@gmail.com',
+      date: '2024.11.05',
+      stage: '60%',
+      status: '진행중',
+    },
+    {
+      requester: 'aa@gmail.com',
+      date: '2024.11.06',
+      stage: '30%',
+      status: '대기중',
+    },
   ];
 
-  // 첫 3개 행만 보여주고, 나머지는 더보기 버튼으로 제어
   const displayedRows = showMore ? rows : rows.slice(0, 3);
 
   return (
@@ -36,8 +63,8 @@ export const Dashboard = () => {
         <div className={styles.top}>
           <div className={styles.statisticbox}>
             <div className={styles.statistics}>
-              <h2>오늘 요청</h2>
-              <h3>16건</h3>
+              <h2>오늘 견적 요청 메일</h2>
+              <h3>{countToday}건</h3>
             </div>
             <div className={styles.buttondiv}>
               <div className={styles.iconbutton}>
@@ -47,8 +74,8 @@ export const Dashboard = () => {
           </div>
           <div className={styles.statisticbox}>
             <div className={styles.statistics}>
-              <h2>월간 요청</h2>
-              <h3>160건</h3>
+              <h2>월간 요청 메일</h2>
+              <h3>{countMonthly}건</h3>
             </div>
             <div className={styles.iconbutton}>
               <CalendarIcon width={32} height={32} />
@@ -59,8 +86,8 @@ export const Dashboard = () => {
           <div className={styles.quotebox}>
             <div className={styles.middleHeader}>
               <div>
-                <h1>진행중인 요청</h1>
-                <h2>30건 진행중</h2>
+                <h1>진행중인 견적</h1>
+                <h2>{inProgressCount}건 발급 진행중</h2>
               </div>
               <button className={styles.textbutton}>조회하기</button>
             </div>

@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { ReactComponent as ArrowIcon } from 'shared/assets/icons/arrow.svg';
 import { fetchEmailsByReceiver } from 'features/mail/api/emailApi'; // API 호출 함수
 import styles from './MailList.module.scss';
-import useMailStore from '../store/mailStore';
+import useMailStore from 'features/mail/utils/mailStore';
 import { getNickname } from 'shared/utils/getNickname';
 import { getTagColor, getTagName } from 'shared/utils/getTag';
 import BoardLayout from 'shared/components/BoardLayout';

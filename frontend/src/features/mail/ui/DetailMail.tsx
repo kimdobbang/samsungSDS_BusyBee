@@ -69,6 +69,7 @@ export const DetailMail = () => {
           </button> */}
           </div>
         </div>
+        <hr />
         <div className={styles.body}>
           <div className={styles.sender}>
             <button className={`${styles.button} ${styles.profile}`}>
@@ -80,6 +81,7 @@ export const DetailMail = () => {
           <div className={styles.content} style={{ whiteSpace: 'pre-wrap' }}>
             {mailDetails.emailContent}
           </div>
+          {/* <div className={styles.atachmentPart}>{mailDetails}</div> */}
         </div>
       </div>
     </BoardLayout>

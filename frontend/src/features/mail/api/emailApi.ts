@@ -12,7 +12,7 @@ export const fetchEmailsByReceiver = async (receiver: string) => {
     }
 
     const data = await response.json();
-    // console.log('DATA: ', data);
+    console.log('DATA: ', data);
 
     return data; // 이메일 데이터 반환
   } catch (error) {

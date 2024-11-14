@@ -21,7 +21,11 @@ export const BoardHeader: React.FC<BoardHeaderProps> = ({ toggleAside }) => {
 
   const logout = () => {
     // logoutFunction();
+    localStorage.clear();
+    sessionStorage.clear();
     setModalOpen(false);
+
+    window.location.reload();
   };
 
   return (
@@ -37,11 +41,7 @@ export const BoardHeader: React.FC<BoardHeaderProps> = ({ toggleAside }) => {
       </div>
       <div className={styles.search}>
         <SearchIcon width={24} height={24} />
-        <input
-          type='text'
-          placeholder='메일 검색'
-          className={styles.searchInput}
-        />
+        <input type='text' placeholder='메일 검색' className={styles.searchInput} />
         <button className={styles.filterButton}>
           <FilterIcon width={12} height={12} />
         </button>
@@ -56,10 +56,7 @@ export const BoardHeader: React.FC<BoardHeaderProps> = ({ toggleAside }) => {
         >
           <InfoIcon />
         </Tooltip>
-        <button
-          className={`${styles.button} ${styles.profile}`}
-          onClick={logoutModalOpen}
-        >
+        <button className={`${styles.button} ${styles.profile}`} onClick={logoutModalOpen}>
           <img src={busybee3} alt='' height={40} />
         </button>
       </div>

@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 // 이미지 파일을 import로 가져오기
 import startMarkerImageSrc from 'shared/assets/icons/start.png';
 import endMarkerImageSrc from 'shared/assets/icons/end.png';
-import currentMarkerImageSrc from 'shared/assets/icons/car.png';
+import currentMarkerImageSrc from 'shared/assets/icons/truck.png';
 
 declare global {
   interface Window {

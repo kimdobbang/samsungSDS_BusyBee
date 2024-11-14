@@ -4,8 +4,9 @@ import { ReactComponent as CalendarIcon } from 'shared/assets/icons/calendar.svg
 // import busybee3 from 'shared/assets/images/busybee2.png';
 import BoardLayout from 'shared/components/BoardLayout';
 import styles from './DashBoard.module.scss';
+import mqtt from 'mqtt';
 
-import { Map } from 'features';
+import { Map, MultiStepProgress } from 'features';
 import { sendToLambda, useAuth } from '../..';
 import { CountByDate } from '../../../shared/utils/getCountByDate';
 // import { CountInProgressQuotes } from 'features/mail/utils/estimate';
@@ -16,6 +17,11 @@ import { sortByReceivedDate } from 'features/mail/utils/sort';
 import { setupMqtt } from 'features/dashboard/api/mqttSetup';
 // import { sendDataToLambda } from '../api/dashboardApi';
 import { SendMailModal } from '../ui/SendMailModal';
+import { SensorData, GpsData } from 'shared/types/sensorData';
+import {
+  getCityNameByCode,
+  getCoordinatesByCode,
+} from 'shared/utils/getLatLng';
 
 export const Dashboard = () => {
   const [, authEmail] = useAuth() || [];
@@ -39,10 +45,61 @@ export const Dashboard = () => {
   const [visibleCount, setVisibleCount] = useState(3);
   const [showSendMailModal, setShowSendMailModal] = useState<boolean>(false);
 
-  // MQTT 연결
+  // sensorData 상태를 SensorData 클래스를 사용해 초기화
+  const [sensorData, setSensorData] = useState<SensorData>(new SensorData());
+  const [gpsData, setGpsData] = useState<GpsData>(new GpsData());
+
+  // MQTT 설정 및 연결
   useEffect(() => {
-    // MQTT 클라이언트 설정 및 연결
-    const client = setupMqtt();
+    const brokerUrl = 'ws://52.78.28.1:8080'; // MQTT 브로커 URL
+
+    const client = mqtt.connect(brokerUrl, {
+      clientId: `myMqttClient-${Math.random().toString(16).slice(2)}`,
+      keepalive: 60,
+      reconnectPeriod: 5000,
+    });
+
+    client.on('connect', () => {
+      console.log('Connected to MQTT broker');
+
+      // 여러 토픽을 구독
+      client.subscribe(['sensor/data', 'gps/data'], (err) => {
+        if (err) {
+          console.error('Subscription error:', err);
+        } else {
+          console.log('Successfully subscribed to sensor/data and gps/data');
+        }
+      });
+    });
+
+    // 메시지를 받을 때 처리
+    client.on('message', (topic, message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        console.log(`Received data on topic ${topic}:`, data);
+
+        // 토픽에 따라 다른 상태를 설정
+        if (topic === 'sensor/data') {
+          setSensorData(data);
+        } else if (topic === 'gps/data') {
+          setGpsData(data);
+        }
+      } catch (error) {
+        console.error(`Failed to parse data on topic ${topic}:`, error);
+      }
+    });
+
+    client.on('error', (error: any) => {
+      console.error('MQTT connection error:', error);
+    });
+
+    client.on('offline', () => {
+      console.log('MQTT client is offline');
+    });
+
+    client.on('close', () => {
+      console.log('MQTT connection closed');
+    });
 
     // 컴포넌트가 언마운트될 때 연결 해제
     return () => {
@@ -84,6 +141,7 @@ export const Dashboard = () => {
   useEffect(() => {
     if (detailEstimateView?.data?.S) {
       setDetailData(JSON.parse(detailEstimateView.data.S));
+      console.log('DETAIL DATA: ', detailData);
     }
   }, [detailEstimateView]);
 
@@ -199,10 +257,12 @@ export const Dashboard = () => {
             </div>
             <table>
               <thead>
-                <th>견적요청처</th>
-                <th>요청날짜</th>
-                <th>단계</th>
-                <th>완료여부</th>
+                <tr>
+                  <th>견적요청처</th>
+                  <th>요청날짜</th>
+                  <th>단계</th>
+                  <th>완료여부</th>
+                </tr>
               </thead>
               <tbody>
                 {paginatedRows
@@ -262,12 +322,14 @@ export const Dashboard = () => {
               </div>
               <table>
                 <thead>
-                  <th>무게</th>
-                  <th>컨테이너 사이즈</th>
-                  <th>출발 날짜</th>
-                  <th>도착 날짜</th>
-                  <th>출발 도시</th>
-                  <th>도착 도시</th>
+                  <tr>
+                    <th>무게</th>
+                    <th>컨테이너 사이즈</th>
+                    <th>출발 날짜</th>
+                    <th>도착 날짜</th>
+                    <th>출발 도시</th>
+                    <th>도착 도시</th>
+                  </tr>
                 </thead>
                 <tbody>
                   <tr>
@@ -350,7 +412,15 @@ export const Dashboard = () => {
                   </tr>
                 </tbody>
               </table>
-              <div className={styles.barSection}></div>
+              <div className={styles.barSection}>
+                <MultiStepProgress
+                  status={
+                    selectIndex !== null
+                      ? originalRows[selectIndex].status.N
+                      : 0
+                  }
+                />
+              </div>
               <div className={styles.detail}>
                 <div className={styles.detailTop}>
                   <div className={styles.topHalf}>
@@ -362,20 +432,65 @@ export const Dashboard = () => {
                 </div>
                 <div className={styles.detailBottom}>
                   <div className={styles.map}>
-                    <Map />
+                    <Map
+                      startLat={
+                        getCoordinatesByCode(detailData?.DepartureCity)?.lat ||
+                        0
+                      } // 기본값 0 사용
+                      startLng={
+                        getCoordinatesByCode(detailData?.DepartureCity)?.lng ||
+                        0
+                      }
+                      endLat={
+                        getCoordinatesByCode(detailData?.ArrivalCity)?.lat || 0
+                      }
+                      endLng={
+                        getCoordinatesByCode(detailData?.ArrivalCity)?.lng || 0
+                      }
+                      currentLat={gpsData?.lat || 0}
+                      currentLng={gpsData?.lon || 0}
+                    />
                   </div>
                   <div className={styles.bottomRight}>
-                    <div className={styles.col}>
-                      <h2>열림 감지</h2>
-                      <div className={styles.square}>ON</div>
+                    <div className={styles.sensor}>
+                      <div className={styles.col}>
+                        <h2>현재 위도</h2>
+                        <div className={styles.square}>{gpsData.lat}</div>
+                      </div>
+                      <div className={styles.col}>
+                        <h2>현재 경도</h2>
+                        <div className={styles.square}>{gpsData.lon}</div>
+                      </div>
+                      <div className={styles.col}>
+                        <h2>열림 감지</h2>
+                        <div
+                          className={styles.square}
+                          style={{
+                            backgroundColor: sensorData.isOpen
+                              ? '#a3e6ff'
+                              : '#3a8bb2',
+                            color: 'white', // 텍스트 색상 (흰색)으로 설정
+                          }}
+                        >
+                          {sensorData.isOpen ? 'OPEN' : 'CLOSED'}
+                        </div>
+                      </div>
+                      <div className={styles.col}>
+                        <h2>내부 온도</h2>
+                        <div className={styles.square}>
+                          {sensorData.temperature}
+                        </div>
+                      </div>
+                      <div className={styles.col}>
+                        <h2>내부 습도</h2>
+                        <div className={styles.square}>
+                          {sensorData.humidity}%
+                        </div>
+                      </div>
                     </div>
-                    <div className={styles.col}>
-                      <h2>내부 온도</h2>
-                      <div className={styles.square}>25도</div>
-                    </div>
-                    <div className={styles.col}>
-                      <h2>내부 습도</h2>
-                      <div className={styles.square}>23%</div>
+                    <div className={styles.camera}>
+                      <h2>내부 카메라</h2>
+                      <div>카메라 자리</div>
                     </div>
                   </div>
                 </div>

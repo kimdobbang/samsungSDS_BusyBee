@@ -1,21 +1,49 @@
-// MQTT 설정 파일 (mqttSetup.js 또는 mqttSetup.ts)
 import mqtt from 'mqtt';
+import { SensorData } from 'shared/types/sensorData';
 
+// export function setupMqtt(setSensorData: (data: SensorData) => void) {
 export function setupMqtt() {
   const brokerUrl = 'ws://52.78.28.1:8080'; // MQTT 브로커 URL
 
   const client = mqtt.connect(brokerUrl, {
-    clientId: 'myMqttClient',
-    // 필요할 경우 인증 정보 추가
+    clientId: `myMqttClient-${Math.random().toString(16).slice(2)}`,
+    keepalive: 60,
+    reconnectPeriod: 5000,
   });
 
   client.on('connect', () => {
     console.log('Connected to MQTT broker');
-    client.subscribe('sensor/data'); // 구독할 주제
+    client.subscribe('sensor/data', (err) => {
+      if (err) {
+        console.error('Subscription error:', err);
+      } else {
+        console.log('Successfully subscribed to sensor/data');
+      }
+    });
   });
 
   client.on('message', (topic, message) => {
-    console.log('MQTT Message:', topic, message.toString());
+    if (topic === 'sensor/data') {
+      try {
+        const data = JSON.parse(message.toString());
+        console.log('Received data:', data);
+        // setSensorData(data);
+      } catch (error) {
+        console.error('Failed to parse sensor data:', error);
+      }
+    }
+  });
+
+  client.on('error', (error) => {
+    console.error('MQTT connection error:', error);
+  });
+
+  client.on('offline', () => {
+    console.log('MQTT client is offline');
+  });
+
+  client.on('close', () => {
+    console.log('MQTT connection closed');
   });
 
   return client;

@@ -56,7 +56,7 @@ public class InformationMailRequest implements RequestHandler<SQSEvent, Void> {
                                     .withBody(new Body()
                                             .withHtml(new Content().withCharset("UTF-8").withData(htmlBody))
                                             .withText(new Content().withCharset("UTF-8").withData(textBody))))
-                            .withSource(emailAddress);
+                            .withSource(parsedData.getReceiver());
 
                     // 이메일 전송
                     SendEmailResult result = sesClient.sendEmail(request);

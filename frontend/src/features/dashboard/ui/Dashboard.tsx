@@ -14,6 +14,8 @@ import { getMonthOrderMail } from 'features/mail/utils/estimate';
 import { RowData } from '../model/boardmodel';
 import { sortByReceivedDate } from 'features/mail/utils/sort';
 import { setupMqtt } from 'features/dashboard/api/mqttSetup';
+// import { sendDataToLambda } from '../api/dashboardApi';
+import { SendMailModal } from '../ui/SendMailModal';
 
 export const Dashboard = () => {
   const [, authEmail] = useAuth() || [];
@@ -35,6 +37,7 @@ export const Dashboard = () => {
   const [selectIndex, setSelectIndex] = useState<number | null>(null);
   const [selectIndexCopy, setSelectIndexCopy] = useState<number | null>(null);
   const [visibleCount, setVisibleCount] = useState(3);
+  const [showSendMailModal, setShowSendMailModal] = useState<boolean>(false);
 
   // MQTT 연결
   useEffect(() => {
@@ -94,6 +97,7 @@ export const Dashboard = () => {
     setShowAll(false);
     setSelectIndex(null);
     setDetailEstimateView(null);
+    console.log(paginatedRows);
   };
 
   const handleMonthMailClick = () => {
@@ -125,6 +129,22 @@ export const Dashboard = () => {
       const selectedEstimate = paginatedRows[selectIndexCopy];
       setDetailEstimateView(selectedEstimate);
       console.log(originalRows[selectIndexCopy].sender.S);
+    }
+  };
+  const sendMail = () => {
+    setShowSendMailModal(true);
+    if (selectIndex !== null) {
+      // const sender = originalRows[selectIndex].receiver?.S;
+      // const receiver = originalRows[selectIndex].sender.S;
+      // const match = receiver.match(/<(.*?)>/);
+      // const REreceiver = receiver && match ? match[1] : null;
+      // const text = '잘부탁드랴여 ㅎㅎ';
+      // if (REreceiver !== null && sender !== undefined) {
+      // const res = sendDataToLambda(REreceiver, sender, text);
+      //   console.log(REreceiver);
+      //   console.log(sender);
+      //   console.log(res);
+      // }
     }
   };
 
@@ -236,7 +256,9 @@ export const Dashboard = () => {
                     : 0}
                   님의 견적 요청 자세히보기
                 </h1>
-                <button className={styles.textbutton}>메일보내기</button>
+                <button onClick={sendMail} className={styles.textbutton}>
+                  메일보내기
+                </button>
               </div>
               <table>
                 <thead>
@@ -250,44 +272,80 @@ export const Dashboard = () => {
                 <tbody>
                   <tr>
                     <td
-                      className={detailData?.Weight ? '' : styles.missingData}
+                      className={
+                        detailData?.Weight && detailData.Weight !== 'unknown'
+                          ? ''
+                          : styles.missingData
+                      }
                     >
-                      {detailData?.Weight || '미기입'}
+                      {detailData?.Weight && detailData.Weight !== 'unknown'
+                        ? detailData.Weight
+                        : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.ContainerSize ? '' : styles.missingData
+                        detailData?.ContainerSize &&
+                        detailData.ContainerSize !== 'unknown'
+                          ? ''
+                          : styles.missingData
                       }
                     >
-                      {detailData?.ContainerSize || '미기입'}
+                      {detailData?.ContainerSize &&
+                      detailData.ContainerSize !== 'unknown'
+                        ? detailData.ContainerSize
+                        : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.DepartureDate ? '' : styles.missingData
+                        detailData?.DepartureDate &&
+                        detailData.DepartureDate !== 'unknown'
+                          ? ''
+                          : styles.missingData
                       }
                     >
-                      {detailData?.DepartureDate || '미기입'}
+                      {detailData?.DepartureDate &&
+                      detailData.DepartureDate !== 'unknown'
+                        ? detailData.DepartureDate
+                        : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.ArrivalDate ? '' : styles.missingData
+                        detailData?.ArrivalDate &&
+                        detailData.ArrivalDate !== 'unknown'
+                          ? ''
+                          : styles.missingData
                       }
                     >
-                      {detailData?.ArrivalDate || '미기입'}
+                      {detailData?.ArrivalDate &&
+                      detailData.ArrivalDate !== 'unknown'
+                        ? detailData.ArrivalDate
+                        : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.DepartureCity ? '' : styles.missingData
+                        detailData?.DepartureCity &&
+                        detailData.DepartureCity !== 'unknown'
+                          ? ''
+                          : styles.missingData
                       }
                     >
-                      {detailData?.DepartureCity || '미기입'}
+                      {detailData?.DepartureCity &&
+                      detailData.DepartureCity !== 'unknown'
+                        ? detailData.DepartureCity
+                        : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.ArrivalCity ? '' : styles.missingData
+                        detailData?.ArrivalCity &&
+                        detailData.ArrivalCity !== 'unknown'
+                          ? ''
+                          : styles.missingData
                       }
                     >
-                      {detailData?.ArrivalCity || '미기입'}
+                      {detailData?.ArrivalCity &&
+                      detailData.ArrivalCity !== 'unknown'
+                        ? detailData.ArrivalCity
+                        : '미기입'}
                     </td>
                   </tr>
                 </tbody>
@@ -326,6 +384,53 @@ export const Dashboard = () => {
           </div>
         )}
       </div>
+      {showSendMailModal && selectIndex !== null && (
+        <SendMailModal
+          showModal={true}
+          onClose={() => {
+            setShowSendMailModal(false);
+          }}
+          onSend={() => {
+            setShowSendMailModal(false);
+            setShowSendMailModal(false);
+          }}
+          orderId={originalRows[selectIndex].Id?.S || ''}
+          sender={originalRows[selectIndex].receiver?.S || ''}
+          REreceiver={
+            originalRows[selectIndex].sender.S?.match(/<(.+?)>/)?.[1] || ''
+          }
+          Weight={
+            detailData?.Weight && detailData.Weight !== 'unknown'
+              ? detailData.Weight
+              : '미기입'
+          }
+          ContainerSize={
+            detailData?.ContainerSize && detailData.ContainerSize !== 'unknown'
+              ? detailData.ContainerSize
+              : '미기입'
+          }
+          DepartureDate={
+            detailData?.DepartureDate && detailData.DepartureDate !== 'unknown'
+              ? detailData.DepartureDate
+              : '미기입'
+          }
+          ArrivalDate={
+            detailData?.ArrivalDate && detailData.ArrivalDate !== 'unknown'
+              ? detailData.ArrivalDate
+              : '미기입'
+          }
+          DepartureCity={
+            detailData?.DepartureCity && detailData.DepartureCity !== 'unknown'
+              ? detailData.DepartureCity
+              : '미기입'
+          }
+          ArrivalCity={
+            detailData?.ArrivalCity && detailData.ArrivalCity !== 'unknown'
+              ? detailData.ArrivalCity
+              : '미기입'
+          }
+        />
+      )}
     </BoardLayout>
   );
 };

@@ -15,15 +15,19 @@ export const AsideBar: React.FC = () => {
             className={styles.button}
             onClick={() => navigate('/mail')} // 조건부 호출
           >
-            <LetterIcon width={24} height={24} className={styles.icon} />
-            <h1 className={styles.title}>편지함</h1>
+            <div>
+              <LetterIcon width={24} height={24} className={styles.icon} />
+              <h1 className={styles.title}>편지함</h1>
+            </div>
             <p className={styles.count}>{mails.length}</p>
           </button>
         </li>
         <li className={styles.item}>
           <button className={styles.button} onClick={() => navigate('/')}>
-            <DashBoardIcon width={24} height={24} className={styles.icon} />
-            <h1 className={styles.title}>대시보드</h1>
+            <div>
+              <DashBoardIcon width={24} height={24} className={styles.icon} />
+              <h1 className={styles.title}>대시보드</h1>
+            </div>
             <p className={styles.count}></p>
           </button>
         </li>

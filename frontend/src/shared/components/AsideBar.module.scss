@@ -21,6 +21,7 @@
 .button {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
   background: none;
   border: none;
@@ -29,6 +30,10 @@
   border-radius: 8px;
   transition: background-color 0.2s;
 
+  > div {
+    display: flex;
+    flex-direction: row;
+  }
   &:hover {
     background-color: #e0e0e0;
   }

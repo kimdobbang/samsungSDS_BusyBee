@@ -8,6 +8,7 @@ import { getNickname } from 'shared/utils/getNickname';
 import { getTagColor, getTagName } from 'shared/utils/getTag';
 import BoardLayout from 'shared/components/BoardLayout';
 import { useAuth } from 'features/auth/hooks/useAuth';
+import { sortMailsByReceivedDate } from '../utils/sort';
 
 interface MailListProps {
   className?: string;
@@ -45,7 +46,9 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
             return { ...mail, nickname, email };
           });
 
-          setMails(parsedData); // 상태에 저장
+          // 최신순으로 데이터 정렬
+          const sortedData = sortMailsByReceivedDate(parsedData);
+          setMails(sortedData); // 상태에 정렬된 데이터를 저장
         }
       } catch (error) {
         console.error('Error fetching emails:', error);

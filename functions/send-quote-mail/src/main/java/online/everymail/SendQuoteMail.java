@@ -22,6 +22,7 @@ public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
     private static final String emailAddress = "no-reply@busybeemail.net";
     private static final DecimalFormat decimalFormat = new DecimalFormat("#,###");
 
+
     @Override
     public Void handleRequest(SQSEvent event, Context context) {
         if (event.getRecords() != null && !event.getRecords().isEmpty()) {
@@ -35,6 +36,7 @@ public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
 
                     SQSMessageData parsedData = gson.fromJson(snsMessage.getMessage(), SQSMessageData.class);
 
+System.out.println(parsedData);
                     // 이메일 본문 생성
                     String textBody = "안녕하세요, " + parsedData.getSender() + "님.\n"
                             + "BusyBee의 운송 서비스를 이용해 주셔서 감사합니다. "

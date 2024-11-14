@@ -1,0 +1,57 @@
+.steps {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+
+  .circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    width: 50px;
+    color: var(--primary);
+    font-size: 22px;
+    font-weight: 500;
+    border-radius: 40%;
+    background-color: #fff;
+    border: 2px solid var(--primary);
+    transition: all 200ms ease;
+    transition-delay: 0s;
+    z-index: 1;
+  }
+  .circle.active {
+    transition-delay: 100ms;
+    border-color: var(--primary);
+    color: #fff;
+    background-color: var(--primary);
+  }
+
+  .circle.current {
+    border: 3px solid var('--hover');
+  }
+  .progressBar .indicator {
+    position: absolute;
+    left: 0;
+    height: 2px;
+    width: 0%;
+    background-color: var(--primary);
+    transition: all 300ms ease;
+    // 안해주면 circle 부분 위에 배경이 표시된다.
+  }
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.names {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}

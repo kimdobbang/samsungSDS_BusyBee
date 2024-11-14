@@ -23,6 +23,8 @@
   --green01: #22c55e;
   --blue01: #06b6d4;
   --orange01: #f97316;
+  --boxclosed: #3a8bb2;
+  --boxopened: #a3e6ff;
 }
 
 /* 모든 요소의 기본 마진과 패딩을 제거 */

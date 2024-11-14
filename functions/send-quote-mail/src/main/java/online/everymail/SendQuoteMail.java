@@ -36,7 +36,6 @@ public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
 
                     SQSMessageData parsedData = gson.fromJson(snsMessage.getMessage(), SQSMessageData.class);
 
-System.out.println(parsedData);
                     // 이메일 본문 생성
                     String textBody = "안녕하세요, " + parsedData.getSender() + "님.\n"
                             + "BusyBee의 운송 서비스를 이용해 주셔서 감사합니다. "
@@ -80,7 +79,7 @@ System.out.println(parsedData);
                                     .withBody(new Body()
                                             .withHtml(new Content().withCharset("UTF-8").withData(htmlBody))
                                             .withText(new Content().withCharset("UTF-8").withData(textBody))))
-                            .withSource(emailAddress);
+                            .withSource(parsedData.getReceiver);
 
                     // 이메일 전송
                     SendEmailResult result = sesClient.sendEmail(request);

@@ -1,0 +1,47 @@
+.tooltipWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip {
+  position: absolute;
+  background-color: #333333;
+  color: #fff;
+  padding: 25px;
+  border-radius: 5px;
+  font-size: 24px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tooltipWrapper:hover .tooltip,
+.tooltipWrapper:focus .tooltip {
+  opacity: 1;
+}
+
+/* Tooltip 위치 스타일 */
+.tooltip.top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 10px;
+}
+
+.tooltip.bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 10px;
+}
+
+.tooltip.left {
+  right: 50%;
+  margin-right: 10px;
+  margin-top: 25px;
+}
+
+.tooltip.right {
+  right: 50%;
+  margin-right: 10px;
+}

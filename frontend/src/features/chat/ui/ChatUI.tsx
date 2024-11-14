@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import styles from './ChatUI.module.scss';
 import busybee2 from '../../../shared/assets/images/busybee2.png';
+import busybee3 from '../../../shared/assets/images/busybee3.png';
+import { ReactComponent as InfoIcon } from 'shared/assets/icons/info.svg';
 import { MessageProps } from '../model/ChatModel';
 import { Voice } from '../..';
 import { useAuth } from '../..';
 import useWebSocket from '../hooks/useWebSocket';
 import { sendDataToLambda } from '../..';
 import { useNavigate } from 'react-router-dom';
+import { Tooltip } from 'features/tooltip/ui/Tooltip';
 
 export const ChatUI = () => {
   const navigate = useNavigate();
@@ -22,6 +25,7 @@ export const ChatUI = () => {
   const { sendMessage, receiveMessage } = useWebSocket(
     isWebSocketConnected ? orderId : null
   );
+  const [viewId, setViewId] = useState<boolean>(false);
 
   useEffect(() => {
     if (email && orderId) {
@@ -101,15 +105,24 @@ export const ChatUI = () => {
       <div className={styles.header}>
         <div></div>
         <div className={styles.middle}>
-          <img src={busybee2} alt='' height={55} />
+          <img src={busybee3} alt='' height={55} />
           <h1>BUSYBEE</h1>
         </div>
         <div></div>
       </div>
       <div className={styles.userId}>
-        {userId}
-        <img src={busybee2} alt='' height={45} />
+        {viewId ? email : null}
+        <button onClick={() => setViewId(!viewId)} className={styles.userImage}>
+          {(userId ?? 'BUSYBEE').slice(0, 5).toUpperCase()}
+        </button>
+        <Tooltip
+          text='　　　　　　　　　　　　　　 챗봇과의 대화를 통해 빠르게 해결책을 찾을 수 있습니다．챗봇이 제공하는 안내를 따르며 대화를 이어가면， 자동화된 시스템이 신속하게 견적을 처리해 드릴 것입니다 　　　　　　　　　　　　　　 '
+          position='left'
+        >
+          <InfoIcon />
+        </Tooltip>
       </div>
+
       <div className={styles.chat} ref={chatRef}>
         {messages.map((message, index) => (
           <div

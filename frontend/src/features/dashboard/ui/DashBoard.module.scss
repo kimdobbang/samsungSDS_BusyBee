@@ -320,6 +320,7 @@ td {
   // background-color: var(--gray02);
   // border: 1px solid black;
   border-radius: 15px;
+  z-index: 0;
 }
 
 .bottomRight {
@@ -386,6 +387,10 @@ td {
     color: #fff;
     border-radius: 10px;
   }
+}
+
+.missingData {
+  color: red;
 }
 
 .open {

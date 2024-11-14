@@ -15,9 +15,9 @@
   @include general();
   display: flex;
   justify-content: space-between;
-  background-color: rgb(89, 193, 241);
+  background-color: var(--primary);
   width: 100vw;
-  height: 10vh;
+  height: 70px;
   padding-inline: 30px;
 }
 
@@ -94,7 +94,7 @@
   width: 55vw;
   display: flex;
   align-items: center;
-  padding: 40px;
+  padding: 20px 20px 40px 20px;
   background-color: white;
 
   input {
@@ -108,13 +108,17 @@
 
 .button {
   @include general;
-  background-color: rgb(46, 151, 190);
+  background-color: var(--primary);
   color: white;
   padding: 10px 20px;
   border-radius: 10px;
   cursor: pointer;
   &:hover {
-    background-color: #358484;
+    background-color: var(--hover);
+  }
+  &:active {
+    position: relative;
+    top: -1px;
   }
 }
 
@@ -127,5 +131,41 @@
   margin-top: -30px;
   margin-bottom: 20px;
   font-size: 12px;
-  color: gray;
+  color: var(--gray03);
+}
+
+.userId {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 아이템 간 간격 */
+
+  .userImage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px; /* 컨테이너 크기 고정 */
+    height: 50px; /* 컨테이너 크기 고정 */
+    border-radius: 50%; /* 둥근 컨테이너 */
+    border: 1px solid var(--gray03);
+    background-color: var(--primary); /* 배경색을 메인 컬러로 설정 */
+    color: white; /* 텍스트 색상 */
+    font-size: 12px; /* 텍스트 크기 */
+    font-weight: bold; /* 텍스트 두께 */
+    text-transform: uppercase; /* 대문자 표시 (옵션) */
+    overflow: hidden;
+    &:hover {
+      background-color: var(--hover);
+    }
+
+    &:active {
+      position: relative;
+      top: -1px;
+    }
+  }
+
+  .userName {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--gray04);
+  }
 }

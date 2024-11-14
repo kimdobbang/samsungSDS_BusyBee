@@ -15,8 +15,13 @@ import { getMonthOrderMail } from 'features/mail/utils/estimate';
 import { RowData } from '../model/boardmodel';
 import { sortByReceivedDate } from 'features/mail/utils/sort';
 import { setupMqtt } from 'features/dashboard/api/mqttSetup';
+// import { sendDataToLambda } from '../api/dashboardApi';
+import { SendMailModal } from '../ui/SendMailModal';
 import { SensorData, GpsData } from 'shared/types/sensorData';
-import { getCityNameByCode, getCoordinatesByCode } from 'shared/utils/getLatLng';
+import {
+  getCityNameByCode,
+  getCoordinatesByCode,
+} from 'shared/utils/getLatLng';
 
 export const Dashboard = () => {
   const [, authEmail] = useAuth() || [];
@@ -28,13 +33,17 @@ export const Dashboard = () => {
   const [originalRows, setOriginalRows] = useState<RowData[]>([]);
   const [monthRows, setMonthRows] = useState<RowData[]>([]);
   const [paginatedRows, setPaginatedRows] = useState<RowData[]>([]);
-  const [detailEstimateView, setDetailEstimateView] = useState<RowData | null>(null);
+  const [detailEstimateView, setDetailEstimateView] = useState<RowData | null>(
+    null
+  );
   const [detailData, setDetailData] = useState<any | null>(null);
 
   const itemsPerPage = 10;
   const [showAll, setShowAll] = useState(false);
   const [selectIndex, setSelectIndex] = useState<number | null>(null);
+  const [selectIndexCopy, setSelectIndexCopy] = useState<number | null>(null);
   const [visibleCount, setVisibleCount] = useState(3);
+  const [showSendMailModal, setShowSendMailModal] = useState<boolean>(false);
 
   // sensorData 상태를 SensorData 클래스를 사용해 초기화
   const [sensorData, setSensorData] = useState<SensorData>(new SensorData());
@@ -111,6 +120,7 @@ export const Dashboard = () => {
 
         const TodayOrderMail = getTodayOrderMail(sortRes);
         const MonthOrderMail = getMonthOrderMail(sortRes);
+        console.log(sortRes);
 
         setOriginalRows(sortRes);
         setTodayRows(TodayOrderMail);
@@ -125,6 +135,8 @@ export const Dashboard = () => {
   useEffect(() => {
     setPaginatedRows(originalRows);
   }, [originalRows]);
+
+  useEffect(() => {}, [selectIndex]);
 
   useEffect(() => {
     if (detailEstimateView?.data?.S) {
@@ -142,6 +154,8 @@ export const Dashboard = () => {
     setVisibleCount(3);
     setShowAll(false);
     setSelectIndex(null);
+    setDetailEstimateView(null);
+    console.log(paginatedRows);
   };
 
   const handleMonthMailClick = () => {
@@ -149,6 +163,7 @@ export const Dashboard = () => {
     setVisibleCount(3);
     setShowAll(false);
     setSelectIndex(null);
+    setDetailEstimateView(null);
   };
 
   const handleShowMore = () => {
@@ -167,15 +182,37 @@ export const Dashboard = () => {
   };
 
   const detailEstimate = () => {
-    if (selectIndex !== null) {
-      const selectedEstimate = paginatedRows[selectIndex];
+    if (selectIndexCopy !== null) {
+      setSelectIndex(selectIndexCopy);
+      const selectedEstimate = paginatedRows[selectIndexCopy];
       setDetailEstimateView(selectedEstimate);
+      console.log(originalRows[selectIndexCopy].sender.S);
+    }
+  };
+  const sendMail = () => {
+    setShowSendMailModal(true);
+    if (selectIndex !== null) {
+      // const sender = originalRows[selectIndex].receiver?.S;
+      // const receiver = originalRows[selectIndex].sender.S;
+      // const match = receiver.match(/<(.*?)>/);
+      // const REreceiver = receiver && match ? match[1] : null;
+      // const text = '잘부탁드랴여 ㅎㅎ';
+      // if (REreceiver !== null && sender !== undefined) {
+      // const res = sendDataToLambda(REreceiver, sender, text);
+      //   console.log(REreceiver);
+      //   console.log(sender);
+      //   console.log(res);
+      // }
     }
   };
 
   return (
     <BoardLayout>
-      <div className={`${styles.dashboard} ${detailEstimateView ? styles.withDetail : ''}`}>
+      <div
+        className={`${styles.dashboard} ${
+          detailEstimateView ? styles.withDetail : ''
+        }`}
+      >
         {/* 상단 섹션 */}
         <div className={styles.top}>
           <div className={styles.statisticbox}>
@@ -184,7 +221,10 @@ export const Dashboard = () => {
               <h3>{countToday}건</h3>
             </div>
             <div className={styles.buttondiv}>
-              <button onClick={handleTodayMailClick} className={styles.iconbutton}>
+              <button
+                onClick={handleTodayMailClick}
+                className={styles.iconbutton}
+              >
                 <MailCheckIcon width={28} height={28} />
               </button>
             </div>
@@ -194,7 +234,10 @@ export const Dashboard = () => {
               <h2>월간 요청 메일</h2>
               <h3>{countMonthly}건</h3>
             </div>
-            <button onClick={handleMonthMailClick} className={styles.iconbutton}>
+            <button
+              onClick={handleMonthMailClick}
+              className={styles.iconbutton}
+            >
               <CalendarIcon width={32} height={32} />
             </button>
           </div>
@@ -222,29 +265,31 @@ export const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginatedRows.slice(0, visibleCount).map((row: RowData, index) => (
-                  <tr
-                    key={index}
-                    className={styles.line}
-                    style={selectIndex === index ? selectedStyle : {}}
-                    onClick={() => setSelectIndex(index)}
-                  >
-                    <td>{row.sender.S}</td>
-                    <td>{row.received_date.S}</td>
-                    <td>
-                      <div className={styles.stage}>
-                        <p>{row.status.N * 20} %</p>
-                        <div className={styles.progressBarContainer}>
-                          <div
-                            className={styles.progressBar}
-                            style={{ width: `${row.status.N * 20}%` }}
-                          ></div>
+                {paginatedRows
+                  .slice(0, visibleCount)
+                  .map((row: RowData, index) => (
+                    <tr
+                      key={index}
+                      className={styles.line}
+                      style={selectIndexCopy === index ? selectedStyle : {}}
+                      onClick={() => setSelectIndexCopy(index)}
+                    >
+                      <td>{row.sender.S}</td>
+                      <td>{row.received_date.S}</td>
+                      <td>
+                        <div className={styles.stage}>
+                          <p>{row.status.N * 20} %</p>
+                          <div className={styles.progressBarContainer}>
+                            <div
+                              className={styles.progressBar}
+                              style={{ width: `${row.status.N * 20}%` }}
+                            ></div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td> {row.status.N === 5 ? '완료' : '진행중'} </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td> {row.status.N === 5 ? '완료' : '진행중'} </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
 
@@ -265,8 +310,15 @@ export const Dashboard = () => {
           <div className={styles.bottom}>
             <div className={styles.detailquote}>
               <div>
-                <h1>ss@gmail.com 님의 견적 요청 자세히보기</h1>
-                <button className={styles.textbutton}>메일보내기</button>
+                <h1>
+                  {selectIndex !== null
+                    ? originalRows[selectIndex].sender.S
+                    : 0}
+                  님의 견적 요청 자세히보기
+                </h1>
+                <button onClick={sendMail} className={styles.textbutton}>
+                  메일보내기
+                </button>
               </div>
               <table>
                 <thead>
@@ -281,24 +333,92 @@ export const Dashboard = () => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td>{detailData?.Weight}</td>
-                    <td>{detailData?.ContainerSize}</td>
-                    <td>{detailData?.DepartureDate}</td>
-                    <td>{detailData?.ArrivalDate}</td>
-                    <td>
-                      {`${detailData?.DepartureCity} (${getCityNameByCode(
-                        detailData?.DepartureCity
-                      )})`}
+                    <td
+                      className={
+                        detailData?.Weight && detailData.Weight !== 'unknown'
+                          ? ''
+                          : styles.missingData
+                      }
+                    >
+                      {detailData?.Weight && detailData.Weight !== 'unknown'
+                        ? detailData.Weight
+                        : '미기입'}
                     </td>
-                    <td>{`${detailData?.ArrivalCity} (${getCityNameByCode(
-                      detailData?.ArrivalCity
-                    )})`}</td>
+                    <td
+                      className={
+                        detailData?.ContainerSize &&
+                        detailData.ContainerSize !== 'unknown'
+                          ? ''
+                          : styles.missingData
+                      }
+                    >
+                      {detailData?.ContainerSize &&
+                      detailData.ContainerSize !== 'unknown'
+                        ? detailData.ContainerSize
+                        : '미기입'}
+                    </td>
+                    <td
+                      className={
+                        detailData?.DepartureDate &&
+                        detailData.DepartureDate !== 'unknown'
+                          ? ''
+                          : styles.missingData
+                      }
+                    >
+                      {detailData?.DepartureDate &&
+                      detailData.DepartureDate !== 'unknown'
+                        ? detailData.DepartureDate
+                        : '미기입'}
+                    </td>
+                    <td
+                      className={
+                        detailData?.ArrivalDate &&
+                        detailData.ArrivalDate !== 'unknown'
+                          ? ''
+                          : styles.missingData
+                      }
+                    >
+                      {detailData?.ArrivalDate &&
+                      detailData.ArrivalDate !== 'unknown'
+                        ? detailData.ArrivalDate
+                        : '미기입'}
+                    </td>
+                    <td
+                      className={
+                        detailData?.DepartureCity &&
+                        detailData.DepartureCity !== 'unknown'
+                          ? ''
+                          : styles.missingData
+                      }
+                    >
+                      {detailData?.DepartureCity &&
+                      detailData.DepartureCity !== 'unknown'
+                        ? detailData.DepartureCity
+                        : '미기입'}
+                    </td>
+                    <td
+                      className={
+                        detailData?.ArrivalCity &&
+                        detailData.ArrivalCity !== 'unknown'
+                          ? ''
+                          : styles.missingData
+                      }
+                    >
+                      {detailData?.ArrivalCity &&
+                      detailData.ArrivalCity !== 'unknown'
+                        ? detailData.ArrivalCity
+                        : '미기입'}
+                    </td>
                   </tr>
                 </tbody>
               </table>
               <div className={styles.barSection}>
                 <MultiStepProgress
-                  status={selectIndex !== null ? originalRows[selectIndex].status.N : 0}
+                  status={
+                    selectIndex !== null
+                      ? originalRows[selectIndex].status.N
+                      : 0
+                  }
                 />
               </div>
               <div className={styles.detail}>
@@ -313,10 +433,20 @@ export const Dashboard = () => {
                 <div className={styles.detailBottom}>
                   <div className={styles.map}>
                     <Map
-                      startLat={getCoordinatesByCode(detailData?.DepartureCity)?.lat || 0} // 기본값 0 사용
-                      startLng={getCoordinatesByCode(detailData?.DepartureCity)?.lng || 0}
-                      endLat={getCoordinatesByCode(detailData?.ArrivalCity)?.lat || 0}
-                      endLng={getCoordinatesByCode(detailData?.ArrivalCity)?.lng || 0}
+                      startLat={
+                        getCoordinatesByCode(detailData?.DepartureCity)?.lat ||
+                        0
+                      } // 기본값 0 사용
+                      startLng={
+                        getCoordinatesByCode(detailData?.DepartureCity)?.lng ||
+                        0
+                      }
+                      endLat={
+                        getCoordinatesByCode(detailData?.ArrivalCity)?.lat || 0
+                      }
+                      endLng={
+                        getCoordinatesByCode(detailData?.ArrivalCity)?.lng || 0
+                      }
                       currentLat={gpsData?.lat || 0}
                       currentLng={gpsData?.lon || 0}
                     />
@@ -336,7 +466,9 @@ export const Dashboard = () => {
                         <div
                           className={styles.square}
                           style={{
-                            backgroundColor: sensorData.isOpen ? '#a3e6ff' : '#3a8bb2',
+                            backgroundColor: sensorData.isOpen
+                              ? '#a3e6ff'
+                              : '#3a8bb2',
                             color: 'white', // 텍스트 색상 (흰색)으로 설정
                           }}
                         >
@@ -345,11 +477,15 @@ export const Dashboard = () => {
                       </div>
                       <div className={styles.col}>
                         <h2>내부 온도</h2>
-                        <div className={styles.square}>{sensorData.temperature}</div>
+                        <div className={styles.square}>
+                          {sensorData.temperature}
+                        </div>
                       </div>
                       <div className={styles.col}>
                         <h2>내부 습도</h2>
-                        <div className={styles.square}>{sensorData.humidity}%</div>
+                        <div className={styles.square}>
+                          {sensorData.humidity}%
+                        </div>
                       </div>
                     </div>
                     <div className={styles.camera}>
@@ -363,6 +499,53 @@ export const Dashboard = () => {
           </div>
         )}
       </div>
+      {showSendMailModal && selectIndex !== null && (
+        <SendMailModal
+          showModal={true}
+          onClose={() => {
+            setShowSendMailModal(false);
+          }}
+          onSend={() => {
+            setShowSendMailModal(false);
+            setShowSendMailModal(false);
+          }}
+          orderId={originalRows[selectIndex].Id?.S || ''}
+          sender={originalRows[selectIndex].receiver?.S || ''}
+          REreceiver={
+            originalRows[selectIndex].sender.S?.match(/<(.+?)>/)?.[1] || ''
+          }
+          Weight={
+            detailData?.Weight && detailData.Weight !== 'unknown'
+              ? detailData.Weight
+              : '미기입'
+          }
+          ContainerSize={
+            detailData?.ContainerSize && detailData.ContainerSize !== 'unknown'
+              ? detailData.ContainerSize
+              : '미기입'
+          }
+          DepartureDate={
+            detailData?.DepartureDate && detailData.DepartureDate !== 'unknown'
+              ? detailData.DepartureDate
+              : '미기입'
+          }
+          ArrivalDate={
+            detailData?.ArrivalDate && detailData.ArrivalDate !== 'unknown'
+              ? detailData.ArrivalDate
+              : '미기입'
+          }
+          DepartureCity={
+            detailData?.DepartureCity && detailData.DepartureCity !== 'unknown'
+              ? detailData.DepartureCity
+              : '미기입'
+          }
+          ArrivalCity={
+            detailData?.ArrivalCity && detailData.ArrivalCity !== 'unknown'
+              ? detailData.ArrivalCity
+              : '미기입'
+          }
+        />
+      )}
     </BoardLayout>
   );
 };

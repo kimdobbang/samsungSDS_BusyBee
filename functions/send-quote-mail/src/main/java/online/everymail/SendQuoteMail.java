@@ -51,7 +51,7 @@ public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
                             + "총 예상 운송 비용: " + decimalFormat.format(parsedData.getQuote()) + "원 (VAT 별도)\n\n"
                             + "문의 및 추가 요청: 견적과 관련하여 문의사항이 있으시거나 추가 요청 사항이 있으시면 언제든지 저희에게 연락 주시기 바랍니다.\n"
                             + "감사합니다.\n"
-                            + "BusyBee: 010-1234-5678";
+                            + "주문을 요청을 원하시면 답장을 통해 주문을 요청해주세요";
 
                     String htmlBody = "<html><body>"
                             + "<h2>안녕하세요, " + parsedData.getSender() + "님</h2>"
@@ -68,7 +68,7 @@ public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
                             + "</ul>"
                             + "<p><strong>총 예상 운송 비용:</strong> " + decimalFormat.format(parsedData.getQuote()) + "원 (VAT 별도)</p>"
                             + "<p>문의 및 추가 요청: 견적과 관련하여 문의사항이 있으시거나 추가 요청 사항이 있으시면 언제든지 저희에게 연락 주시기 바랍니다.</p>"
-                            + "<p>감사합니다.<br>BusyBee: 010-1234-5678</p>"
+                            + "<p>감사합니다.<br>주문을 요청을 원하시면 답장을 통해 주문을 요청해주세요</p>"
                             + "</body></html>";
 
                     // 이메일 요청 생성
@@ -79,7 +79,7 @@ public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
                                     .withBody(new Body()
                                             .withHtml(new Content().withCharset("UTF-8").withData(htmlBody))
                                             .withText(new Content().withCharset("UTF-8").withData(textBody))))
-                            .withSource(parsedData.getReceiver);
+                            .withSource(parsedData.getReceiver());
 
                     // 이메일 전송
                     SendEmailResult result = sesClient.sendEmail(request);

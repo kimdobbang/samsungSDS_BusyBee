@@ -15,3 +15,13 @@ export class SensorData {
     this.temperature = data.temperature ?? 0;
   }
 }
+
+export class GpsData {
+  lat: number;
+  lon: number;
+
+  constructor(data: Partial<GpsData> = {}) {
+    this.lat = data.lat ?? 0;
+    this.lon = data.lon ?? 0;
+  }
+}

@@ -42,10 +42,10 @@ export const MultiStepProgress: React.FC<MultiStepProgressProps> = ({ status }) 
   return (
     <div className={styles.container}>
       <div className={styles.steps} ref={circle}>
-        {progressArr.map((i) => (
-          <div className={styles.info}>
+        {progressArr.map((i, index) => (
+          <div className={styles.info} key={index}>
             <span
-              key={i.status}
+              key={`${i.status}-${index}`}
               className={`${styles.circle} ${i.status <= currentProgress ? styles.active : ''}`}
             >
               {i.status}
@@ -57,8 +57,8 @@ export const MultiStepProgress: React.FC<MultiStepProgressProps> = ({ status }) 
         </div>
       </div>
       <div className={styles.names}>
-        {progressArr.map((i) => (
-          <span>{i.name}</span>
+        {progressArr.map((i, index) => (
+          <span key={`${i.status}-${index}`}>{i.name}</span>
         ))}
         <span>{''}</span>
       </div>

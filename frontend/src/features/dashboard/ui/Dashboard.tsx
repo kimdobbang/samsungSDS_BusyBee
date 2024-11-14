@@ -15,8 +15,8 @@ import { getMonthOrderMail } from 'features/mail/utils/estimate';
 import { RowData } from '../model/boardmodel';
 import { sortByReceivedDate } from 'features/mail/utils/sort';
 import { setupMqtt } from 'features/dashboard/api/mqttSetup';
-import { SensorData } from 'shared/types/sensorData';
-import { getCoordinatesByCode } from 'shared/utils/getLatLng';
+import { SensorData, GpsData } from 'shared/types/sensorData';
+import { getCityNameByCode, getCoordinatesByCode } from 'shared/utils/getLatLng';
 
 export const Dashboard = () => {
   const [, authEmail] = useAuth() || [];
@@ -38,6 +38,7 @@ export const Dashboard = () => {
 
   // sensorData 상태를 SensorData 클래스를 사용해 초기화
   const [sensorData, setSensorData] = useState<SensorData>(new SensorData());
+  const [gpsData, setGpsData] = useState<GpsData>(new GpsData());
 
   // MQTT 설정 및 연결
   useEffect(() => {
@@ -51,24 +52,31 @@ export const Dashboard = () => {
 
     client.on('connect', () => {
       console.log('Connected to MQTT broker');
-      client.subscribe('sensor/data', (err) => {
+
+      // 여러 토픽을 구독
+      client.subscribe(['sensor/data', 'gps/data'], (err) => {
         if (err) {
           console.error('Subscription error:', err);
         } else {
-          console.log('Successfully subscribed to sensor/data');
+          console.log('Successfully subscribed to sensor/data and gps/data');
         }
       });
     });
 
+    // 메시지를 받을 때 처리
     client.on('message', (topic, message) => {
-      if (topic === 'sensor/data') {
-        try {
-          const data = JSON.parse(message.toString());
-          console.log('Received data:', data);
+      try {
+        const data = JSON.parse(message.toString());
+        console.log(`Received data on topic ${topic}:`, data);
+
+        // 토픽에 따라 다른 상태를 설정
+        if (topic === 'sensor/data') {
           setSensorData(data);
-        } catch (error) {
-          console.error('Failed to parse sensor data:', error);
+        } else if (topic === 'gps/data') {
+          setGpsData(data);
         }
+      } catch (error) {
+        console.error(`Failed to parse data on topic ${topic}:`, error);
       }
     });
 
@@ -206,10 +214,12 @@ export const Dashboard = () => {
             </div>
             <table>
               <thead>
-                <th>견적요청처</th>
-                <th>요청날짜</th>
-                <th>단계</th>
-                <th>완료여부</th>
+                <tr>
+                  <th>견적요청처</th>
+                  <th>요청날짜</th>
+                  <th>단계</th>
+                  <th>완료여부</th>
+                </tr>
               </thead>
               <tbody>
                 {paginatedRows.slice(0, visibleCount).map((row: RowData, index) => (
@@ -260,12 +270,14 @@ export const Dashboard = () => {
               </div>
               <table>
                 <thead>
-                  <th>무게</th>
-                  <th>컨테이너 사이즈</th>
-                  <th>출발 날짜</th>
-                  <th>도착 날짜</th>
-                  <th>출발 도시</th>
-                  <th>도착 도시</th>
+                  <tr>
+                    <th>무게</th>
+                    <th>컨테이너 사이즈</th>
+                    <th>출발 날짜</th>
+                    <th>도착 날짜</th>
+                    <th>출발 도시</th>
+                    <th>도착 도시</th>
+                  </tr>
                 </thead>
                 <tbody>
                   <tr>
@@ -273,8 +285,14 @@ export const Dashboard = () => {
                     <td>{detailData?.ContainerSize}</td>
                     <td>{detailData?.DepartureDate}</td>
                     <td>{detailData?.ArrivalDate}</td>
-                    <td>{detailData?.DepartureCity}</td>
-                    <td>{detailData?.ArrivalCity}</td>
+                    <td>
+                      {`${detailData?.DepartureCity} (${getCityNameByCode(
+                        detailData?.DepartureCity
+                      )})`}
+                    </td>
+                    <td>{`${detailData?.ArrivalCity} (${getCityNameByCode(
+                      detailData?.ArrivalCity
+                    )})`}</td>
                   </tr>
                 </tbody>
               </table>
@@ -299,23 +317,31 @@ export const Dashboard = () => {
                       startLng={getCoordinatesByCode(detailData?.DepartureCity)?.lng || 0}
                       endLat={getCoordinatesByCode(detailData?.ArrivalCity)?.lat || 0}
                       endLng={getCoordinatesByCode(detailData?.ArrivalCity)?.lng || 0}
-                      currentLat={sensorData?.latitude || 0}
-                      currentLng={sensorData?.longitude || 0}
+                      currentLat={gpsData?.lat || 0}
+                      currentLng={gpsData?.lon || 0}
                     />
                   </div>
                   <div className={styles.bottomRight}>
                     <div className={styles.sensor}>
                       <div className={styles.col}>
                         <h2>현재 위도</h2>
-                        <div className={styles.square}>{sensorData.latitude}</div>
+                        <div className={styles.square}>{gpsData.lat}</div>
                       </div>
                       <div className={styles.col}>
                         <h2>현재 경도</h2>
-                        <div className={styles.square}>{sensorData.longitude}</div>
+                        <div className={styles.square}>{gpsData.lon}</div>
                       </div>
                       <div className={styles.col}>
                         <h2>열림 감지</h2>
-                        <div className={styles.square}>{sensorData.isOpen ? 'ON' : 'OFF'}</div>
+                        <div
+                          className={styles.square}
+                          style={{
+                            backgroundColor: sensorData.isOpen ? '#a3e6ff' : '#3a8bb2',
+                            color: 'white', // 텍스트 색상 (흰색)으로 설정
+                          }}
+                        >
+                          {sensorData.isOpen ? 'OPEN' : 'CLOSED'}
+                        </div>
                       </div>
                       <div className={styles.col}>
                         <h2>내부 온도</h2>

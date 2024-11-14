@@ -16,8 +16,8 @@ interface MapLocationData {
   startLng: number;
   endLat: number;
   endLng: number;
-  currentLat: number;
-  currentLng: number;
+  currentLat?: number;
+  currentLng?: number;
 }
 
 export const Map = ({
@@ -25,10 +25,19 @@ export const Map = ({
   startLng = 0,
   endLat = 0,
   endLng = 0,
-  currentLat = 0,
-  currentLng = 0,
+  currentLat = 36.3504,
+  currentLng = 123.3845,
 }: MapLocationData) => {
   useEffect(() => {
+    console.log(
+      '데이터 들어온 거 찍기: ',
+      startLat,
+      startLng,
+      endLat,
+      endLng,
+      currentLat,
+      currentLng
+    );
     // 카카오맵 API 스크립트 동적으로 추가
     const script = document.createElement('script');
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_MAP_API_KEY}&autoload=false`;
@@ -39,7 +48,7 @@ export const Map = ({
         if (container) {
           const options = {
             center: new window.kakao.maps.LatLng(currentLat, currentLng),
-            level: 13,
+            level: 8,
           };
           const map = new window.kakao.maps.Map(container, options);
 

@@ -6,7 +6,7 @@ export * from './auth/ui/AuthUI';
 export * from './mail/ui/DetailMail';
 export * from './mail/ui/MailList';
 export * from './mail/api/emailApi';
-
+export * from './dashboard/ui/MultiStepProgress';
 export * from './dashboard/ui/Dashboard';
 export * from './dashboard/ui/Map';
 // export * from './board/api/emailMockData';

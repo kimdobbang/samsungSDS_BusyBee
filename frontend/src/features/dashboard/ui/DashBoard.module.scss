@@ -283,8 +283,10 @@ td {
   width: 100%;
   height: auto;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  gap: 2rem;
 }
+
 .left,
 .right {
   width: 50%;
@@ -316,11 +318,18 @@ td {
 .map {
   width: 50%;
   // padding: 2%;
-  height: 400px;
+  height: 100%;
   // background-color: var(--gray02);
-  // border: 1px solid black;
+  border: 1px solid black;
   border-radius: 15px;
   z-index: 0;
+}
+
+.bottomTop {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  flex-direction: row;
 }
 
 .bottomRight {
@@ -341,7 +350,8 @@ td {
   flex-direction: row;
   justify-content: center;
   align-items: start;
-  gap: 1rem;
+  gap: 2rem;
+
   > .col {
     display: flex;
     flex-direction: column;
@@ -351,7 +361,7 @@ td {
 
 .camera {
   width: 100%;
-  height: 60%;
+  height: 100%;
 
   > h1 {
     height: 10%;
@@ -359,7 +369,7 @@ td {
   > div {
     background-color: #ddd;
     border-radius: 15px;
-    height: 90%;
+    height: 100%;
   }
   > h2 {
     font-size: 16px;

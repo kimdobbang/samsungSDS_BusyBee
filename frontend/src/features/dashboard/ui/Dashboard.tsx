@@ -17,11 +17,8 @@ import { sortByReceivedDate } from 'features/mail/utils/sort';
 import { setupMqtt } from 'features/dashboard/api/mqttSetup';
 // import { sendDataToLambda } from '../api/dashboardApi';
 import { SendMailModal } from '../ui/SendMailModal';
-import { SensorData, GpsData } from 'shared/types/sensorData';
-import {
-  getCityNameByCode,
-  getCoordinatesByCode,
-} from 'shared/utils/getLatLng';
+import { SensorData, GpsData } from 'features/dashboard/model/boardmodel';
+import { getCityNameByCode, getCoordinatesByCode } from 'shared/utils/getLatLng';
 
 export const Dashboard = () => {
   const [, authEmail] = useAuth() || [];
@@ -33,9 +30,7 @@ export const Dashboard = () => {
   const [originalRows, setOriginalRows] = useState<RowData[]>([]);
   const [monthRows, setMonthRows] = useState<RowData[]>([]);
   const [paginatedRows, setPaginatedRows] = useState<RowData[]>([]);
-  const [detailEstimateView, setDetailEstimateView] = useState<RowData | null>(
-    null
-  );
+  const [detailEstimateView, setDetailEstimateView] = useState<RowData | null>(null);
   const [detailData, setDetailData] = useState<any | null>(null);
 
   const itemsPerPage = 10;
@@ -149,6 +144,36 @@ export const Dashboard = () => {
     backgroundColor: 'var(--sub01)', // 하늘색 배경
   };
 
+  // 온도에 따른 배경 색상 결정
+  const getTemperatureBgColor = (temperature: number) => {
+    if (temperature <= 20) {
+      return '#69a3ff'; // 파란색 계열 (낮은 온도)
+    } else if (temperature <= 40) {
+      return '#a3d4ff'; // 밝은 파란색 계열
+    } else if (temperature <= 60) {
+      return '#ffd966'; // 노란색 계열 (중간 온도)
+    } else if (temperature <= 80) {
+      return '#ffb347'; // 주황색 계열 (높은 온도)
+    } else {
+      return '#ff6961'; // 빨간색 계열 (아주 높은 온도)
+    }
+  };
+
+  // 습도에 따른 배경 색상 결정
+  const getHumidityBgColor = (humidity: number) => {
+    if (humidity <= 20) {
+      return '#cdeffb'; // 연한 파란색 (낮은 습도)
+    } else if (humidity <= 40) {
+      return '#a7e0f9'; // 조금 더 진한 파란색
+    } else if (humidity <= 60) {
+      return '#6bcef5'; // 기본 파란색 (중간 습도, primary color)
+    } else if (humidity <= 80) {
+      return '#369dfc'; // 더 진한 파란색
+    } else {
+      return '#1177ff'; // 아주 진한 파란색 (높은 습도, hover color)
+    }
+  };
+
   const handleTodayMailClick = () => {
     setPaginatedRows(todayRows);
     setVisibleCount(3);
@@ -208,11 +233,7 @@ export const Dashboard = () => {
 
   return (
     <BoardLayout>
-      <div
-        className={`${styles.dashboard} ${
-          detailEstimateView ? styles.withDetail : ''
-        }`}
-      >
+      <div className={`${styles.dashboard} ${detailEstimateView ? styles.withDetail : ''}`}>
         {/* 상단 섹션 */}
         <div className={styles.top}>
           <div className={styles.statisticbox}>
@@ -221,10 +242,7 @@ export const Dashboard = () => {
               <h3>{countToday}건</h3>
             </div>
             <div className={styles.buttondiv}>
-              <button
-                onClick={handleTodayMailClick}
-                className={styles.iconbutton}
-              >
+              <button onClick={handleTodayMailClick} className={styles.iconbutton}>
                 <MailCheckIcon width={28} height={28} />
               </button>
             </div>
@@ -234,10 +252,7 @@ export const Dashboard = () => {
               <h2>월간 요청 메일</h2>
               <h3>{countMonthly}건</h3>
             </div>
-            <button
-              onClick={handleMonthMailClick}
-              className={styles.iconbutton}
-            >
+            <button onClick={handleMonthMailClick} className={styles.iconbutton}>
               <CalendarIcon width={32} height={32} />
             </button>
           </div>
@@ -265,31 +280,29 @@ export const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginatedRows
-                  .slice(0, visibleCount)
-                  .map((row: RowData, index) => (
-                    <tr
-                      key={index}
-                      className={styles.line}
-                      style={selectIndexCopy === index ? selectedStyle : {}}
-                      onClick={() => setSelectIndexCopy(index)}
-                    >
-                      <td>{row.sender.S}</td>
-                      <td>{row.received_date.S}</td>
-                      <td>
-                        <div className={styles.stage}>
-                          <p>{row.status.N * 20} %</p>
-                          <div className={styles.progressBarContainer}>
-                            <div
-                              className={styles.progressBar}
-                              style={{ width: `${row.status.N * 20}%` }}
-                            ></div>
-                          </div>
+                {paginatedRows.slice(0, visibleCount).map((row: RowData, index) => (
+                  <tr
+                    key={index}
+                    className={styles.line}
+                    style={selectIndexCopy === index ? selectedStyle : {}}
+                    onClick={() => setSelectIndexCopy(index)}
+                  >
+                    <td>{row.sender.S}</td>
+                    <td>{row.received_date.S}</td>
+                    <td>
+                      <div className={styles.stage}>
+                        <p>{row.status.N * 20} %</p>
+                        <div className={styles.progressBarContainer}>
+                          <div
+                            className={styles.progressBar}
+                            style={{ width: `${row.status.N * 20}%` }}
+                          ></div>
                         </div>
-                      </td>
-                      <td> {row.status.N === 5 ? '완료' : '진행중'} </td>
-                    </tr>
-                  ))}
+                      </div>
+                    </td>
+                    <td> {row.status.N === 5 ? '완료' : '진행중'} </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
 
@@ -311,9 +324,7 @@ export const Dashboard = () => {
             <div className={styles.detailquote}>
               <div>
                 <h1>
-                  {selectIndex !== null
-                    ? originalRows[selectIndex].sender.S
-                    : 0}
+                  {selectIndex !== null ? originalRows[selectIndex].sender.S : 0}
                   님의 견적 요청 자세히보기
                 </h1>
                 <button onClick={sendMail} className={styles.textbutton}>
@@ -346,66 +357,56 @@ export const Dashboard = () => {
                     </td>
                     <td
                       className={
-                        detailData?.ContainerSize &&
-                        detailData.ContainerSize !== 'unknown'
+                        detailData?.ContainerSize && detailData.ContainerSize !== 'unknown'
                           ? ''
                           : styles.missingData
                       }
                     >
-                      {detailData?.ContainerSize &&
-                      detailData.ContainerSize !== 'unknown'
+                      {detailData?.ContainerSize && detailData.ContainerSize !== 'unknown'
                         ? detailData.ContainerSize
                         : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.DepartureDate &&
-                        detailData.DepartureDate !== 'unknown'
+                        detailData?.DepartureDate && detailData.DepartureDate !== 'unknown'
                           ? ''
                           : styles.missingData
                       }
                     >
-                      {detailData?.DepartureDate &&
-                      detailData.DepartureDate !== 'unknown'
+                      {detailData?.DepartureDate && detailData.DepartureDate !== 'unknown'
                         ? detailData.DepartureDate
                         : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.ArrivalDate &&
-                        detailData.ArrivalDate !== 'unknown'
+                        detailData?.ArrivalDate && detailData.ArrivalDate !== 'unknown'
                           ? ''
                           : styles.missingData
                       }
                     >
-                      {detailData?.ArrivalDate &&
-                      detailData.ArrivalDate !== 'unknown'
+                      {detailData?.ArrivalDate && detailData.ArrivalDate !== 'unknown'
                         ? detailData.ArrivalDate
                         : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.DepartureCity &&
-                        detailData.DepartureCity !== 'unknown'
+                        detailData?.DepartureCity && detailData.DepartureCity !== 'unknown'
                           ? ''
                           : styles.missingData
                       }
                     >
-                      {detailData?.DepartureCity &&
-                      detailData.DepartureCity !== 'unknown'
+                      {detailData?.DepartureCity && detailData.DepartureCity !== 'unknown'
                         ? detailData.DepartureCity
                         : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.ArrivalCity &&
-                        detailData.ArrivalCity !== 'unknown'
+                        detailData?.ArrivalCity && detailData.ArrivalCity !== 'unknown'
                           ? ''
                           : styles.missingData
                       }
                     >
-                      {detailData?.ArrivalCity &&
-                      detailData.ArrivalCity !== 'unknown'
+                      {detailData?.ArrivalCity && detailData.ArrivalCity !== 'unknown'
                         ? detailData.ArrivalCity
                         : '미기입'}
                     </td>
@@ -414,11 +415,7 @@ export const Dashboard = () => {
               </table>
               <div className={styles.barSection}>
                 <MultiStepProgress
-                  status={
-                    selectIndex !== null
-                      ? originalRows[selectIndex].status.N
-                      : 0
-                  }
+                  status={selectIndex !== null ? originalRows[selectIndex].status.N : 0}
                 />
               </div>
               <div className={styles.detail}>
@@ -427,70 +424,73 @@ export const Dashboard = () => {
                     <h1>현재 위치</h1>
                   </div>
                   <div className={styles.topHalf}>
-                    <h1>운송 상태</h1>
+                    <h1>카메라</h1>
                   </div>
                 </div>
                 <div className={styles.detailBottom}>
-                  <div className={styles.map}>
-                    <Map
-                      startLat={
-                        getCoordinatesByCode(detailData?.DepartureCity)?.lat ||
-                        0
-                      } // 기본값 0 사용
-                      startLng={
-                        getCoordinatesByCode(detailData?.DepartureCity)?.lng ||
-                        0
-                      }
-                      endLat={
-                        getCoordinatesByCode(detailData?.ArrivalCity)?.lat || 0
-                      }
-                      endLng={
-                        getCoordinatesByCode(detailData?.ArrivalCity)?.lng || 0
-                      }
-                      currentLat={gpsData?.lat || 0}
-                      currentLng={gpsData?.lon || 0}
-                    />
-                  </div>
-                  <div className={styles.bottomRight}>
-                    <div className={styles.sensor}>
-                      <div className={styles.col}>
-                        <h2>현재 위도</h2>
-                        <div className={styles.square}>{gpsData.lat}</div>
-                      </div>
-                      <div className={styles.col}>
-                        <h2>현재 경도</h2>
-                        <div className={styles.square}>{gpsData.lon}</div>
-                      </div>
-                      <div className={styles.col}>
-                        <h2>열림 감지</h2>
-                        <div
-                          className={styles.square}
-                          style={{
-                            backgroundColor: sensorData.isOpen
-                              ? '#a3e6ff'
-                              : '#3a8bb2',
-                            color: 'white', // 텍스트 색상 (흰색)으로 설정
-                          }}
-                        >
-                          {sensorData.isOpen ? 'OPEN' : 'CLOSED'}
-                        </div>
-                      </div>
-                      <div className={styles.col}>
-                        <h2>내부 온도</h2>
-                        <div className={styles.square}>
-                          {sensorData.temperature}
-                        </div>
-                      </div>
-                      <div className={styles.col}>
-                        <h2>내부 습도</h2>
-                        <div className={styles.square}>
-                          {sensorData.humidity}%
-                        </div>
+                  <div className={styles.bottomTop}>
+                    <div className={styles.map}>
+                      <Map
+                        startLat={getCoordinatesByCode(detailData?.DepartureCity)?.lat || 0} // 기본값 0 사용
+                        startLng={getCoordinatesByCode(detailData?.DepartureCity)?.lng || 0}
+                        endLat={getCoordinatesByCode(detailData?.ArrivalCity)?.lat || 0}
+                        endLng={getCoordinatesByCode(detailData?.ArrivalCity)?.lng || 0}
+                        currentLat={gpsData?.lat || 0}
+                        currentLng={gpsData?.lon || 0}
+                      />
+                    </div>
+                    <div className={styles.bottomRight}>
+                      <div className={styles.camera}>
+                        <div>카메라 자리</div>
                       </div>
                     </div>
-                    <div className={styles.camera}>
-                      <h2>내부 카메라</h2>
-                      <div>카메라 자리</div>
+                  </div>
+                  <div className={styles.sensor}>
+                    <div className={styles.col}>
+                      <h2>현재 위도</h2>
+                      <div className={styles.square}>{gpsData.lat}</div>
+                    </div>
+                    <div className={styles.col}>
+                      <h2>현재 경도</h2>
+                      <div className={styles.square}>{gpsData.lon}</div>
+                    </div>
+                    <div className={styles.col}>
+                      <h2>위치 정확도</h2>
+                      <div className={styles.square}>{gpsData.acc}m</div>
+                    </div>
+                    <div className={styles.col}>
+                      <h2>타임스탬프</h2>
+                      <div className={styles.square}>{gpsData.tst}</div>
+                    </div>
+                    <div className={styles.col}>
+                      <h2>열림 감지</h2>
+                      <div
+                        className={styles.square}
+                        style={{
+                          backgroundColor: sensorData.isOpen ? '#a3e6ff' : '#3a8bb2',
+                          color: 'white', // 텍스트 색상 (흰색)으로 설정
+                        }}
+                      >
+                        {sensorData.isOpen ? 'OPEN' : 'CLOSED'}
+                      </div>
+                    </div>
+                    <div className={styles.col}>
+                      <h2>내부 온도</h2>
+                      <div
+                        className={styles.square}
+                        style={{ backgroundColor: getTemperatureBgColor(sensorData.temperature) }}
+                      >
+                        {sensorData.temperature}°C
+                      </div>
+                    </div>
+                    <div className={styles.col}>
+                      <h2>내부 습도</h2>
+                      <div
+                        className={styles.square}
+                        style={{ backgroundColor: getHumidityBgColor(sensorData.temperature) }}
+                      >
+                        {sensorData.humidity}%
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -511,13 +511,9 @@ export const Dashboard = () => {
           }}
           orderId={originalRows[selectIndex].Id?.S || ''}
           sender={originalRows[selectIndex].receiver?.S || ''}
-          REreceiver={
-            originalRows[selectIndex].sender.S?.match(/<(.+?)>/)?.[1] || ''
-          }
+          REreceiver={originalRows[selectIndex].sender.S?.match(/<(.+?)>/)?.[1] || ''}
           Weight={
-            detailData?.Weight && detailData.Weight !== 'unknown'
-              ? detailData.Weight
-              : '미기입'
+            detailData?.Weight && detailData.Weight !== 'unknown' ? detailData.Weight : '미기입'
           }
           ContainerSize={
             detailData?.ContainerSize && detailData.ContainerSize !== 'unknown'

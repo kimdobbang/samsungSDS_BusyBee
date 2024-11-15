@@ -84,3 +84,39 @@
 .profile {
   border-radius: 50%;
 }
+
+.tagButton {
+  border: none;
+  background-color: var(--bg01);
+}
+
+.flagsContainer {
+  display: flex;
+  position: absolute;
+  justify-content: start;
+  flex-direction: row;
+  gap: 15px;
+  width: 50vw;
+  height: 10vh;
+  top: 90px;
+  background-color: var(--bg01);
+}
+
+.flag {
+  width: 80px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.flag:hover {
+  transform: scale(1.1); /* 크기 약간 확대 */
+  background-color: rgba(255, 255, 255, 0.2); /* 배경색을 살짝 밝게 */
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* 그림자 추가 */
+}

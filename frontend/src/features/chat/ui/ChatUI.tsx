@@ -27,6 +27,8 @@ export const ChatUI = () => {
   );
   const [viewId, setViewId] = useState<boolean>(false);
 
+  console.log(useAuth());
+
   useEffect(() => {
     if (email && orderId) {
       const fetchLambdaData = async () => {

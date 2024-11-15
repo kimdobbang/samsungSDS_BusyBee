@@ -17,7 +17,8 @@ const useMailStore = create(
       // receiver와 received_date를 기반으로 메일 찾기
       getMail: (receiver, received_date) => {
         return get().mails.find(
-          (mail) => mail.receiver === receiver && mail.received_date === received_date
+          (mail) =>
+            mail.receiver === receiver && mail.received_date === received_date
         );
       },
     }),

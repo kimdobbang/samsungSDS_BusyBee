@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as LetterIcon } from 'shared/assets/icons/letterbox.svg';
 import { ReactComponent as DashBoardIcon } from 'shared/assets/icons/dashboard.svg';
 import styles from './AsideBar.module.scss';
@@ -9,21 +10,30 @@ import { getNickname } from 'shared/utils/getNickname';
 import { sortMailsByReceivedDate } from 'features/mail/utils/sort';
 
 export const AsideBar: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const mails = useMailStore((state) => state.mails);
   const setMails = useMailStore((state) => state.setMails);
 
   // useAuth 훅을 사용하여 이메일 가져오기
-  const [, , loginId] = useAuth() || []; // 구조 분해 할당으로 이메일만 가져옴
+  const [, loginId] = useAuth() || []; // 구조 분해 할당으로 이메일만 가져옴
+  const received_date = searchParams.get('received_date');
 
+  // URL 인코딩된 received_date를 디코딩
+  const decodedReceivedDate = received_date
+    ? decodeURIComponent(received_date)
+    : null;
   useEffect(() => {
     const loadMails = async () => {
       // email이 없으면 메일을 로드하지 않음
       if (!loginId) return;
 
       try {
-        const receiver = loginId + '@busybeemail.net';
-        const data = await fetchEmailsByReceiver(receiver || 'test@busybeemail.net');
+        const receiver = typeof loginId === 'string' ? loginId : '';
+        const data = await fetchEmailsByReceiver(
+          receiver,
+          decodedReceivedDate !== null ? decodedReceivedDate : ''
+        );
 
         // API 응답 구조 출력
         // console.log('Fetched data:', data);
@@ -65,7 +75,9 @@ export const AsideBar: React.FC = () => {
               <LetterIcon width={24} height={24} className={styles.icon} />
               <h1 className={styles.title}>편지함</h1>
             </div>
-            <p className={styles.count}>{mails.length}</p>
+            <p className={styles.count}>
+              {mails.length !== 1 ? mails.length : ''}
+            </p>
           </button>
         </li>
         <li className={styles.item}>

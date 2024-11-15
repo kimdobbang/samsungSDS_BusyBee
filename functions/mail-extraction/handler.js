@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const { OpenAI } = require('openai');
 const mammoth = require('mammoth');
 const XLSX = require('xlsx');
+const pdfParse = require('pdf-parse');
 
 const cityMapping = require('./cityMapping');
 const PROMPT_TEMPLATE = require('./promptTemplate');
@@ -89,7 +90,15 @@ const extractTextFromWord = async (buffer) => {
     return '';
   }
 };
-
+const extractTextFromPDF = async (buffer) => {
+  try {
+    const result = await pdfParse(buffer);
+    return result.text.trim();
+  } catch (error) {
+    console.error('Error extracting text from PDF:', error.message);
+    return '';
+  }
+};
 // Lambda Handler
 exports.handler = async (event) => {
   for (const record of event.Records) {
@@ -121,6 +130,9 @@ exports.handler = async (event) => {
             extractedText = fileBuffer.toString('utf-8');
           }
           textFiles.push({ filename: key, file: Buffer.from(extractedText, 'utf-8') });
+        } else if (['pdf'].includes(fileExtension)) {
+          const pdfContent = await extractTextFromPDF(fileBuffer);
+          textFiles.push({ filename: key, file: Buffer.from(pdfContent, 'utf-8') });
         } else if (['jpg', 'jpeg', 'png'].includes(fileExtension)) {
           imageFiles.push(fileBuffer);
         } else if (['xls', 'xlsx'].includes(fileExtension)) {

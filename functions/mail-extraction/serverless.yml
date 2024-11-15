@@ -9,25 +9,27 @@ provider:
     EXTRACT_QUEUE_URL: 'https://sqs.ap-northeast-2.amazonaws.com/481665114066/information-integrity-verification-trigger'
     MAIL_S3_BUCKET: 'mails-to-files' # S3 버킷 이름 환경 변수로 설정
 
-  iam:
-    role:
-      statements:
-        - Effect: 'Allow'
-          Action:
-            - 'ssm:GetParameter' # SSM Parameter Store 접근 권한
-          Resource: 'arn:aws:ssm:ap-northeast-2:481665114066:parameter/prod/openAI/api_key'
-        - Effect: 'Allow'
-          Action:
-            - 'sqs:SendMessage'
-            - 'sqs:ReceiveMessage'
-            - 'sqs:DeleteMessage'
-          Resource:
-            - 'arn:aws:sqs:ap-northeast-2:481665114066:mail-extraction-trigger'
-            - 'arn:aws:sqs:ap-northeast-2:481665114066:information-integrity-verification-trigger'
-        - Effect: 'Allow'
-          Action:
-            - 's3:GetObject' # S3 객체 읽기 권한
-          Resource: 'arn:aws:s3:::mails-to-files/*' # S3 버킷 및 모든 객체에 대한 접근 권한
+  iamRoleStatements: # 변경된 키
+    - Effect: 'Allow'
+      Action:
+        - 'ssm:GetParameter'
+      Resource: 'arn:aws:ssm:ap-northeast-2:481665114066:parameter/prod/openAI/api_key'
+    - Effect: 'Allow'
+      Action:
+        - 'sqs:SendMessage'
+        - 'sqs:ReceiveMessage'
+        - 'sqs:DeleteMessage'
+      Resource:
+        - 'arn:aws:sqs:ap-northeast-2:481665114066:mail-extraction-trigger'
+        - 'arn:aws:sqs:ap-northeast-2:481665114066:information-integrity-verification-trigger'
+    - Effect: 'Allow'
+      Action:
+        - 's3:GetObject'
+      Resource: 'arn:aws:s3:::mails-to-files/*'
+    - Effect: 'Allow'
+      Action:
+        - 'textract:AnalyzeDocument'
+      Resource: '*' # Textract를 모든 문서에 대해 사용 가능하게 설정 (필요 시 리소스를 제한할 수 있음)
 
 functions:
   extractEmailData:

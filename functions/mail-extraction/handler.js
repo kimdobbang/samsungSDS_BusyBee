@@ -104,7 +104,7 @@ exports.handler = async (event) => {
   for (const record of event.Records) {
     try {
       const message = JSON.parse(record.body);
-      const { email_content, attachments, sender } = message;
+      const { email_content, attachments, sender, received_date, receiver } = message;
 
       console.log(`Processing message: ${JSON.stringify(message)}`);
 
@@ -194,6 +194,8 @@ exports.handler = async (event) => {
       const sqsMessage = {
         key: uuidv4(),
         sender,
+        receiver,
+        receivedDate: received_date,
         data: validatedData,
       };
 

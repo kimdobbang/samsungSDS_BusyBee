@@ -15,10 +15,10 @@ provider:
           Resource: 'arn:aws:sqs:ap-northeast-2:481665114066:dynamodb-sqs-queue'
         - Effect: 'Allow'
           Action:
-            - 's3:PutObject'
             - 's3:GetObject'
+            - 's3:PutObject'
             - 's3:ListBucket'
-          Resource: 'arn:aws:s3:::sagemaker-ap-northeast-2-481665114066/distilkobert-onxx/*'
+          Resource: 'arn:aws:s3:::sagemaker-ap-northeast-2-481665114066/*'
 
 functions:
   updateModel:
@@ -27,13 +27,15 @@ functions:
     environment:
       S3_BUCKET: sagemaker-ap-northeast-2-481665114066
       MODEL_PREFIX: distilkobert-classifier/
+      ONNX_MODEL_PREFIX: distilkobert-onxx/
+      TRANSFORMERS_CACHE: /tmp/huggingface
     events:
       - sqs:
           arn:
             Fn::GetAtt:
               - DynamoDBSQSQueue
               - Arn
-          batchSize: 32 # 처리할 메시지 개수
+          batchSize: 32
           maximumBatchingWindow: 300
 
 resources:
@@ -42,7 +44,7 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: dynamodb-sqs-queue
-        VisibilityTimeout: 910 # Lambda Timeout (900)보다 큰 값
+        VisibilityTimeout: 910
         MessageRetentionPeriod: 1209600
         RedrivePolicy:
           deadLetterTargetArn:

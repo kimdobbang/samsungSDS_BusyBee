@@ -1,12 +1,12 @@
-import { unmarshall } from '@aws-sdk/client-dynamodb';
-import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
+const { unmarshall } = require('@aws-sdk/client-dynamodb');
+const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
 
 const REGION = 'ap-northeast-2';
 const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
 
 const sqsClient = new SQSClient({ region: REGION });
 
-export const dynamodbToSQSHandler = async (event) => {
+exports.dynamodbToSQSHandler = async (event) => {
   try {
     for (const record of event.Records) {
       if (record.eventName === 'MODIFY') {

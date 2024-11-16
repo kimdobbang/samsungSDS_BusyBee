@@ -3,7 +3,6 @@
 #include <PubSubClient.h>   // PubSubClient 라이브러리 포함
 #include <DHT.h>            // DHT 라이브러리 포함
 #include <MFRC522.h>        // RFID 라이브러리 포함
-#include <SoftwareSerial.h> // GPS 시리얼 통신
 #include <ArduinoJson.h>    // ArduinoJson 라이브러리 포함
 
 #define TRIG 6        // TRIG 핀 설정 (초음파 보내는 핀)
@@ -12,8 +11,7 @@
 
 // SensorData 구조체 선언
 struct SensorData {
-  double latitude;     // 위도
-  double longitude;    // 경도
+
   float temperature;   // 온도
   float humidity;      // 습도
   bool isOpen;       // 문 열림 상태 (문이 열렸으면 true, 아니면 false)
@@ -35,10 +33,6 @@ DHT dht(DHTPIN, DHTTYPE); // DHT 센서 객체 생성
 #define RST_PIN 9               // RFID RST 핀 (SPI 핀: 9번)
 MFRC522 rfid(SS_PIN, RST_PIN);  // RFID 객체 생성
 
-// GPS 설정
-SoftwareSerial gps(2, 3);   // GPS 통신 핀
-String gpsData = "";        // GPS 데이터를 저장할 문자열 변수
-
 void setup() {
   Serial.begin(9600);
 
@@ -47,10 +41,17 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
     Serial.println("Connecting to WiFi...");
+  } if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("Failed to connect to WiFi. Please check credentials.");
+  } else {
+    Serial.println("Connected to WiFi");
   }
-  Serial.println("Connected to WiFi");
 
+  // MQTT 설정
   client.setServer(mqtt_server, 1883);
+  client.setCallback(mqttCallback);  // MQTT 콜백 함수 등록
+
+  // 센서 설정
   setupSensors();
 }
 
@@ -71,7 +72,7 @@ void loop() {
   // MQTT 주제에 JSON 데이터 발행
   client.publish("sensor/data", jsonBuffer);
 
-  delay(1000);  // 5초마다 데이터 발행
+  delay(2500);  // 2.5초마다 데이터 발행
 }
 
 // 센서 초기화 함수
@@ -89,57 +90,46 @@ void setupSensors() {
   // RFID 모듈 초기화
   rfid.PCD_Init();
 
-  // GPS 모듈 통신 시작
-  gps.begin(9600);
-
   Serial.println("Sensors initialized.");
 }
-
 // MQTT 재연결 함수
 void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     if (client.connect("ArduinoClient")) {
       Serial.println("connected");
+      // 특정 주제 구독
+      client.subscribe("sensor/control");  // "sensor/control" 주제 구독
+      Serial.println("Subscribed to topic: sensor/control");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
-      delay(1000);
+      delay(2500);  // 2.5초 대기 후 재시도
     }
   }
 }
 
+
 // 센서 데이터 수집 함수
 void collectSensorData() {
-  // GPS 데이터 수신
-  if (gps.available()) {
-    char c = gps.read();
-
-    if (isPrintable(c)) {
-      gpsData += c; // GPS 데이터 누적
-    }
-
-    if (c == '\n') { // 한 문장이 끝났을 때
-      if (gpsData.startsWith("$GPRMC") && gpsData.length() > 10) {
-        parseGPRMC(gpsData); // GPRMC 데이터 파싱 및 출력
-      }
-      gpsData = ""; // 문자열 초기화
-    }
-  }
-
-  // 온도 및 습도 데이터 읽기
+    // 온도 및 습도 데이터 읽기
   sensorData.humidity = dht.readHumidity();
   sensorData.temperature = dht.readTemperature();
 
   if (isnan(sensorData.humidity) || isnan(sensorData.temperature)) {
-    Serial.println("온습도 센서에서 데이터를 읽을 수 없습니다!");
+    Serial.println("Failed to read from DHT sensor! Retrying...");
+    delay(1000);
+    collectSensorData();  // 재시도
   }
-
+  
   // RFID 카드 읽기
   if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
     String cardID = getRFIDCardID(rfid);  // RFID 카드 ID 추출
     Serial.print("RFID 카드 ID: ");
-    Serial.println(cardID);  // 카드 ID 출력
+    Serial.println(cardID); // 카드 ID 출력
+
+    cardID.trim();
+    cardID.toUpperCase();
 
     if (cardID.equals("02 20 CE 01")) { // 파란색 태그
       sensorData.status = 4;
@@ -147,10 +137,10 @@ void collectSensorData() {
       sensorData.status = 5;
     }
 
-    rfid.PICC_HaltA();  // RFID 카드 읽기 중지
+    rfid.PICC_HaltA();
   }
 
-  // 초음파 
+  // 초음파 센서
   int distance = measureDistance(); // 거리 측정
   Serial.print("측정 거리: ");
   Serial.println(distance);
@@ -160,49 +150,6 @@ void collectSensorData() {
   } else {
     sensorData.isOpen = false;
   }
-}
-
-// GPRMC 메시지를 파싱하여 위치 정보 출력
-void parseGPRMC(String data) {
-  // 원본 GPS 데이터를 출력
-  Serial.print("Raw GPS Data: ");
-  Serial.println(data);
-  
-  int commaIndex1 = data.indexOf(','); 
-  int commaIndex2 = data.indexOf(',', commaIndex1 + 1); 
-  int commaIndex3 = data.indexOf(',', commaIndex2 + 1); 
-  int commaIndex4 = data.indexOf(',', commaIndex3 + 1); 
-  int commaIndex5 = data.indexOf(',', commaIndex4 + 1); 
-  int commaIndex6 = data.indexOf(',', commaIndex5 + 1);
-  int commaIndex7 = data.indexOf(',', commaIndex6 + 1);
-
-  // 유효성 확인
-  String status = data.substring(commaIndex2 + 1, commaIndex3);
-  if (status != "A") {
-    Serial.println("위치 정보가 유효하지 않습니다.");
-    return;
-  }
-
-  // 위도와 경도 값 추출
-  String lat = data.substring(commaIndex3 + 1, commaIndex4);
-  String latDir = data.substring(commaIndex4 + 1, commaIndex5);
-  String lon = data.substring(commaIndex5 + 1, commaIndex6);
-  String lonDir = data.substring(commaIndex6 + 1, commaIndex7);
-
-  // 위도와 경도를 실수로 변환
-  sensorData.latitude = convertToDecimalDegrees(lat, 2);
-  sensorData.longitude = convertToDecimalDegrees(lon, 3);
-
-  // 방향에 따라 부호 조정
-  if (latDir == "S") sensorData.latitude = -sensorData.latitude;
-  if (lonDir == "W") sensorData.longitude = -sensorData.longitude;
-}
-
-// DMM 형식을 Decimal Degrees로 변환하는 함수
-double convertToDecimalDegrees(String dmm, int degreeDigits) {
-  double degrees = dmm.substring(0, degreeDigits).toDouble(); // 도 부분 추출
-  double minutes = dmm.substring(degreeDigits).toDouble();    // 분 부분 추출
-  return degrees + (minutes / 60.0);                          // 분을 도로 변환
 }
 
 // RFID 카드 ID를 추출하여 String으로 반환하는 함수
@@ -232,14 +179,11 @@ int measureDistance() {
   return distance;
 }
 
-// SensorData 구조체를 JSON으로 변환하는 함수
+// SensorData 구조체 -> JSON변환함수
 String convertToJSON(SensorData data) {
-  // JSON 문서 객체 생성 (메모리 크기는 데이터 양에 맞게 설정)
   StaticJsonDocument<256> jsonDoc;
 
   // JSON 객체에 구조체 데이터 추가
-  jsonDoc["latitude"] = data.latitude;
-  jsonDoc["longitude"] = data.longitude;
   jsonDoc["isOpen"] = data.isOpen;
   jsonDoc["temperature"] = data.temperature;
   jsonDoc["humidity"] = data.humidity;
@@ -249,5 +193,35 @@ String convertToJSON(SensorData data) {
   String jsonString;
   serializeJson(jsonDoc, jsonString);
 
-  return jsonString; // JSON 문자열 반환
+  return jsonString;
+}
+
+// MQTT 메시지를 수신하는 콜백 함수
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived on topic: ");
+  Serial.println(topic);
+
+  // 수신된 메시지를 문자열로 변환
+  String message;
+  for (unsigned int i = 0; i < length; i++) {
+    message += (char)payload[i];
+  }
+  Serial.print("Message: ");
+  Serial.println(message);
+
+  // 특정 요청 처리
+  if (String(topic) == "sensor/control") { 
+    if (message == "status_3") {
+      sensorData.status = 3;
+      Serial.println("Status updated to 3");
+    } else if (message == "status_4") {
+      sensorData.status = 4;
+      Serial.println("Status updated to 4");
+    } else if (message == "status_5") {
+      sensorData.status = 5;
+      Serial.println("Status updated to 5");
+    } else {
+      Serial.println("Invalid status update command");
+    }
+  }
 }

@@ -2,6 +2,7 @@ service: online-learning
 
 provider:
   name: aws
+  region: ap-northeast-2
   runtime: python3.12
   memorySize: 1024
   timeout: 900

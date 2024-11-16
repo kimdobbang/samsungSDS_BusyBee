@@ -5,6 +5,7 @@ build/
 develop-eggs/
 dist/
 downloads/
+venv/
 eggs/
 .eggs/
 lib/

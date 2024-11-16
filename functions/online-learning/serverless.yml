@@ -1,0 +1,57 @@
+service: online-learning
+
+provider:
+  name: aws
+  runtime: python3.12
+  memorySize: 1024
+  timeout: 900
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 'sqs:SendMessage'
+          Resource: 'arn:aws:sqs:ap-northeast-2:*:dynamodb-sqs-queue'
+        - Effect: 'Allow'
+          Action:
+            - 'dynamodb:GetRecords'
+            - 'dynamodb:GetShardIterator'
+            - 'dynamodb:DescribeStream'
+            - 'dynamodb:ListStreams'
+          Resource: 'arn:aws:dynamodb:ap-northeast-2:481665114066:table/mail-db/stream/*'
+        - Effect: 'Allow'
+          Action:
+            - 's3:PutObject'
+            - 's3:GetObject'
+            - 's3:ListBucket'
+          Resource: 'arn:aws:s3:::sagemaker-ap-northeast-2-481665114066/distilkobert-onxx/*'
+
+  updateModel:
+    image: 481665114066.dkr.ecr.ap-northeast-2.amazonaws.com/online-learning:latest
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - DynamoDBSQSQueue
+              - Arn
+          batchSize: 32
+
+resources:
+  Resources:
+    DynamoDBSQSQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: dynamodb-sqs-queue
+        VisibilityTimeout: 30
+        MessageRetentionPeriod: 1209600
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - DeadLetterQueue
+              - Arn
+          maxReceiveCount: 5
+
+    DeadLetterQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: dynamodb-sqs-dead-letter-queue

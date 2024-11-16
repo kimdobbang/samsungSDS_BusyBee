@@ -1,0 +1,29 @@
+service: maildb-to-sqs
+
+provider:
+  name: aws
+  region: ap-northeast-2 # 리전 명시
+  runtime: nodejs20.x
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 'sqs:SendMessage'
+          Resource: 'arn:aws:sqs:ap-northeast-2:*:dynamodb-sqs-queue'
+        - Effect: 'Allow'
+          Action:
+            - 'dynamodb:GetRecords'
+            - 'dynamodb:GetShardIterator'
+            - 'dynamodb:DescribeStream'
+            - 'dynamodb:ListStreams'
+          Resource: 'arn:aws:dynamodb:ap-northeast-2:481665114066:table/mail-db/stream/*'
+
+functions:
+  maildbToSqs:
+    handler: handler.dynamodbToSQSHandler
+    name: maildb-to-sqs
+    events:
+      - stream:
+          type: dynamodb
+          arn: 'arn:aws:dynamodb:ap-northeast-2:481665114066:table/mail-db/stream/2024-11-08T05:20:32.427'

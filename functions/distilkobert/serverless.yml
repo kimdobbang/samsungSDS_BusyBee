@@ -1,0 +1,29 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: ourmail
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: distilkobert
+
+# Serverless Framework 버전
+frameworkVersion: '4'
+
+# AWS 프로바이더 설정
+provider:
+  name: aws
+  region: ap-northeast-2 # 리전: 서울
+  runtime: python3.12 # Lambda 실행 환경
+  environment: # Lambda 환경 변수
+    S3_BUCKET: sagemaker-ap-northeast-2-481665114066
+    MODEL_PREFIX: distilkobert-classifier/
+
+functions:
+  inference:
+    image: 481665114066.dkr.ecr.ap-northeast-2.amazonaws.com/distilkobert-lambda:latest
+    memorySize: 1024
+    timeout: 15 # 타임아웃 설정 (초 단위)
+    events:
+      - http:
+          path: inference
+          method: post
+
+plugins:
+  - serverless-python-requirements

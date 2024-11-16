@@ -10,7 +10,7 @@ provider:
         - Effect: 'Allow'
           Action:
             - 'sqs:SendMessage'
-          Resource: 'arn:aws:sqs:ap-northeast-2:*:dynamodb-sqs-queue'
+          Resource: 'arn:aws:sqs:ap-northeast-2:481665114066:dynamodb-sqs-queue'
         - Effect: 'Allow'
           Action:
             - 'dynamodb:GetRecords'
@@ -23,6 +23,8 @@ functions:
   maildbToSqs:
     handler: handler.dynamodbToSQSHandler
     name: maildb-to-sqs
+    environment:
+      SQS_QUEUE_URL: https://sqs.ap-northeast-2.amazonaws.com/481665114066/dynamodb-sqs-queue # SQS URL 설정
     events:
       - stream:
           type: dynamodb

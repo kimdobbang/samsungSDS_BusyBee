@@ -5,16 +5,12 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 
 # 환경 변수
-S3_BUCKET = os.environ.get("S3_BUCKET", "sagemaker-ap-northeast-2-481665114066")
-MODEL_PREFIX = os.environ.get("MODEL_PREFIX", "distilkobert-classifier/")
+S3_BUCKET = os.environ.get("S3_BUCKET")
+MODEL_PREFIX = os.environ.get("MODEL_PREFIX")
 MODEL_DIR = "/tmp/model"
 
-# S3 및 DynamoDB 클라이언트 생성
+# S3 클라이언트 생성
 s3 = boto3.client("s3")
-dynamodb = boto3.resource("dynamodb")
-
-# DynamoDB 테이블 이름 설정
-DYNAMODB_TABLE = "mail-db"
 
 # S3에서 모델 다운로드
 def download_model():
@@ -40,11 +36,50 @@ def upload_model_to_s3():
     model_files = ["pytorch_model.bin", "config.json", "vocab.txt"]
     for file_name in model_files:
         s3.upload_file(
-            os.path.join(MODEL_DIR, file_name), 
-            S3_BUCKET, 
+            os.path.join(MODEL_DIR, file_name),
+            S3_BUCKET,
             f"{MODEL_PREFIX}{file_name}"
         )
     print("모델 업로드 완료")
+
+# 모델 재학습
+def retrain_model(tokenizer, model, training_data):
+    print("모델 재학습 시작")
+    
+    inputs = tokenizer(
+        [data["text"] for data in training_data],
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=128,
+    )
+    labels = torch.tensor([data["label"] for data in training_data])
+
+    dataset = torch.utils.data.TensorDataset(
+        inputs["input_ids"], inputs["attention_mask"], labels
+    )
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=32)  # 배치 크기 32
+
+    model.train()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
+
+    for epoch in range(1):
+        for batch in dataloader:
+            input_ids, attention_mask, batch_labels = batch
+            outputs = model(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                labels=batch_labels,
+            )
+            loss = outputs.loss
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+            print(f"Loss: {loss.item()}")
+
+    model.save_pretrained(MODEL_DIR)
+    tokenizer.save_pretrained(MODEL_DIR)
+    print("모델 재학습 완료 및 저장 완료")
 
 # Lambda 핸들러
 def lambda_handler(event, context):
@@ -54,16 +89,12 @@ def lambda_handler(event, context):
         tokenizer, model = load_model()
 
         # SQS 메시지 읽기
-        messages = []
-        for record in event["Records"]:
-            body = json.loads(record["body"])
-            messages.append(body)
+        messages = [json.loads(record["body"]) for record in event["Records"]]
         
         # 학습 데이터 준비
         training_data = [
             {"text": msg["emailContent"], "label": msg["flag"]}
             for msg in messages
-            if "emailContent" in msg and "flag" in msg
         ]
         
         if not training_data:
@@ -91,47 +122,3 @@ def lambda_handler(event, context):
             "statusCode": 500,
             "body": json.dumps({"error": str(e)}),
         }
-
-# 모델 재학습
-def retrain_model(tokenizer, model, training_data):
-    print("모델 재학습 시작")
-    
-    # 학습 데이터 토큰화
-    inputs = tokenizer(
-        [data["text"] for data in training_data],
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-        max_length=128,
-    )
-    labels = torch.tensor([data["label"] for data in training_data])
-
-    # 학습 데이터 생성
-    dataset = torch.utils.data.TensorDataset(
-        inputs["input_ids"], inputs["attention_mask"], labels
-    )
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=16)
-
-    # 모델 학습 준비
-    model.train()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=5e-5)
-
-    # 간단한 학습 루프 (에포크 1회 실행)
-    for epoch in range(1):
-        for batch in dataloader:
-            input_ids, attention_mask, batch_labels = batch
-            outputs = model(
-                input_ids=input_ids,
-                attention_mask=attention_mask,
-                labels=batch_labels,
-            )
-            loss = outputs.loss
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-            print(f"Loss: {loss.item()}")
-
-    # 모델 저장
-    model.save_pretrained(MODEL_DIR)
-    tokenizer.save_pretrained(MODEL_DIR)
-    print("모델 재학습 완료 및 저장 완료")

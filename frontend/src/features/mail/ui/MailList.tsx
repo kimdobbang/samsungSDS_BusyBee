@@ -57,7 +57,10 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
             </thead>
             <tbody>
               {mails.map((mail, index) => (
-                <tr key={index}>
+                <tr
+                  key={index}
+                  className={mail.isRead ? styles.boardControl : ''}
+                >
                   <td>
                     <input type='checkbox' />
                   </td>
@@ -67,7 +70,10 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
                   </td>
                   {/* 값이 제대로 렌더링되지 않으면 확인 */}
                   <td className={styles.tagCol}>
-                    <div style={{ backgroundColor: getTagColor(mail.flag) }} className={styles.tag}>
+                    <div
+                      style={{ backgroundColor: getTagColor(mail.flag) }}
+                      className={styles.tag}
+                    >
                       {getTagName(mail.flag)}
                     </div>
                   </td>
@@ -79,7 +85,9 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
                     </a>
                     {/* 값이 제대로 렌더링되지 않으면 확인 */}
                   </td>
-                  <td className={styles.timestamp}>{mail.received_date || 'Unknown'}</td>
+                  <td className={styles.timestamp}>
+                    {mail.received_date || 'Unknown'}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -8,15 +8,23 @@ import styles from './DetailMail.module.scss';
 import useMailStore from 'features/mail/utils/mailStore';
 import { getTagColor, getTagName } from 'shared/utils/getTag';
 import BoardLayout from 'shared/components/BoardLayout';
+import { useEffect, useState } from 'react';
+import { SelectModal } from './SelectModal';
 
 export const DetailMail = () => {
   // URL에서 파라미터를 가져옴
   const [searchParams] = useSearchParams();
   const receiver = searchParams.get('receiver');
   const received_date = searchParams.get('received_date');
+  const [showFlags, setShowFlags] = useState(false);
+  const [flags, setFlags] = useState<number[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedFlag, setSelectedFlag] = useState<number | null>(null);
 
   // URL 인코딩된 received_date를 디코딩
-  const decodedReceivedDate = received_date ? decodeURIComponent(received_date) : null;
+  const decodedReceivedDate = received_date
+    ? decodeURIComponent(received_date)
+    : null;
 
   // useMailStore로부터 상태 가져오기
   const getMail = useMailStore((state) => state.getMail);
@@ -29,7 +37,15 @@ export const DetailMail = () => {
 
   // 메일 상세 정보 가져오기
   const mailDetails =
-    receiver && decodedReceivedDate ? getMail(receiver.trim(), decodedReceivedDate.trim()) : null;
+    receiver && decodedReceivedDate
+      ? getMail(receiver.trim(), decodedReceivedDate.trim())
+      : null;
+
+  useEffect(() => {
+    if (mailDetails) {
+      setFlags([0, 1, 2, 3].filter((flag) => flag !== mailDetails.flag));
+    }
+  }, [mailDetails]);
 
   // 디버깅: getMail 결과 출력
   console.log('getMails result:', mailDetails);
@@ -38,21 +54,61 @@ export const DetailMail = () => {
   if (!receiver || !decodedReceivedDate || !mailDetails) {
     return <div>Invalid or missing email details</div>;
   }
-
   // S3 버킷 URL
   const S3_BUCKET_URL = 'https://mails-to-files.s3.amazonaws.com/';
 
+  const toggleFlags = () => {
+    setShowFlags((prevShowFlags) => !prevShowFlags);
+    if (!showFlags) {
+      setFlags([0, 1, 2, 3].filter((flag) => flag !== mailDetails.flag));
+    } else {
+      setFlags([]);
+    }
+  };
+  const handleFlagClick = (flag: number) => {
+    setSelectedFlag(flag);
+    setModalOpen(true);
+  };
+
+  const handleTagChange = (tagNum: number) => {
+    if (mailDetails) {
+      mailDetails.flag = tagNum;
+    }
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedFlag(null);
+  };
   return (
     <BoardLayout>
       <div className={styles.detailMail}>
         <div className={styles.header}>
           <div className={styles.tag}>
-            <h1 style={{ backgroundColor: getTagColor(mailDetails.flag) }}>
-              {getTagName(mailDetails.flag)}
-            </h1>
+            <button className={styles.tagButton} onClick={toggleFlags}>
+              <h1 style={{ backgroundColor: getTagColor(mailDetails.flag) }}>
+                {getTagName(mailDetails.flag)}
+              </h1>
+            </button>
+            {showFlags && (
+              <div className={styles.flagsContainer}>
+                {flags.map((flag) => (
+                  <div
+                    key={flag}
+                    className={styles.flag}
+                    style={{ backgroundColor: getTagColor(flag) }}
+                    onClick={() => handleFlagClick(flag)}
+                  >
+                    {getTagName(flag)}
+                  </div>
+                ))}
+              </div>
+            )}
             <h1>{mailDetails.subject}</h1>
           </div>
-          <div className={styles.headerbuttons}>{/* 아이콘 버튼들 주석 처리 */}</div>
+          <div className={styles.headerbuttons}>
+            {/* 아이콘 버튼들 주석 처리 */}
+          </div>
         </div>
         <hr />
         <div className={styles.body}>
@@ -91,6 +147,20 @@ export const DetailMail = () => {
             )}
           </div>
         </div>
+
+        {modalOpen && (
+          <SelectModal
+            onClose={closeModal}
+            selectedFlag={
+              getTagName(selectedFlag !== null ? selectedFlag : 0) !== null
+                ? getTagName(selectedFlag !== null ? selectedFlag : 0)
+                : ''
+            }
+            receivedDate={decodedReceivedDate}
+            tagNum={selectedFlag !== null ? selectedFlag : undefined}
+            onTagChange={handleTagChange}
+          />
+        )}
       </div>
     </BoardLayout>
   );

@@ -101,9 +101,8 @@ def load_model():
 
     print("모델 및 토크나이저 로드 완료.")
     return tokenizer, model
-
-
-# 모델 재학습
+    
+# 모델 저장
 def retrain_model(tokenizer, model, training_data):
     print("모델 재학습 시작...")
     inputs = tokenizer(
@@ -142,26 +141,11 @@ def retrain_model(tokenizer, model, training_data):
     # 모델 저장
     print("모델 저장 중...")
     model.save_pretrained(MODEL_DIR)
-    
-    # 토크나이저 저장
-    vocab_path = os.path.join(MODEL_DIR, "vocab.txt")
-    tokenizer_config_path = os.path.join(MODEL_DIR, "tokenizer_config.json")
-    tokenizer_special_tokens_path = os.path.join(MODEL_DIR, "special_tokens_map.json")
-    
-    with open(vocab_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(tokenizer.get_vocab().keys()))
-    print(f"Vocabulary saved at {vocab_path}")
+    tokenizer.save_vocabulary(MODEL_DIR)  # save_pretrained 대신 save_vocabulary 사용
+    print("모델 저장 완료.")
 
-    with open(tokenizer_config_path, "w", encoding="utf-8") as f:
-        json.dump(tokenizer.init_kwargs, f, ensure_ascii=False, indent=4)
-    print(f"Tokenizer config saved at {tokenizer_config_path}")
-
-    with open(tokenizer_special_tokens_path, "w", encoding="utf-8") as f:
-        json.dump(tokenizer.special_tokens_map, f, ensure_ascii=False, indent=4)
-    print(f"Special tokens map saved at {tokenizer_special_tokens_path}")
-    
-    print("토크나이저 저장 완료.")
     return model
+
 
 # ONNX 변환
 def convert_to_onnx(model):

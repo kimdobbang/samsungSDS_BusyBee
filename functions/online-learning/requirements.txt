@@ -1,5 +1,6 @@
 transformers
 torch
+onnx
 onnxruntime
 boto3
-sentencepiece 
+sentencepiece

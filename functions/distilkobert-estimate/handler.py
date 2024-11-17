@@ -6,6 +6,7 @@ import numpy as np
 import onnxruntime as ort
 from transformers import AutoTokenizer
 from datetime import datetime
+from decimal import Decimal 
 
 # 환경 변수
 S3_BUCKET = os.environ["S3_BUCKET"]
@@ -95,13 +96,16 @@ def lambda_handler(event, context):
             # 평가 수행
             results = evaluate_model(tokenizer, ort_session, test_data)
 
+            # 정확도 값을 Decimal로 변환
+            accuracy_decimal = Decimal(str(results["accuracy"]))  # float 값을 문자열로 변환 후 Decimal로 변환
+
             # 결과 저장
             table = dynamodb.Table(DYNAMODB_TABLE)
             evaluation_id = str(uuid.uuid4())
             table.put_item(Item={
                 "id": evaluation_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "accuracy": results["accuracy"],
+                "accuracy": accuracy_decimal,
                 "confusion_matrix": json.dumps(results["confusion_matrix"]),
                 "true_labels": json.dumps(results["true_labels"]),
                 "predicted_labels": json.dumps(results["predicted_labels"]),

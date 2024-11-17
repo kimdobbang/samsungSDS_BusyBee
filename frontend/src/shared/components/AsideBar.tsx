@@ -83,7 +83,10 @@ export const AsideBar: React.FC = () => {
           </button>
         </li>
         <li className={styles.item}>
-          <button className={styles.button} onClick={() => navigate('/analy')}>
+          <button
+            className={styles.button}
+            onClick={() => navigate('/analysis')}
+          >
             <div>
               <AnalystIcon width={24} height={24} className={styles.icon} />
               <h1 className={styles.title}>분석이력</h1>

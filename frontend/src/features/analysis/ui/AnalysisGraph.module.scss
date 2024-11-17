@@ -1,0 +1,31 @@
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.graphSection,
+.matrixSection {
+  width: 48%; /* 양쪽 균등 배분 */
+  background-color: #f9f9f9;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.graphSection h2,
+.matrixSection h2 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: var(--primary);
+}
+
+.graph {
+  height: 400px; /* Adjust height for graph */
+}

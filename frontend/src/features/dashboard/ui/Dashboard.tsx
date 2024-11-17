@@ -6,7 +6,7 @@ import BoardLayout from 'shared/components/BoardLayout';
 import styles from './DashBoard.module.scss';
 import mqtt from 'mqtt';
 
-import { Map, MultiStepProgress } from 'features';
+import { Map, MultiStepProgress, CameraViewer } from 'features';
 import { sendToLambda, useAuth } from '../..';
 import { CountByDate } from '../../../shared/utils/getCountByDate';
 // import { CountInProgressQuotes } from 'features/mail/utils/estimate';
@@ -46,14 +46,14 @@ export const Dashboard = () => {
   const [showSendMailModal, setShowSendMailModal] = useState<boolean>(false);
 
   // sensorData 상태를 SensorData 클래스를 사용해 초기화
+
+  const [isMqttConnected, setIsMqttConnected] = useState(false);
   const [sensorData, setSensorData] = useState<SensorData>(new SensorData());
   const [gpsData, setGpsData] = useState<GpsData>(new GpsData());
 
   // MQTT 설정 및 연결
   useEffect(() => {
-    const brokerUrl =
-      'wss://iot-iot-784138088.ap-northeast-2.elb.amazonaws.com';
-    // 'wss://3.36.105.60:443'; // MQTT 브로커 URL
+    const brokerUrl = 'wss://mqsocket.busybeemail.net'; // MQTT 브로커 URL
 
     const client = mqtt.connect(brokerUrl, {
       clientId: `myMqttClient-${Math.random().toString(16).slice(2)}`,
@@ -64,7 +64,7 @@ export const Dashboard = () => {
 
     client.on('connect', () => {
       console.log('Connected to MQTT broker');
-
+      setIsMqttConnected(true); // 연결 성공 시 상태 업데이트
       // 여러 토픽을 구독
       client.subscribe(['sensor/data', 'gps/data'], (err) => {
         if (err) {
@@ -152,18 +152,25 @@ export const Dashboard = () => {
     backgroundColor: 'var(--sub01)', // 하늘색 배경
   };
 
-  // 온도에 따른 배경 색상 결정
   const getTemperatureBgColor = (temperature: number) => {
-    if (temperature <= 20) {
-      return '#69a3ff'; // 파란색 계열 (낮은 온도)
+    if (temperature <= 10) {
+      return '#4f83cc'; // 매우 낮은 온도 - 진한 파란색
+    } else if (temperature <= 15) {
+      return '#6699ff'; // 조금 낮은 온도 - 파란색
+    } else if (temperature <= 20) {
+      return '#85b8ff'; // 시원한 파란색
+    } else if (temperature <= 25) {
+      return '#a3d4ff'; // 부드러운 밝은 파란색
+    } else if (temperature <= 30) {
+      return '#cce7ff'; // 연한 하늘색
+    } else if (temperature <= 35) {
+      return '#ffdb99'; // 약간 따뜻한 노란색
+    } else if (temperature <= 37) {
+      return '#ffcc66'; // 더 따뜻한 노란색
     } else if (temperature <= 40) {
-      return '#a3d4ff'; // 밝은 파란색 계열
-    } else if (temperature <= 60) {
-      return '#ffd966'; // 노란색 계열 (중간 온도)
-    } else if (temperature <= 80) {
-      return '#ffb347'; // 주황색 계열 (높은 온도)
+      return '#ffb347'; // 진한 주황색 (높은 온도)
     } else {
-      return '#ff6961'; // 빨간색 계열 (아주 높은 온도)
+      return '#ff8c69'; // 매우 높은 온도 - 붉은 주황색
     }
   };
 
@@ -447,11 +454,7 @@ export const Dashboard = () => {
               </table>
               <div className={styles.barSection}>
                 <MultiStepProgress
-                  status={
-                    selectIndex !== null
-                      ? originalRows[selectIndex].status.N
-                      : 0
-                  }
+                  status={selectIndex !== null ? sensorData.status : 0}
                 />
               </div>
               <div className={styles.detail}>
@@ -489,7 +492,9 @@ export const Dashboard = () => {
                     </div>
                     <div className={styles.bottomRight}>
                       <div className={styles.camera}>
-                        <div>카메라 자리</div>
+                        <div>
+                          <CameraViewer />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -501,14 +506,6 @@ export const Dashboard = () => {
                     <div className={styles.col}>
                       <h2>현재 경도</h2>
                       <div className={styles.square}>{gpsData.lon}</div>
-                    </div>
-                    <div className={styles.col}>
-                      <h2>위치 정확도</h2>
-                      <div className={styles.square}>{gpsData.acc}m</div>
-                    </div>
-                    <div className={styles.col}>
-                      <h2>타임스탬프</h2>
-                      <div className={styles.square}>{gpsData.tst}</div>
                     </div>
                     <div className={styles.col}>
                       <h2>열림 감지</h2>

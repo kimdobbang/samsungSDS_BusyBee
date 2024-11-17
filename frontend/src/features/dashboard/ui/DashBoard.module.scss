@@ -320,7 +320,7 @@ td {
   // padding: 2%;
   height: 100%;
   // background-color: var(--gray02);
-  border: 1px solid black;
+  // border: 1px solid black;
   border-radius: 15px;
   z-index: 0;
 }
@@ -330,6 +330,7 @@ td {
   height: 300px;
   display: flex;
   flex-direction: row;
+  gap: 2rem;
 }
 
 .bottomRight {

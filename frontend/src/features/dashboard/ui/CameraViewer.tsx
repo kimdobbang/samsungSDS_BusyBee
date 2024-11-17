@@ -6,7 +6,7 @@ export const CameraViewer: React.FC = () => {
 
   useEffect(() => {
     // WebSocket 연결 설정
-    const ws = new WebSocket('ws://218.150.140.4:8081');
+    const ws = new WebSocket(`wss://cam.busybeemail.net`);
 
     ws.onopen = () => {
       console.log('WebSocket connection established. 카메라 연결');

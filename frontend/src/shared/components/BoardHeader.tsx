@@ -39,13 +39,6 @@ export const BoardHeader: React.FC<BoardHeaderProps> = ({ toggleAside }) => {
           <h1>BUSYBEE</h1>
         </button>
       </div>
-      <div className={styles.search}>
-        <SearchIcon width={24} height={24} />
-        <input type='text' placeholder='메일 검색' className={styles.searchInput} />
-        <button className={styles.filterButton}>
-          <FilterIcon width={12} height={12} />
-        </button>
-      </div>
       <div className={styles.actions}>
         {/* <button className={`${styles.button} ${styles.settingIcon}`}>
           <SettingIcon width={24} height={24} />

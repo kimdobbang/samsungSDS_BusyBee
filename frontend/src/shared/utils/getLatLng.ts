@@ -1,5 +1,8 @@
 // 도시코드와 위도, 경도, 이름 매핑
-const locationCoordinates: Record<string, { lat: number; lng: number; name: string }> = {
+const locationCoordinates: Record<
+  string,
+  { lat: number; lng: number; name: string }
+> = {
   SEL: { lat: 37.5665, lng: 126.978, name: '서울' },
   ICN: { lat: 37.4563, lng: 126.7052, name: '인천' },
   PUS: { lat: 35.1796, lng: 129.0756, name: '부산' },
@@ -73,7 +76,7 @@ export function getCoordinatesByCode(code: string) {
   if (coordinates) {
     return coordinates;
   } else {
-    console.error('Invalid code or coordinates not found.');
+    // console.error('Invalid code or coordinates not found.');
     return null;
   }
 }

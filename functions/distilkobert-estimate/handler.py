@@ -79,7 +79,9 @@ def evaluate_model(tokenizer, ort_session, test_data):
 # Lambda 핸들러
 def lambda_handler(event, context):
     try:
-        http_method = event["httpMethod"]
+        # httpMethod가 없으면 기본적으로 POST로 처리
+        http_method = event.get("httpMethod", "POST")
+
         if http_method == "POST":
             # 모델 및 데이터 다운로드
             download_from_s3(MODEL_PREFIX, MODEL_DIR)

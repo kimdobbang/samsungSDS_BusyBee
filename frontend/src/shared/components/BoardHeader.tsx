@@ -1,8 +1,8 @@
 // import { ReactComponent as MenuIcon } from 'shared/assets/icons/menu.svg';
 // import { ReactComponent as SettingIcon } from 'shared/assets/icons/setting.svg';
 import { ReactComponent as InfoIcon } from 'shared/assets/icons/info.svg';
-import { ReactComponent as FilterIcon } from 'shared/assets/icons/filter.svg';
-import { ReactComponent as SearchIcon } from 'shared/assets/icons/search.svg';
+// import { ReactComponent as FilterIcon } from 'shared/assets/icons/filter.svg';
+// import { ReactComponent as SearchIcon } from 'shared/assets/icons/search.svg';
 import busybee3 from 'shared/assets/images/busybee3.png';
 import styles from './BoardHeader.module.scss';
 import { useState } from 'react';

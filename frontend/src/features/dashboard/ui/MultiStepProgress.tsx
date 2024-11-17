@@ -23,14 +23,16 @@ export const MultiStepProgress: React.FC<MultiStepProgressProps> = ({ status }) 
   ];
   useEffect(() => {
     if (circle.current && progressBar.current) {
-      // Update the progress bar width
-      progressBar.current.style.width = `${(status / 5) * 100}%`;
+      // 너비 계산: status가 5일 때는 4/5 (80%)로 설정
+      const adjustedWidth = status === 5 ? (4 / 5) * 100 : (status / 5) * 100;
+      progressBar.current.style.width = `${adjustedWidth}%`;
 
-      // Update the active class for circles
+      // 각 원(circle)에 active 클래스 추가
       circle.current.childNodes.forEach((node: ChildNode, index: number) => {
         if (node instanceof HTMLElement) {
-          if (index <= status) {
-            node.classList.add(styles.active); // Use styles.active for CSS modules
+          if (index < status) {
+            // index가 status보다 작을 때 색상 적용
+            node.classList.add(styles.active);
           } else {
             node.classList.remove(styles.active);
           }

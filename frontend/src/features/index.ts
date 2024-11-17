@@ -9,6 +9,7 @@ export * from './mail/api/emailApi';
 export * from './dashboard/ui/MultiStepProgress';
 export * from './dashboard/ui/Dashboard';
 export * from './dashboard/ui/Map';
+export * from './dashboard/ui/CameraViewer';
 // export * from './board/api/emailMockData';
 // export * from './board/hooks/useBoard';
 

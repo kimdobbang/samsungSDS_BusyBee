@@ -3,15 +3,14 @@ import sys
 import json
 import boto3
 import torch
-from transformers import PreTrainedTokenizerFast, AutoModelForSequenceClassification
+from transformers import AutoModelForSequenceClassification
 from concurrent.futures import ThreadPoolExecutor
-import pathlib
 
 # 환경 변수 설정
 S3_BUCKET = os.environ.get("S3_BUCKET")
 MODEL_PREFIX = os.environ.get("MODEL_PREFIX")  # 모델 파일 S3 경로
 ONNX_MODEL_PREFIX = os.environ.get("ONNX_MODEL_PREFIX")  # ONNX 모델 S3 경로
-MODEL_DIR = "/var/task/model"  # Lambda 내 쓰기 가능한 경로
+MODEL_DIR = "/tmp/model"  # Lambda 내 쓰기 가능한 경로
 ONNX_FILE = "distilkobert.onnx"
 HF_HOME = "/tmp/huggingface"
 
@@ -34,7 +33,8 @@ def download_model():
         "vocab.txt",          # 필수
         "special_tokens_map.json",  # 필수
         "tokenizer_78b3253a26.model",  # 실제 사용될 토크나이저
-        "tokenizer_config.json"  # 필수
+        "tokenizer_config.json",  # 필수
+        "tokenization_kobert.py"  # 추가된 부분
     ]
 
     def download_file(file_name):
@@ -42,7 +42,12 @@ def download_model():
         local_path = os.path.join(MODEL_DIR, file_name)
         if not os.path.exists(local_path):
             print(f"Downloading {file_name} from S3...")
-            s3.download_file(S3_BUCKET, s3_path, local_path)
+            try:
+                s3.download_file(S3_BUCKET, s3_path, local_path)
+                print(f"Successfully downloaded {file_name} to {local_path}")
+            except Exception as e:
+                print(f"Error downloading {file_name} from S3: {e}")
+                raise
 
     with ThreadPoolExecutor() as executor:
         executor.map(download_file, files)
@@ -53,6 +58,7 @@ def download_model():
 # 모델 및 토크나이저 로드
 def load_model():
     print("모델 및 토크나이저 로드 중...")
+    print(f"다운로드된 파일: {os.listdir(MODEL_DIR)}")
 
     # PYTHONPATH 설정
     sys.path.insert(0, MODEL_DIR)
@@ -64,21 +70,34 @@ def load_model():
     else:
         raise FileNotFoundError(f"tokenization_kobert.py 파일이 누락되었습니다: {tokenization_path}")
 
-    # 토크나이저 로드 (커스텀 모델 사용)
-    tokenizer = PreTrainedTokenizerFast(
-        tokenizer_file=os.path.join(MODEL_DIR, "tokenizer_78b3253a26.model"),
-        config_file=os.path.join(MODEL_DIR, "tokenizer_config.json"),
-        vocab_file=os.path.join(MODEL_DIR, "vocab.txt"),
-    )
-    print(f"토크나이저 로드 완료: {tokenizer}")
+    # 커스텀 토크나이저 임포트
+    try:
+        from tokenization_kobert import KoBertTokenizer
+        print("KoBertTokenizer 클래스 임포트 완료.")
+    except Exception as e:
+        print(f"KoBertTokenizer 임포트 중 에러 발생: {e}")
+        raise
+
+    # 토크나이저 로드
+    try:
+        tokenizer = KoBertTokenizer.from_pretrained(MODEL_DIR)
+        print(f"토크나이저 로드 완료: {tokenizer}")
+    except Exception as e:
+        print(f"토크나이저 로드 중 에러 발생: {e}")
+        raise
 
     # 모델 로드
-    model = AutoModelForSequenceClassification.from_pretrained(
-        MODEL_DIR,
-        cache_dir=HF_HOME,
-        local_files_only=True,
-        trust_remote_code=True
-    )
+    try:
+        model = AutoModelForSequenceClassification.from_pretrained(
+            MODEL_DIR,
+            cache_dir=HF_HOME,
+            local_files_only=True,
+            trust_remote_code=True
+        )
+        print("모델 로드 완료.")
+    except Exception as e:
+        print(f"모델 로드 중 에러 발생: {e}")
+        raise
 
     print("모델 및 토크나이저 로드 완료.")
     return tokenizer, model
@@ -121,11 +140,28 @@ def retrain_model(tokenizer, model, training_data):
     print("모델 재학습 완료.")
 
     # 모델 저장
+    print("모델 저장 중...")
     model.save_pretrained(MODEL_DIR)
-    tokenizer.save_pretrained(MODEL_DIR)
-    print("모델 저장 완료.")
-    return model
+    
+    # 토크나이저 저장
+    vocab_path = os.path.join(MODEL_DIR, "vocab.txt")
+    tokenizer_config_path = os.path.join(MODEL_DIR, "tokenizer_config.json")
+    tokenizer_special_tokens_path = os.path.join(MODEL_DIR, "special_tokens_map.json")
+    
+    with open(vocab_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(tokenizer.get_vocab().keys()))
+    print(f"Vocabulary saved at {vocab_path}")
 
+    with open(tokenizer_config_path, "w", encoding="utf-8") as f:
+        json.dump(tokenizer.init_kwargs, f, ensure_ascii=False, indent=4)
+    print(f"Tokenizer config saved at {tokenizer_config_path}")
+
+    with open(tokenizer_special_tokens_path, "w", encoding="utf-8") as f:
+        json.dump(tokenizer.special_tokens_map, f, ensure_ascii=False, indent=4)
+    print(f"Special tokens map saved at {tokenizer_special_tokens_path}")
+    
+    print("토크나이저 저장 완료.")
+    return model
 
 # ONNX 변환
 def convert_to_onnx(model):
@@ -163,14 +199,22 @@ def upload_model_files(model_dir):
         local_path = os.path.join(model_dir, file_name)
         if os.path.exists(local_path):
             s3_path = f"{MODEL_PREFIX}{file_name}"
-            s3.upload_file(local_path, S3_BUCKET, s3_path)
-            print(f"Uploaded {file_name} to s3://{S3_BUCKET}/{s3_path}")
+            try:
+                s3.upload_file(local_path, S3_BUCKET, s3_path)
+                print(f"Uploaded {file_name} to s3://{S3_BUCKET}/{s3_path}")
+            except Exception as e:
+                print(f"Error uploading {file_name} to S3: {e}")
+                raise
 
 
 def upload_onnx_file(onnx_path):
     s3_path = f"{ONNX_MODEL_PREFIX}{ONNX_FILE}"
-    s3.upload_file(onnx_path, S3_BUCKET, s3_path)
-    print(f"Uploaded ONNX 모델: s3://{S3_BUCKET}/{s3_path}")
+    try:
+        s3.upload_file(onnx_path, S3_BUCKET, s3_path)
+        print(f"Uploaded ONNX 모델: s3://{S3_BUCKET}/{s3_path}")
+    except Exception as e:
+        print(f"Error uploading ONNX model to S3: {e}")
+        raise
 
 
 # Lambda 핸들러
@@ -193,6 +237,8 @@ def lambda_handler(event, context):
         if not training_data:
             return {"statusCode": 200, "body": json.dumps({"message": "No training data."})}
 
+        print(f"Received training data: {training_data}")
+
         # 모델 재학습
         retrained_model = retrain_model(tokenizer, model, training_data)
 
@@ -207,4 +253,6 @@ def lambda_handler(event, context):
 
     except Exception as e:
         print(f"에러 발생: {e}")
+        import traceback
+        traceback.print_exc()
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}

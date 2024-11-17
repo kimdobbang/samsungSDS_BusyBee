@@ -54,7 +54,7 @@ PRETRAINED_INIT_CONFIGURATION = {
     "monologg/distilkobert": {"do_lower_case": False},
 }
 
-SPIECE_UNDERLINE = "▁"
+SPIECE_UNDERLINE = "‚ñÅ"
 
 
 class KoBertTokenizer(PreTrainedTokenizer):

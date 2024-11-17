@@ -2,3 +2,4 @@ transformers
 torch
 onnxruntime
 boto3
+sentencepiece 

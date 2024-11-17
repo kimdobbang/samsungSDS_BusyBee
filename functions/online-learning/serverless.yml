@@ -4,7 +4,7 @@ provider:
   name: aws
   region: ap-northeast-2
   runtime: python3.12
-  memorySize: 1024
+  memorySize: 2048
   timeout: 900
   iam:
     role:

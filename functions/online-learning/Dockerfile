@@ -10,9 +10,6 @@ ENV TRANSFORMERS_CACHE=/tmp/huggingface
 ENV TRANSFORMERS_OFFLINE=1
 ENV PYTHONPATH=${LAMBDA_TASK_ROOT}/tokenizer
 
-# tokenization_kobert.py 복사
-COPY tokenization_kobert.py ${LAMBDA_TASK_ROOT}/model/tokenization_kobert.py
-
 # 종속성 설치
 COPY requirements.txt .
 RUN pip install -r requirements.txt

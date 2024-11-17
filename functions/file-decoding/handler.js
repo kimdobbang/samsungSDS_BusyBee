@@ -10,7 +10,10 @@ module.exports.fileDecoding = async (event) => {
 
   try {
     for (const record of event.Records) {
-      console.log("현재 처리 중인 SQS 레코드:", JSON.stringify(record, null, 2));
+      console.log(
+        "현재 처리 중인 SQS 레코드:",
+        JSON.stringify(record, null, 2)
+      );
 
       const message = JSON.parse(record.body);
       console.log("SQS 메시지 파싱 결과:", JSON.stringify(message, null, 2));
@@ -24,7 +27,10 @@ module.exports.fileDecoding = async (event) => {
         Bucket: bucketName,
         Key: key,
       };
-      console.log("S3 getObject 요청 매개변수:", JSON.stringify(params, null, 2));
+      console.log(
+        "S3 getObject 요청 매개변수:",
+        JSON.stringify(params, null, 2)
+      );
 
       const data = await s3.getObject(params).promise();
       console.log("S3 객체 가져오기 성공. 데이터 크기:", data.Body.length);
@@ -32,7 +38,6 @@ module.exports.fileDecoding = async (event) => {
       const parsedEmail = await simpleParser(data.Body);
       console.log("이메일 파싱 결과:", JSON.stringify(parsedEmail, null, 2));
 
-      // 각 요청마다 새로운 attachmentKeys 배열 초기화
       const attachmentKeys = [];
 
       for (const attachment of parsedEmail.attachments) {
@@ -40,7 +45,9 @@ module.exports.fileDecoding = async (event) => {
 
         if (isAllowedExtension(attachment.filename)) {
           const targetBucketName = "mails-to-files";
-          const attachmentKey = `${key.split("/").slice(1).join("/")}/${attachment.filename}`;
+          const attachmentKey = `${key.split("/").slice(1).join("/")}/${
+            attachment.filename
+          }`;
           console.log("저장 대상 S3 객체 키:", attachmentKey);
 
           await s3
@@ -52,15 +59,20 @@ module.exports.fileDecoding = async (event) => {
             .promise();
 
           attachmentKeys.push(attachmentKey);
-          console.log(`첨부파일 저장 성공: ${targetBucketName}/${attachmentKey}`);
+          console.log(
+            `첨부파일 저장 성공: ${targetBucketName}/${attachmentKey}`
+          );
         } else {
-          console.log(`확장자가 지원되지 않아 첨부파일을 건너뜁니다: ${attachment.filename}`);
+          console.log(
+            `확장자가 지원되지 않아 첨부파일을 건너뜁니다: ${attachment.filename}`
+          );
         }
       }
 
       // SQS 메시지 전송
       const sqsParams = {
-        QueueUrl: "https://sqs.ap-northeast-2.amazonaws.com/481665114066/mail-classification-trigger",
+        QueueUrl:
+          "https://sqs.ap-northeast-2.amazonaws.com/481665114066/mail-classification-trigger",
         MessageBody: JSON.stringify({
           key: key,
           sender: message.sender,
@@ -68,11 +80,14 @@ module.exports.fileDecoding = async (event) => {
           subject: message.subject,
           email_content: message.email_content,
           received_date: message.received_date,
-          attachments: attachmentKeys, // 요청마다 독립적인 데이터
+          attachments: attachmentKeys,
         }),
       };
 
-      console.log("SQS 메시지 전송 매개변수:", JSON.stringify(sqsParams, null, 2));
+      console.log(
+        "SQS 메시지 전송 매개변수:",
+        JSON.stringify(sqsParams, null, 2)
+      );
 
       await sqs.sendMessage(sqsParams).promise();
       console.log("SQS 메시지 전송 성공:", sqsParams.MessageBody);

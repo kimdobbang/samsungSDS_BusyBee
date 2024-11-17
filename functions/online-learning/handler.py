@@ -22,6 +22,7 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"  # 오프라인 모드
 
 # S3 클라이언트 생성
 s3 = boto3.client("s3")
+lambda_client = boto3.client("lambda")
 
 
 # S3에서 필요한 모델 파일 다운로드
@@ -214,9 +215,12 @@ def lambda_handler(event, context):
 
         # 이벤트 데이터 처리
         messages = [json.loads(record["body"]) for record in event.get("Records", [])]
-        training_data = [
-            {"text": msg["emailContent"], "label": msg["flag"]} for msg in messages
-        ]
+        training_data = []
+        for msg in messages:
+            flag = msg.get("flag")
+            if flag is None or not (1 <= flag <= 4):
+                raise ValueError(f"Invalid flag value: {flag}")
+            training_data.append({"text": msg["emailContent"], "label": flag - 1})
 
         if not training_data:
             return {"statusCode": 200, "body": json.dumps({"message": "No training data."})}
@@ -233,6 +237,9 @@ def lambda_handler(event, context):
         upload_model_files(MODEL_DIR)
         upload_onnx_file(onnx_path)
 
+        # 평가 람다 호출
+        invoke_evaluation_lambda()
+
         return {"statusCode": 200, "body": json.dumps({"message": "Success"})}
 
     except Exception as e:
@@ -240,3 +247,26 @@ def lambda_handler(event, context):
         import traceback
         traceback.print_exc()
         return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+        
+def invoke_evaluation_lambda():
+    """
+    디스틸버트 평가 람다 호출
+    """
+    evaluation_lambda_name = "distilkobert-evaluation"  # 평가 람다의 이름
+    payload = {
+        "httpMethod": "POST",  # 평가 람다가 POST 요청으로 작동
+        "body": {}  # 추가적인 데이터가 필요하다면 여기에 추가
+    }
+
+    try:
+        print("평가 람다 호출 시작...")
+        response = lambda_client.invoke(
+            FunctionName=evaluation_lambda_name,
+            InvocationType="RequestResponse",  # 동기 호출
+            Payload=json.dumps(payload),
+        )
+        response_payload = json.loads(response["Payload"].read())
+        print(f"평가 람다 호출 성공: {response_payload}")
+    except Exception as e:
+        print(f"평가 람다 호출 중 에러 발생: {e}")
+        raise

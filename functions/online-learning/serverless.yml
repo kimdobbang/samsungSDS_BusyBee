@@ -19,6 +19,11 @@ provider:
             - 's3:PutObject'
             - 's3:ListBucket'
           Resource: 'arn:aws:s3:::sagemaker-ap-northeast-2-481665114066/*'
+        - Effect: 'Allow'
+          Action:
+            - 'lambda:InvokeFunction'
+          Resource:
+            - 'arn:aws:lambda:ap-northeast-2:481665114066:function:distilkobert-evaluation'
 
 functions:
   updateModel:

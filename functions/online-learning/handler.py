@@ -215,12 +215,9 @@ def lambda_handler(event, context):
 
         # 이벤트 데이터 처리
         messages = [json.loads(record["body"]) for record in event.get("Records", [])]
-        training_data = []
-        for msg in messages:
-            flag = msg.get("flag")
-            if flag is None or not (1 <= flag <= 4):
-                raise ValueError(f"Invalid flag value: {flag}")
-            training_data.append({"text": msg["emailContent"], "label": flag - 1})
+        training_data = [
+            {"text": msg["emailContent"], "label": msg["flag"]} for msg in messages
+        ]
 
         if not training_data:
             return {"statusCode": 200, "body": json.dumps({"message": "No training data."})}

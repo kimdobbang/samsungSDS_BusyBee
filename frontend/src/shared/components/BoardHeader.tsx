@@ -1,8 +1,8 @@
 // import { ReactComponent as MenuIcon } from 'shared/assets/icons/menu.svg';
 // import { ReactComponent as SettingIcon } from 'shared/assets/icons/setting.svg';
 import { ReactComponent as InfoIcon } from 'shared/assets/icons/info.svg';
-import { ReactComponent as FilterIcon } from 'shared/assets/icons/filter.svg';
-import { ReactComponent as SearchIcon } from 'shared/assets/icons/search.svg';
+// import { ReactComponent as FilterIcon } from 'shared/assets/icons/filter.svg';
+// import { ReactComponent as SearchIcon } from 'shared/assets/icons/search.svg';
 import busybee3 from 'shared/assets/images/busybee3.png';
 import styles from './BoardHeader.module.scss';
 import { useState } from 'react';
@@ -37,13 +37,6 @@ export const BoardHeader: React.FC<BoardHeaderProps> = ({ toggleAside }) => {
         <button className={`${styles.button} ${styles.logo}`}>
           <img src={busybee3} alt='' height={40} />
           <h1>BUSYBEE</h1>
-        </button>
-      </div>
-      <div className={styles.search}>
-        <SearchIcon width={24} height={24} />
-        <input type='text' placeholder='메일 검색' className={styles.searchInput} />
-        <button className={styles.filterButton}>
-          <FilterIcon width={12} height={12} />
         </button>
       </div>
       <div className={styles.actions}>

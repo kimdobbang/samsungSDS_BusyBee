@@ -22,9 +22,7 @@ export const ChatUI = () => {
   const email = typeof authEmail === 'string' ? authEmail : '';
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
   const orderId = new URLSearchParams(window.location.search).get('orderId');
-  const { sendMessage, receiveMessage } = useWebSocket(
-    isWebSocketConnected ? orderId : null
-  );
+  const { sendMessage, receiveMessage } = useWebSocket(isWebSocketConnected ? orderId : null);
   const [viewId, setViewId] = useState<boolean>(false);
 
   console.log(useAuth());
@@ -118,19 +116,21 @@ export const ChatUI = () => {
           {(userId ?? 'BUSYBEE').slice(0, 5).toUpperCase()}
         </button>
         <Tooltip
-          text='　　　　　　　　　　　　　　 챗봇과의 대화를 통해 빠르게 해결책을 찾을 수 있습니다．챗봇이 제공하는 안내를 따르며 대화를 이어가면， 자동화된 시스템이 신속하게 견적을 처리해 드릴 것입니다 　　　　　　　　　　　　　　 '
+          text='　　　　　　　　　　　　　　 챗봇과의 대화를 통해 빠르게 해결책을 찾을 수 있습니다. 챗봇이 제공하는 안내를 따르며 대화를 이어가면, 자동화된 시스템이 신속하게 견적을 처리해 드릴 것입니다!　　　　　　　　　　　　　　 '
           position='left'
         >
           <InfoIcon />
         </Tooltip>
       </div>
 
+      <div>
+        <b>📦 물류 문의 및 최신 동향 안내</b> <br />
+        물류 최신 동향, 배송 가능 지역 등 궁금한 사항에 대해 신속하게 답변 드립니다. 언제든지
+        문의해주세요!
+      </div>
       <div className={styles.chat} ref={chatRef}>
         {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`${styles.messageContainer} ${styles[message.sender]}`}
-          >
+          <div key={index} className={`${styles.messageContainer} ${styles[message.sender]}`}>
             {message.sender === 'admin' ? (
               <div className={styles.profileContainer}>
                 <img src={busybee2} alt='' width={45} height={45} />
@@ -139,9 +139,7 @@ export const ChatUI = () => {
                 </div>
               </div>
             ) : (
-              <div className={`${styles.message} ${styles[message.sender]}`}>
-                {message.content}
-              </div>
+              <div className={`${styles.message} ${styles[message.sender]}`}>{message.content}</div>
             )}
           </div>
         ))}
@@ -159,9 +157,7 @@ export const ChatUI = () => {
         </div>
         <Voice onTranscriptChange={handleTranscriptChange} />
       </div>
-      <div className={styles.warningMessage}>
-        음성 녹음 시 대화가 초기화됩니다.
-      </div>
+      <div className={styles.warningMessage}>음성 녹음 시 대화가 초기화됩니다.</div>
     </div>
   );
 };

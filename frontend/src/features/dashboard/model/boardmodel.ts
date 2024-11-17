@@ -22,29 +22,27 @@ export interface SendMailModalProps {
   ArrivalCity: string;
 }
 
+// SensorData 클래스 업데이트
 export class SensorData {
   humidity: number;
   isOpen: boolean;
-  latitude: number;
-  longitude: number;
-  status: number;
   temperature: number;
+  status: number;
 
   constructor(data: Partial<SensorData> = {}) {
     this.humidity = data.humidity ?? 0;
     this.isOpen = data.isOpen ?? false;
-    this.latitude = data.latitude ?? 0;
-    this.longitude = data.longitude ?? 0;
-    this.status = data.status ?? 0;
     this.temperature = data.temperature ?? 0;
+    this.status = data.status ?? 0;
   }
 }
 
+// GpsData 클래스 업데이트
 export class GpsData {
-  lat: number; //위도
-  lon: number; //경도
-  acc: number; //위치 정확도(단위:m)
-  tst: number; //타임스탬프(유닉스 시간)
+  lat: number; // 위도
+  lon: number; // 경도
+  acc: number; // 위치 정확도(단위: m)
+  tst: number; // 타임스탬프 (유닉스 시간)
 
   constructor(data: Partial<GpsData> = {}) {
     this.lat = data.lat ?? 0;

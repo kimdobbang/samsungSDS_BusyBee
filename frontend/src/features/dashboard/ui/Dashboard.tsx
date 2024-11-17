@@ -4,7 +4,6 @@ import { ReactComponent as CalendarIcon } from 'shared/assets/icons/calendar.svg
 // import busybee3 from 'shared/assets/images/busybee2.png';
 import BoardLayout from 'shared/components/BoardLayout';
 import styles from './DashBoard.module.scss';
-import mqtt from 'mqtt';
 
 import { Map, MultiStepProgress, CameraViewer } from 'features';
 import { sendToLambda, useAuth } from '../..';
@@ -14,7 +13,6 @@ import { getTodayOrderMail } from 'features/mail/utils/estimate';
 import { getMonthOrderMail } from 'features/mail/utils/estimate';
 import { RowData } from '../model/boardmodel';
 import { sortByReceivedDate } from 'features/mail/utils/sort';
-import { setupMqtt } from 'features/dashboard/api/mqttSetup';
 // import { sendDataToLambda } from '../api/dashboardApi';
 import { SendMailModal } from '../ui/SendMailModal';
 import { SensorData, GpsData } from 'features/dashboard/model/boardmodel';
@@ -41,68 +39,60 @@ export const Dashboard = () => {
   const [showSendMailModal, setShowSendMailModal] = useState<boolean>(false);
 
   // sensorData 상태를 SensorData 클래스를 사용해 초기화
+  const [isConnected, setIsConnected] = useState(false);
 
-  const [isMqttConnected, setIsMqttConnected] = useState(false);
   const [sensorData, setSensorData] = useState<SensorData>(new SensorData());
   const [gpsData, setGpsData] = useState<GpsData>(new GpsData());
-
-  // MQTT 설정 및 연결
+  // WebSocket 설정 및 연결
   useEffect(() => {
-    const brokerUrl = 'wss://mqsocket.busybeemail.net'; // MQTT 브로커 URL
+    const ws = new WebSocket('wss://mqsocket.busybeemail.net');
 
-    const client = mqtt.connect(brokerUrl, {
-      clientId: `myMqttClient-${Math.random().toString(16).slice(2)}`,
-      keepalive: 60,
-      reconnectPeriod: 5000,
-    });
+    ws.onopen = () => {
+      console.log('WebSocket 서버에 연결되었습니다.');
+      setIsConnected(true); // 연결 성공 시 상태 업데이트
+    };
 
-    client.on('connect', () => {
-      console.log('Connected to MQTT broker');
-      setIsMqttConnected(true); // 연결 성공 시 상태 업데이트
-      // 여러 토픽을 구독
-      client.subscribe(['sensor/data', 'gps/data'], (err) => {
-        if (err) {
-          console.error('Subscription error:', err);
-        } else {
-          console.log('Successfully subscribed to sensor/data and gps/data');
-        }
-      });
-    });
-
-    // 메시지를 받을 때 처리
-    client.on('message', (topic, message) => {
+    ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(message.toString());
-        console.log(`Received data on topic ${topic}:`, data);
+        const data = JSON.parse(event.data);
 
-        // 토픽에 따라 다른 상태를 설정
-        if (topic === 'sensor/data') {
-          setSensorData(data);
-        } else if (topic === 'gps/data') {
-          setGpsData(data);
+        // 데이터 파싱 및 상태 업데이트
+        if (data.topic === 'sensor/data') {
+          const sensor = new SensorData(data.data); // 새로운 SensorData 생성
+          console.log('sensor: ', sensor);
+          setSensorData(sensor);
+        } else if (data.topic === 'gps/data') {
+          const gps = new GpsData(data.data); // 새로운 GpsData 생성
+          console.log('gps: ', gps);
+          setGpsData(gps);
         }
       } catch (error) {
-        console.error(`Failed to parse data on topic ${topic}:`, error);
+        console.error('메시지 처리 중 에러:', error);
       }
-    });
+    };
 
-    client.on('error', (error: any) => {
-      console.error('MQTT connection error:', error);
-    });
+    ws.onerror = (error) => {
+      console.error('WebSocket 오류:', error);
+    };
 
-    client.on('offline', () => {
-      console.log('MQTT client is offline');
-    });
+    ws.onclose = () => {
+      console.log('WebSocket 연결이 종료되었습니다.');
+      setIsConnected(false);
+    };
 
-    client.on('close', () => {
-      console.log('MQTT connection closed');
-    });
-
-    // 컴포넌트가 언마운트될 때 연결 해제
+    // 컴포넌트가 언마운트될 때 WebSocket 닫기
     return () => {
-      client.end();
+      ws.close();
     };
   }, []);
+
+  useEffect(() => {
+    if (!isConnected) {
+      // WebSocket 연결이 실패했을 경우 기본값 설정
+      setSensorData(new SensorData({ temperature: 0, humidity: 0, isOpen: false, status: 0 }));
+      setGpsData(new GpsData({ lat: 0, lon: 0 }));
+    }
+  }, [isConnected]);
 
   useEffect(() => {
     const fetchLambdaData = async () => {
@@ -293,24 +283,22 @@ export const Dashboard = () => {
                   <tr
                     key={index}
                     className={styles.line}
-                    style={selectIndexCopy === index ? selectedStyle : {}}
-                    onClick={() => setSelectIndexCopy(index)}
+                    style={selectIndexCopy === index ? selectedStyle : {}} // selectIndex를 사용
+                    onClick={() => setSelectIndexCopy(index)} // selectIndex를 설정
                   >
                     <td>{row.sender.S}</td>
                     <td>{row.received_date.S}</td>
                     <td>
                       <div className={styles.stage}>
                         <p>
-                          {selectIndexCopy === index ? sensorData.status * 20 : row.status.N * 20} %
+                          {selectIndex === index ? sensorData.status * 20 : row.status.N * 20} %
                         </p>
                         <div className={styles.progressBarContainer}>
                           <div
                             className={styles.progressBar}
                             style={{
                               width: `${
-                                selectIndexCopy === index
-                                  ? sensorData.status * 20
-                                  : row.status.N * 20
+                                selectIndex === index ? sensorData.status * 20 : row.status.N * 20
                               }%`,
                             }}
                           ></div>
@@ -318,7 +306,7 @@ export const Dashboard = () => {
                       </div>
                     </td>
                     <td>
-                      {selectIndexCopy === index
+                      {selectIndex === index
                         ? sensorData.status === 5
                           ? '완료'
                           : '진행중'

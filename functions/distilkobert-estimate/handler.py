@@ -6,7 +6,7 @@ import numpy as np
 import onnxruntime as ort
 from transformers import AutoTokenizer
 from datetime import datetime
-from decimal import Decimal 
+from decimal import Decimal
 
 # 환경 변수
 S3_BUCKET = os.environ["S3_BUCKET"]
@@ -71,11 +71,17 @@ def evaluate_model(tokenizer, ort_session, test_data):
         confusion_matrix[t][p] += 1
 
     return {
-        "accuracy": accuracy,
+        "accuracy": Decimal(str(accuracy)),  # Decimal로 변환
         "confusion_matrix": confusion_matrix,
         "true_labels": true_labels,
         "predicted_labels": predicted_labels
     }
+
+# JSON 직렬화용 Decimal 핸들러
+def json_decimal_handler(obj):
+    if isinstance(obj, Decimal):
+        return float(obj)
+    raise TypeError("Type not serializable")
 
 # Lambda 핸들러
 def lambda_handler(event, context):
@@ -96,16 +102,13 @@ def lambda_handler(event, context):
             # 평가 수행
             results = evaluate_model(tokenizer, ort_session, test_data)
 
-            # 정확도 값을 Decimal로 변환
-            accuracy_decimal = Decimal(str(results["accuracy"]))  # float 값을 문자열로 변환 후 Decimal로 변환
-
             # 결과 저장
             table = dynamodb.Table(DYNAMODB_TABLE)
             evaluation_id = str(uuid.uuid4())
             table.put_item(Item={
                 "id": evaluation_id,
                 "timestamp": datetime.utcnow().isoformat(),
-                "accuracy": accuracy_decimal,
+                "accuracy": results["accuracy"],
                 "confusion_matrix": json.dumps(results["confusion_matrix"]),
                 "true_labels": json.dumps(results["true_labels"]),
                 "predicted_labels": json.dumps(results["predicted_labels"]),
@@ -113,7 +116,7 @@ def lambda_handler(event, context):
 
             return {
                 "statusCode": 200,
-                "body": json.dumps({"message": "Evaluation completed", "evaluation_id": evaluation_id})
+                "body": json.dumps({"message": "Evaluation completed", "evaluation_id": evaluation_id}, default=json_decimal_handler)
             }
 
         elif http_method == "GET":
@@ -124,7 +127,7 @@ def lambda_handler(event, context):
 
             return {
                 "statusCode": 200,
-                "body": json.dumps({"message": "Evaluation results retrieved", "results": items})
+                "body": json.dumps({"message": "Evaluation results retrieved", "results": items}, default=json_decimal_handler)
             }
 
         else:
@@ -136,5 +139,5 @@ def lambda_handler(event, context):
     except Exception as e:
         return {
             "statusCode": 500,
-            "body": json.dumps({"error": str(e)})
+            "body": json.dumps({"error": str(e)}),
         }

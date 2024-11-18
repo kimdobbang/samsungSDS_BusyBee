@@ -45,9 +45,19 @@ export const AnalysisGraph: React.FC = () => {
         const result = await sendGetItems();
         console.log(result);
 
-        const newTimestamps = result.results.map((item: any) => {
+        // 데이터 정렬: timestamp 기준으로 오름차순 정렬
+        const sortedResults = result.results.sort(
+          (a: any, b: any) =>
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+
+        // 정렬된 데이터를 기반으로 timestamps와 accuracies 설정
+        const newTimestamps = sortedResults.map((item: any) => {
           const date = new Date(item.timestamp);
-          return `${date.toLocaleDateString()}\n${date.toLocaleTimeString()}`;
+          // 월, 일만 반환
+          const month = date.getMonth() + 1; // getMonth()는 0부터 시작하므로 +1
+          const day = date.getDate();
+          return `${month}월 ${day}일`;
         });
 
         const newAccuracies = result.results.map((item: any) =>
@@ -56,6 +66,8 @@ export const AnalysisGraph: React.FC = () => {
 
         setTimestamps(newTimestamps);
         setAccuracies(newAccuracies);
+
+        console.log(timestamps);
 
         const matrix = result.results.map((item: any) =>
           JSON.parse(item.confusion_matrix)

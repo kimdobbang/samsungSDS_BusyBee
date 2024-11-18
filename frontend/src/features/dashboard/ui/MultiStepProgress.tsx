@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import styles from './MultiStepProgress.module.scss'; // Import as a CSS module
+import styles from './MultiStepProgress.module.scss';
 
 interface MultiStepProgressProps {
   status: number;
@@ -11,7 +11,6 @@ interface StatusData {
 }
 
 export const MultiStepProgress: React.FC<MultiStepProgressProps> = ({ status }) => {
-  const [currentProgress, setCurrentProgress] = useState(status);
   const circle = useRef<HTMLDivElement>(null);
   const progressBar = useRef<HTMLSpanElement>(null);
   const progressArr: StatusData[] = [
@@ -21,6 +20,7 @@ export const MultiStepProgress: React.FC<MultiStepProgressProps> = ({ status }) 
     { status: 4, name: '운송중' },
     { status: 5, name: '운송 완료' },
   ];
+
   useEffect(() => {
     if (circle.current && progressBar.current) {
       // 너비 계산: status가 5일 때는 4/5 (80%)로 설정
@@ -31,7 +31,6 @@ export const MultiStepProgress: React.FC<MultiStepProgressProps> = ({ status }) 
       circle.current.childNodes.forEach((node: ChildNode, index: number) => {
         if (node instanceof HTMLElement) {
           if (index < status) {
-            // index가 status보다 작을 때 색상 적용
             node.classList.add(styles.active);
           } else {
             node.classList.remove(styles.active);
@@ -48,7 +47,7 @@ export const MultiStepProgress: React.FC<MultiStepProgressProps> = ({ status }) 
           <div className={styles.info} key={index}>
             <span
               key={`${i.status}-${index}`}
-              className={`${styles.circle} ${i.status <= currentProgress ? styles.active : ''}`}
+              className={`${styles.circle} ${i.status <= status ? styles.active : ''}`}
             >
               {i.status}
             </span>

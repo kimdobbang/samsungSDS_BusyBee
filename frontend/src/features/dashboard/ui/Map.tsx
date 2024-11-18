@@ -45,7 +45,7 @@ export const Map = ({
         if (container) {
           const options = {
             center: new window.kakao.maps.LatLng(currentLat, currentLng),
-            level: 8,
+            level: 3,
           };
           // 지도 객체 생성 및 저장 (한 번만 생성)
           mapRef.current = new window.kakao.maps.Map(container, options);

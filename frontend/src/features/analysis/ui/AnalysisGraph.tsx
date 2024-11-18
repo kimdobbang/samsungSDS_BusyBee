@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Bar, Chart } from 'react-chartjs-2';
+import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
   Legend,
   Filler,
 } from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
 import styles from './AnalysisGraph.module.scss';
 import BoardLayout from 'shared/components/BoardLayout';
 import { sendGetItems } from '../api/analysisApi';
@@ -19,138 +19,158 @@ import { sendGetItems } from '../api/analysisApi';
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
   Legend,
-  Filler,
-  ChartDataLabels
+  Filler
 );
 
 export const AnalysisGraph: React.FC = () => {
-  const [data, setData] = useState<any>(null); // 데이터를 저장할 상태
-  const [loading, setLoading] = useState<boolean>(true); // 로딩 상태 관리
+  const [loading, setLoading] = useState<boolean>(true);
+  const [timestamps, setTimestamps] = useState<string[]>([]);
+  const [accuracies, setAccuracies] = useState<number[]>([]);
+  const [matrixData, setMatrixData] = useState<number[][]>([]);
+  const [classLabels, setClassLabels] = useState<string[]>([
+    '스　　팸',
+    '주　　문',
+    '견　　적',
+    '기　　타',
+  ]);
 
   useEffect(() => {
-    // 데이터를 가져오는 비동기 함수
     const fetchData = async () => {
       try {
         const result = await sendGetItems();
-        setData(result); // 가져온 데이터를 상태에 저장
-        console.log(data);
+        console.log(result);
+
+        const newTimestamps = result.results.map((item: any) => {
+          const date = new Date(item.timestamp);
+          return `${date.toLocaleDateString()}\n${date.toLocaleTimeString()}`;
+        });
+
+        const newAccuracies = result.results.map((item: any) =>
+          parseFloat(item.accuracy)
+        );
+
+        setTimestamps(newTimestamps);
+        setAccuracies(newAccuracies);
+
+        const matrix = result.results.map((item: any) =>
+          JSON.parse(item.confusion_matrix)
+        );
+        if (matrix.length > 0) {
+          setMatrixData(matrix[0]);
+        }
       } catch (e) {
         console.error('Error fetching data:', e);
       } finally {
-        setLoading(false); // 로딩 종료
+        setLoading(false);
       }
     };
 
-    fetchData(); // 컴포넌트가 렌더링될 때 데이터 가져오기
+    fetchData();
   }, []);
 
-  // Bar Chart Data
-  const barChartData = {
-    labels: ['Label 1', 'Label 2', 'Label 3', 'Label 4'],
+  // Line Chart Data
+  const lineChartData = {
+    labels: timestamps, // X축 레이블
     datasets: [
       {
-        label: 'Dataset 1',
-        data: [10, 20, 30, 40],
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
+        label: 'Accuracy',
+        data: accuracies,
+        backgroundColor: 'rgba(75, 192, 192, 0.2)', // 라인 아래 영역 색상
+        borderColor: 'rgba(75, 192, 192, 1)', // 라인 색상
+        pointBackgroundColor: 'rgba(75, 192, 192, 1)', // 포인트 색상
+        borderWidth: 2, // 라인 두께
+        fill: true, // 라인 아래 영역 채우기
       },
     ],
   };
 
-  const barChartOptions = {
+  const lineChartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top' as const,
       },
       title: {
         display: true,
-        text: 'Bar Chart Example',
+        text: 'Accuracy Over Time',
       },
     },
-  };
-
-  // Confusion Matrix Data
-  const confusionMatrixData = {
-    labels: ['Predicted A', 'Predicted B'], // X축 라벨
-    datasets: [
-      {
-        label: 'Actual A',
-        data: [50, 5],
-        backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(255, 99, 132, 0.6)'],
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      },
-      {
-        label: 'Actual B',
-        data: [10, 35],
-        backgroundColor: [
-          'rgba(75, 192, 192, 0.6)',
-          'rgba(153, 102, 255, 0.6)',
-        ],
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const confusionMatrixOptions = {
-    responsive: true,
     scales: {
       x: {
-        stacked: true,
         title: {
           display: true,
-          text: 'Predicted Classes',
+          text: 'Timestamp',
+        },
+        ticks: {
+          callback: (value: number | string, index: number, ticks: any) => {
+            const timestamp = timestamps[Number(value)];
+            return timestamp ? timestamp.split('\n') : '';
+          },
         },
       },
       y: {
-        stacked: true,
         title: {
           display: true,
-          text: 'Actual Classes',
+          text: 'Accuracy',
         },
-      },
-    },
-    plugins: {
-      legend: {
-        display: true,
-        position: 'top' as const,
-      },
-      tooltip: {
-        callbacks: {
-          label: (context: any) => `Count: ${context.raw}`,
-        },
-      },
-      datalabels: {
-        display: true,
-        color: 'black',
-        formatter: (value: number) => value,
+        beginAtZero: true,
+        max: 1,
       },
     },
   };
-
   return (
     <BoardLayout>
       <div className={styles.container}>
         {/* 그래프 섹션 */}
         <div className={styles.graphSection}>
-          <h2>Graph Visualization</h2>
+          <h2>Accuracy Over Time</h2>
           <div className={styles.graph}>
-            <Bar data={barChartData} options={barChartOptions} />
+            <Line data={lineChartData} options={lineChartOptions} />
           </div>
         </div>
 
         {/* 혼동행렬 섹션 */}
         <div className={styles.matrixSection}>
           <h2>Confusion Matrix</h2>
-          <div className={styles.graph}>
-            <Bar data={confusionMatrixData} options={confusionMatrixOptions} />
+          <br />
+          <div className={styles.matrixContainer}>
+            <table className={styles.matrixTable}>
+              <thead>
+                <tr>
+                  <th></th>
+                  {classLabels.map((label, idx) => (
+                    <th key={`header-${idx}`} className={styles.headerCell}>
+                      {label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {matrixData.map((row, rowIndex) => (
+                  <tr key={`row-${rowIndex}`}>
+                    <th className={styles.headerCell}>
+                      {classLabels[rowIndex]}
+                    </th>
+                    {row.map((value, colIndex) => (
+                      <td
+                        key={`cell-${rowIndex}-${colIndex}`}
+                        className={`${styles.cell} ${
+                          rowIndex === colIndex ? styles.diagonal : ''
+                        }`}
+                      >
+                        {value}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

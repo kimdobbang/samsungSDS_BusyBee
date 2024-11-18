@@ -11,8 +11,9 @@ export const sendGetItems = async () => {
         withCredentials: false, // 필요 시 설정
       }
     );
-    console.log(res);
-    return res;
+    const data = res.data;
+
+    return data;
   } catch (e) {
     console.error('Error:', e);
     throw e;

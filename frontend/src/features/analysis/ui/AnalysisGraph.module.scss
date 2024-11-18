@@ -1,31 +1,79 @@
 .container {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
   padding: 20px;
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  gap: 20px;
+  position: relative;
 }
 
 .graphSection,
 .matrixSection {
-  width: 48%; /* 양쪽 균등 배분 */
-  background-color: #f9f9f9;
-  border: 1px solid #d0d0d0;
-  border-radius: 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.8); /* 반투명 흰색 배경 */
+  backdrop-filter: blur(10px); /* 글래스 효과 */
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px; /* 살짝 둥근 모서리 */
   padding: 20px;
-}
-
-.graphSection h2,
-.matrixSection h2 {
-  margin-bottom: 10px;
-  font-size: 18px;
-  color: var(--primary);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 약간의 그림자 */
+  height: 450px;
 }
 
 .graph {
-  height: 400px; /* Adjust height for graph */
+  width: 100%; /* 전체 너비 */
+  max-width: 600px; /* 최대 너비 설정 */
+  height: 500px; /* 고정된 높이 */
+}
+
+.matrixContainer {
+  overflow-x: auto;
+}
+
+.matrixTable {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 400px;
+  height: 300px;
+}
+
+.matrixTable th,
+.matrixTable td {
+  border: 1px solid gray;
+  padding: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.headerCell {
+  background-color: #f9f9f9;
+  font-weight: bold;
+  color: var(--primary, black);
+}
+
+.cell {
+  background-color: white;
+}
+
+.diagonal {
+  background-color: var(--primary-light, lightblue);
+  font-weight: bold;
+  color: var(--primary, black);
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4),
+    rgba(0, 0, 0, 0.1)
+  );
+  backdrop-filter: blur(20px);
+  opacity: 0.8;
 }

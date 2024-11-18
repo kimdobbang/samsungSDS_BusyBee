@@ -73,7 +73,7 @@ export const AnalysisGraph: React.FC = () => {
           JSON.parse(item.confusion_matrix)
         );
         if (matrix.length > 0) {
-          setMatrixData(matrix[0]);
+          setMatrixData(matrix[matrix.length - 1]);
         }
       } catch (e) {
         console.error('Error fetching data:', e);

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 // import { ReactComponent as ReplyIcon } from 'shared/assets/icons/reply.svg';
 import { ReactComponent as ArrowIcon } from 'shared/assets/icons/arrow.svg';
 import { fetchEmailsByReceiver } from 'features/mail/api/emailApi'; // API 호출 함수
@@ -19,6 +19,14 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
   const mails = useMailStore((state) => state.mails);
   const setMails = useMailStore((state) => state.setMails);
 
+  const [selectedTag, setSelectedTag] = useState<number | null>(null);
+
+  // 선택된 태그에 따라 메일 필터링
+  const filteredMails =
+    selectedTag !== null
+      ? mails.filter((mail) => mail.flag === selectedTag)
+      : mails;
+
   // 데이터 구조 확인을 위해 콘솔 로그 출력
   if (mails.length > 0) {
     console.log('MAILS: ', mails);
@@ -29,11 +37,48 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
       <div className={`${styles.mailList} ${className}`}>
         <div className={styles.header}>
           <div className={styles.actions}>
-            <input type='checkbox' />
+            <button
+              className={`${styles.tagButton} ${
+                selectedTag === 0 ? styles.active : ''
+              }`}
+              onClick={() => setSelectedTag(0)}
+            >
+              스팸
+            </button>
+            <button
+              className={`${styles.tagButton} ${
+                selectedTag === 1 ? styles.active : ''
+              }`}
+              onClick={() => setSelectedTag(1)}
+            >
+              주문
+            </button>
+            <button
+              className={`${styles.tagButton} ${
+                selectedTag === 2 ? styles.active : ''
+              }`}
+              onClick={() => setSelectedTag(2)}
+            >
+              견적
+            </button>
+            <button
+              className={`${styles.tagButton} ${
+                selectedTag === 3 ? styles.active : ''
+              }`}
+              onClick={() => setSelectedTag(3)}
+            >
+              기타
+            </button>
+            <button
+              className={styles.tagButton}
+              onClick={() => setSelectedTag(null)}
+            >
+              전체
+            </button>
           </div>
           <div className={styles.pageInfo}>
             <p>
-              {mails.length}개 중 1-{mails.length}
+              {filteredMails.length}개 중 1-{filteredMails.length}
             </p>
             <button className={styles.navButton}>
               <ArrowIcon width={24} height={24} />
@@ -56,7 +101,7 @@ export const MailList: React.FC<MailListProps> = ({ className = '' }) => {
               </tr>
             </thead>
             <tbody>
-              {mails.map((mail, index) => (
+              {filteredMails.map((mail, index) => (
                 <tr
                   key={index}
                   className={mail.isRead ? styles.boardControl : ''}

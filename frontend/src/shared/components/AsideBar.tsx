@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
 import { ReactComponent as LetterIcon } from 'shared/assets/icons/letterbox.svg';
 import { ReactComponent as DashBoardIcon } from 'shared/assets/icons/dashboard.svg';
+import { ReactComponent as AnalystIcon } from 'shared/assets/icons/face.svg';
+
 import styles from './AsideBar.module.scss';
 import useMailStore from 'features/mail/utils/mailStore';
 import { useEffect } from 'react';
@@ -78,6 +80,18 @@ export const AsideBar: React.FC = () => {
             <p className={styles.count}>
               {mails.length !== 1 ? mails.length : ''}
             </p>
+          </button>
+        </li>
+        <li className={styles.item}>
+          <button
+            className={styles.button}
+            onClick={() => navigate('/analysis')}
+          >
+            <div>
+              <AnalystIcon width={24} height={24} className={styles.icon} />
+              <h1 className={styles.title}>분석이력</h1>
+            </div>
+            <p className={styles.count}></p>
           </button>
         </li>
         <li className={styles.item}>

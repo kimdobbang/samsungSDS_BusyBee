@@ -1,7 +1,20 @@
 import styles from './page.module.scss';
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ChatUI, Home, DetailMail, MailList, Dashboard, AuthUI } from 'features';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
+import {
+  ChatUI,
+  Home,
+  DetailMail,
+  MailList,
+  Dashboard,
+  AuthUI,
+  AnalysisGraph,
+} from 'features';
 import PrivateRoute from './PrivateRoute';
 // import { Auth } from '../features';
 // import { Voice } from '../features';
@@ -29,6 +42,14 @@ const App: React.FC = () => {
             element={
               <PrivateRoute>
                 <DetailMail />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path='analysis'
+            element={
+              <PrivateRoute>
+                <AnalysisGraph />
               </PrivateRoute>
             }
           />

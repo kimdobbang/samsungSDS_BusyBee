@@ -121,3 +121,28 @@
 .boardControl td {
   background-color: #f0f0f0;
 }
+
+.tagButton {
+  margin: 0 5px;
+  padding: 8px 12px;
+  border: 1px solid gray;
+  border-radius: 40px;
+  background-color: #fff;
+  color: gray;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 40px;
+  width: 65px;
+
+  &:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  &.active {
+    border-color: var(--primary);
+    color: var(--primary);
+    font-weight: bold;
+    background-color: var(--bg01);
+  }
+}

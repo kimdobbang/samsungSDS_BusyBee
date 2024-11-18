@@ -16,7 +16,10 @@ import { sortByReceivedDate } from 'features/mail/utils/sort';
 // import { sendDataToLambda } from '../api/dashboardApi';
 import { SendMailModal } from '../ui/SendMailModal';
 import { SensorData, GpsData } from 'features/dashboard/model/boardmodel';
-import { getCityNameByCode, getCoordinatesByCode } from 'shared/utils/getLatLng';
+import {
+  getCityNameByCode,
+  getCoordinatesByCode,
+} from 'shared/utils/getLatLng';
 
 export const Dashboard = () => {
   const [, authEmail] = useAuth() || [];
@@ -28,7 +31,9 @@ export const Dashboard = () => {
   const [originalRows, setOriginalRows] = useState<RowData[]>([]);
   const [monthRows, setMonthRows] = useState<RowData[]>([]);
   const [paginatedRows, setPaginatedRows] = useState<RowData[]>([]);
-  const [detailEstimateView, setDetailEstimateView] = useState<RowData | null>(null);
+  const [detailEstimateView, setDetailEstimateView] = useState<RowData | null>(
+    null
+  );
   const [detailData, setDetailData] = useState<any | null>(null);
 
   const itemsPerPage = 10;
@@ -89,7 +94,14 @@ export const Dashboard = () => {
   useEffect(() => {
     if (!isConnected) {
       // WebSocket 연결이 실패했을 경우 기본값 설정
-      setSensorData(new SensorData({ temperature: 0, humidity: 0, isOpen: false, status: 0 }));
+      setSensorData(
+        new SensorData({
+          temperature: 0,
+          humidity: 0,
+          isOpen: false,
+          status: 0,
+        })
+      );
       setGpsData(new GpsData({ lat: 0, lon: 0 }));
     }
   }, [isConnected]);
@@ -232,7 +244,11 @@ export const Dashboard = () => {
 
   return (
     <BoardLayout>
-      <div className={`${styles.dashboard} ${detailEstimateView ? styles.withDetail : ''}`}>
+      <div
+        className={`${styles.dashboard} ${
+          detailEstimateView ? styles.withDetail : ''
+        }`}
+      >
         {/* 상단 섹션 */}
         <div className={styles.top}>
           <div className={styles.statisticbox}>
@@ -241,7 +257,10 @@ export const Dashboard = () => {
               <h3>{countToday}건</h3>
             </div>
             <div className={styles.buttondiv}>
-              <button onClick={handleTodayMailClick} className={styles.iconbutton}>
+              <button
+                onClick={handleTodayMailClick}
+                className={styles.iconbutton}
+              >
                 <MailCheckIcon width={28} height={28} />
               </button>
             </div>
@@ -251,7 +270,10 @@ export const Dashboard = () => {
               <h2>월간 요청 메일</h2>
               <h3>{countMonthly}건</h3>
             </div>
-            <button onClick={handleMonthMailClick} className={styles.iconbutton}>
+            <button
+              onClick={handleMonthMailClick}
+              className={styles.iconbutton}
+            >
               <CalendarIcon width={32} height={32} />
             </button>
           </div>
@@ -279,43 +301,50 @@ export const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginatedRows.slice(0, visibleCount).map((row: RowData, index) => (
-                  <tr
-                    key={index}
-                    className={styles.line}
-                    style={selectIndexCopy === index ? selectedStyle : {}} // selectIndex를 사용
-                    onClick={() => setSelectIndexCopy(index)} // selectIndex를 설정
-                  >
-                    <td>{row.sender.S}</td>
-                    <td>{row.received_date.S}</td>
-                    <td>
-                      <div className={styles.stage}>
-                        <p>
-                          {selectIndex === index ? sensorData.status * 20 : row.status.N * 20} %
-                        </p>
-                        <div className={styles.progressBarContainer}>
-                          <div
-                            className={styles.progressBar}
-                            style={{
-                              width: `${
-                                selectIndex === index ? sensorData.status * 20 : row.status.N * 20
-                              }%`,
-                            }}
-                          ></div>
+                {paginatedRows
+                  .slice(0, visibleCount)
+                  .map((row: RowData, index) => (
+                    <tr
+                      key={index}
+                      className={styles.line}
+                      style={selectIndexCopy === index ? selectedStyle : {}} // selectIndex를 사용
+                      onClick={() => setSelectIndexCopy(index)} // selectIndex를 설정
+                    >
+                      <td>{row.sender.S}</td>
+                      <td>{row.received_date.S}</td>
+                      <td>
+                        <div className={styles.stage}>
+                          <p>
+                            {selectIndex === index
+                              ? sensorData.status * 20
+                              : row.status.N * 20}{' '}
+                            %
+                          </p>
+                          <div className={styles.progressBarContainer}>
+                            <div
+                              className={styles.progressBar}
+                              style={{
+                                width: `${
+                                  selectIndex === index
+                                    ? sensorData.status * 20
+                                    : row.status.N * 20
+                                }%`,
+                              }}
+                            ></div>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      {selectIndex === index
-                        ? sensorData.status === 5
+                      </td>
+                      <td>
+                        {selectIndex === index
+                          ? sensorData.status === 5
+                            ? '완료'
+                            : '진행중'
+                          : row.status.N === 5
                           ? '완료'
-                          : '진행중'
-                        : row.status.N === 5
-                        ? '완료'
-                        : '진행중'}
-                    </td>
-                  </tr>
-                ))}
+                          : '진행중'}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
 
@@ -337,7 +366,9 @@ export const Dashboard = () => {
             <div className={styles.detailquote}>
               <div>
                 <h1>
-                  {selectIndex !== null ? originalRows[selectIndex].sender.S : 0}
+                  {selectIndex !== null
+                    ? originalRows[selectIndex].sender.S
+                    : 0}
                   님의 견적 요청 자세히보기
                 </h1>
                 <button onClick={sendMail} className={styles.textbutton}>
@@ -370,56 +401,66 @@ export const Dashboard = () => {
                     </td>
                     <td
                       className={
-                        detailData?.ContainerSize && detailData.ContainerSize !== 'unknown'
+                        detailData?.ContainerSize &&
+                        detailData.ContainerSize !== 'unknown'
                           ? ''
                           : styles.missingData
                       }
                     >
-                      {detailData?.ContainerSize && detailData.ContainerSize !== 'unknown'
+                      {detailData?.ContainerSize &&
+                      detailData.ContainerSize !== 'unknown'
                         ? detailData.ContainerSize
                         : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.DepartureDate && detailData.DepartureDate !== 'unknown'
+                        detailData?.DepartureDate &&
+                        detailData.DepartureDate !== 'unknown'
                           ? ''
                           : styles.missingData
                       }
                     >
-                      {detailData?.DepartureDate && detailData.DepartureDate !== 'unknown'
+                      {detailData?.DepartureDate &&
+                      detailData.DepartureDate !== 'unknown'
                         ? detailData.DepartureDate
                         : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.ArrivalDate && detailData.ArrivalDate !== 'unknown'
+                        detailData?.ArrivalDate &&
+                        detailData.ArrivalDate !== 'unknown'
                           ? ''
                           : styles.missingData
                       }
                     >
-                      {detailData?.ArrivalDate && detailData.ArrivalDate !== 'unknown'
+                      {detailData?.ArrivalDate &&
+                      detailData.ArrivalDate !== 'unknown'
                         ? detailData.ArrivalDate
                         : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.DepartureCity && detailData.DepartureCity !== 'unknown'
+                        detailData?.DepartureCity &&
+                        detailData.DepartureCity !== 'unknown'
                           ? ''
                           : styles.missingData
                       }
                     >
-                      {detailData?.DepartureCity && detailData.DepartureCity !== 'unknown'
+                      {detailData?.DepartureCity &&
+                      detailData.DepartureCity !== 'unknown'
                         ? detailData.DepartureCity
                         : '미기입'}
                     </td>
                     <td
                       className={
-                        detailData?.ArrivalCity && detailData.ArrivalCity !== 'unknown'
+                        detailData?.ArrivalCity &&
+                        detailData.ArrivalCity !== 'unknown'
                           ? ''
                           : styles.missingData
                       }
                     >
-                      {detailData?.ArrivalCity && detailData.ArrivalCity !== 'unknown'
+                      {detailData?.ArrivalCity &&
+                      detailData.ArrivalCity !== 'unknown'
                         ? detailData.ArrivalCity
                         : '미기입'}
                     </td>
@@ -427,7 +468,9 @@ export const Dashboard = () => {
                 </tbody>
               </table>
               <div className={styles.barSection}>
-                <MultiStepProgress status={selectIndex !== null ? sensorData.status : 0} />
+                <MultiStepProgress
+                  status={selectIndex !== null ? sensorData.status : 0}
+                />
               </div>
               <div className={styles.detail}>
                 <div className={styles.detailTop}>
@@ -442,10 +485,22 @@ export const Dashboard = () => {
                   <div className={styles.bottomTop}>
                     <div className={styles.map}>
                       <Map
-                        startLat={getCoordinatesByCode(detailData?.DepartureCity)?.lat || 0} // 기본값 0 사용
-                        startLng={getCoordinatesByCode(detailData?.DepartureCity)?.lng || 0}
-                        endLat={getCoordinatesByCode(detailData?.ArrivalCity)?.lat || 0}
-                        endLng={getCoordinatesByCode(detailData?.ArrivalCity)?.lng || 0}
+                        startLat={
+                          getCoordinatesByCode(detailData?.DepartureCity)
+                            ?.lat || 0
+                        } // 기본값 0 사용
+                        startLng={
+                          getCoordinatesByCode(detailData?.DepartureCity)
+                            ?.lng || 0
+                        }
+                        endLat={
+                          getCoordinatesByCode(detailData?.ArrivalCity)?.lat ||
+                          0
+                        }
+                        endLng={
+                          getCoordinatesByCode(detailData?.ArrivalCity)?.lng ||
+                          0
+                        }
                         currentLat={gpsData?.lat || 0}
                         currentLng={gpsData?.lon || 0}
                       />
@@ -472,7 +527,9 @@ export const Dashboard = () => {
                       <div
                         className={styles.square}
                         style={{
-                          backgroundColor: sensorData.isOpen ? '#a3e6ff' : '#3a8bb2',
+                          backgroundColor: sensorData.isOpen
+                            ? '#a3e6ff'
+                            : '#3a8bb2',
                           color: 'white', // 텍스트 색상 (흰색)으로 설정
                         }}
                       >
@@ -483,7 +540,11 @@ export const Dashboard = () => {
                       <h2>내부 온도</h2>
                       <div
                         className={styles.square}
-                        style={{ backgroundColor: getTemperatureBgColor(sensorData.temperature) }}
+                        style={{
+                          backgroundColor: getTemperatureBgColor(
+                            sensorData.temperature
+                          ),
+                        }}
                       >
                         {sensorData.temperature}°C
                       </div>
@@ -492,7 +553,11 @@ export const Dashboard = () => {
                       <h2>내부 습도</h2>
                       <div
                         className={styles.square}
-                        style={{ backgroundColor: getHumidityBgColor(sensorData.temperature) }}
+                        style={{
+                          backgroundColor: getHumidityBgColor(
+                            sensorData.temperature
+                          ),
+                        }}
                       >
                         {sensorData.humidity}%
                       </div>
@@ -516,9 +581,13 @@ export const Dashboard = () => {
           }}
           orderId={originalRows[selectIndex].Id?.S || ''}
           sender={originalRows[selectIndex].receiver?.S || ''}
-          REreceiver={originalRows[selectIndex].sender.S?.match(/<(.+?)>/)?.[1] || ''}
+          REreceiver={
+            originalRows[selectIndex].sender.S?.match(/<(.+?)>/)?.[1] || ''
+          }
           Weight={
-            detailData?.Weight && detailData.Weight !== 'unknown' ? detailData.Weight : '미기입'
+            detailData?.Weight && detailData.Weight !== 'unknown'
+              ? detailData.Weight
+              : '미기입'
           }
           ContainerSize={
             detailData?.ContainerSize && detailData.ContainerSize !== 'unknown'

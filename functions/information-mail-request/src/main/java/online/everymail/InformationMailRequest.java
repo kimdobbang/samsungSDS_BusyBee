@@ -17,7 +17,6 @@ public class InformationMailRequest implements RequestHandler<SQSEvent, Void> {
             .withRegion("ap-northeast-2")
             .build();
     private static final Gson gson = new Gson();
-    private static final String emailAddress = "no-reply@busybeemail.net";
 
     @Override
     public Void handleRequest(SQSEvent event, Context context) {

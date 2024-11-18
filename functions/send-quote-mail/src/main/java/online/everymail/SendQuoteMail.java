@@ -19,7 +19,6 @@ public class SendQuoteMail implements RequestHandler<SQSEvent, Void> {
             .withRegion("ap-northeast-2")
             .build();
     private static final Gson gson = new Gson();
-    private static final String emailAddress = "no-reply@busybeemail.net";
     private static final DecimalFormat decimalFormat = new DecimalFormat("#,###");
 
 

@@ -9,7 +9,7 @@ const sqs = new AWS.SQS();
 module.exports.unzip = async (event) => {
   try {
     for (const record of event.Records) {
-      const attachmentKeys = []; // 전역 대신 함수 내부에서 관리
+      const attachmentKeys = [];
       const message = JSON.parse(record.body);
       const key = message.key;
       const bucketName = "request-mail";
@@ -26,7 +26,7 @@ module.exports.unzip = async (event) => {
           await processZipFile(
             attachment.content,
             `${key.split("/").slice(1).join("/")}/${attachment.filename}`,
-            attachmentKeys // 함수에 전달
+            attachmentKeys
           );
         } else if (isAllowedExtension(attachment.filename)) {
           const targetBucketName = "mails-to-files";
@@ -63,7 +63,7 @@ module.exports.unzip = async (event) => {
           subject: message.subject,
           email_content: message.email_content,
           received_date: message.received_date,
-          attachments: attachmentKeys, // 함수 내에서 생성된 키
+          attachments: attachmentKeys,
         }),
       };
 
@@ -104,7 +104,7 @@ const processZipFile = async (zipContent, basePath, attachmentKeys) => {
           })
           .promise();
 
-        attachmentKeys.push(entryPath); // 함수에 전달된 키 관리
+        attachmentKeys.push(entryPath);
         console.log(`File ${entry.entryName} saved to S3`);
       } else {
         console.log(

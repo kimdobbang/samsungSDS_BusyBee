@@ -72,7 +72,7 @@ void loop() {
   // MQTT 주제에 JSON 데이터 발행
   client.publish("sensor/data", jsonBuffer);
 
-  delay(2500);  // 2.5초마다 데이터 발행
+  delay(1500);  // 1.5초마다 데이터 발행
 }
 
 // 센서 초기화 함수
@@ -104,7 +104,7 @@ void reconnect() {
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
-      delay(2500);  // 2.5초 대기 후 재시도
+      delay(1500);  // 1.5초 대기 후 재시도
     }
   }
 }

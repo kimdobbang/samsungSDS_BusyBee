@@ -1,0 +1,43 @@
+service: file-classfication
+
+org: modomail
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-northeast-2  # 배포할 AWS 리전
+  environment:
+    SQS_QUEUE_URL_ZIP: https://sqs.${self:provider.region}.amazonaws.com/481665114066/unzip-trigger
+    SQS_QUEUE_URL_FILE: https://sqs.${self:provider.region}.amazonaws.com/481665114066/file-decoding-trigger
+    SQS_QUEUE_URL_MAIL: https://sqs.${self:provider.region}.amazonaws.com/481665114066/file-mail-classification-trigger
+    S3_BUCKET: request-mail
+
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+          Resource:
+            - 'arn:aws:sqs:ap-northeast-2:481665114066:unzip-trigger'
+            - 'arn:aws:sqs:ap-northeast-2:481665114066:file-decoding-trigger'
+            - 'arn:aws:sqs:ap-northeast-2:481665114066:file-mail-classification-trigger' # 수정된 부분
+            - 'arn:aws:sqs:ap-northeast-2:481665114066:file-classification-trigger'
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+          Resource:
+            - arn:aws:s3:::request-mail/*
+            - arn:aws:s3:::mails-to-files/*
+
+functions:
+  classifyEmail:
+    name: file-classification
+    handler: handler.classifyEmail
+    events:
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:file-classification-trigger

@@ -1,0 +1,36 @@
+service: information-integrity-verification
+
+provider:
+  name: aws
+  runtime: java17
+  region: ap-northeast-2
+  memorySize: 512
+  timeout: 30
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+          Resource:
+            - arn:aws:sqs:ap-northeast-2:481665114066:information-integrity-verification-trigger
+            - arn:aws:sqs:ap-northeast-2:481665114066:quotation-calculation-trigger
+        - Effect: Allow
+          Action:
+            - sns:Publish
+          Resource:
+            - arn:aws:sns:ap-northeast-2:481665114066:incorrect-information
+
+package:
+  artifact: build/libs/information-integrity-verification-0.0.1-SNAPSHOT-all.jar
+
+functions:
+  InformationIntegrityVerification:
+    name: information-integrity-verification
+    handler: online.everymail.InformationIntegrityVerification
+    events:
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:information-integrity-verification-trigger

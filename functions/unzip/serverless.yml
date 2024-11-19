@@ -1,0 +1,41 @@
+service: unzip
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-northeast-2
+  stage: dev
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+        - logs:DescribeLogStreams
+        - logs:TagResource
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+      Resource:
+        - arn:aws:s3:::request-mail/*
+        - arn:aws:s3:::mails-to-files/*
+    - Effect: Allow
+      Action:
+        - sqs:ReceiveMessage
+        - sqs:DeleteMessage
+        - sqs:GetQueueAttributes
+        - sqs:SendMessage
+      Resource:
+        - arn:aws:sqs:ap-northeast-2:481665114066:unzip-trigger
+        - arn:aws:sqs:ap-northeast-2:481665114066:zip-mail-classification-trigger
+
+functions:
+  unzip:
+    name: unzip
+    handler: handler.unzip
+    events:
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:unzip-trigger

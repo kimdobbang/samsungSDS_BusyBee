@@ -1,0 +1,64 @@
+service: online-learning
+
+provider:
+  name: aws
+  region: ap-northeast-2
+  runtime: python3.12
+  memorySize: 2048
+  timeout: 900
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 'sqs:SendMessage'
+          Resource: 'arn:aws:sqs:ap-northeast-2:481665114066:dynamodb-sqs-queue'
+        - Effect: 'Allow'
+          Action:
+            - 's3:GetObject'
+            - 's3:PutObject'
+            - 's3:ListBucket'
+          Resource: 'arn:aws:s3:::sagemaker-ap-northeast-2-481665114066/*'
+        - Effect: 'Allow'
+          Action:
+            - 'lambda:InvokeFunction'
+          Resource:
+            - 'arn:aws:lambda:ap-northeast-2:481665114066:function:distilkobert-evaluation'
+
+functions:
+  updateModel:
+    name: online-learning
+    image: 481665114066.dkr.ecr.ap-northeast-2.amazonaws.com/online-learning:latest
+    environment:
+      S3_BUCKET: sagemaker-ap-northeast-2-481665114066
+      MODEL_PREFIX: distilkobert-classifier/
+      ONNX_MODEL_PREFIX: distilkobert-onxx/
+      TRANSFORMERS_CACHE: /tmp/huggingface
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - DynamoDBSQSQueue
+              - Arn
+          batchSize: 32
+          maximumBatchingWindow: 300
+
+resources:
+  Resources:
+    DynamoDBSQSQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: dynamodb-sqs-queue
+        VisibilityTimeout: 910
+        MessageRetentionPeriod: 1209600
+        RedrivePolicy:
+          deadLetterTargetArn:
+            Fn::GetAtt:
+              - DeadLetterQueue
+              - Arn
+          maxReceiveCount: 5
+
+    DeadLetterQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: dynamodb-sqs-dead-letter-queue

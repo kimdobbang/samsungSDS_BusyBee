@@ -10,4 +10,7 @@ export interface Mail {
   emailId: string;
   nickname?: string; // 추가된 속성
   email?: string; // 추가된 속성
+  attachments?: string[];
+  isRead?: boolean;
+  isTagCollect?: boolean;
 }

@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 // 이미지 파일을 import로 가져오기
 import startMarkerImageSrc from 'shared/assets/icons/start.png';
 import endMarkerImageSrc from 'shared/assets/icons/end.png';
-import currentMarkerImageSrc from 'shared/assets/icons/car.png';
+import currentMarkerImageSrc from 'shared/assets/icons/truck.png';
 
 declare global {
   interface Window {
@@ -11,28 +11,30 @@ declare global {
   }
 }
 
-// 공통 인터페이스 정의
-interface LocationProps {
-  latitude: number;
-  longitude: number;
+interface MapLocationData {
+  startLat: number;
+  startLng: number;
+  endLat: number;
+  endLng: number;
+  currentLat?: number;
+  currentLng?: number;
 }
 
-export const Map: React.FC = () => {
-  useEffect(() => {
-    // 위치 설정
-    const startPoint: LocationProps = {
-      latitude: 37.5665,
-      longitude: 126.978,
-    };
-    const endPoint: LocationProps = {
-      latitude: 37.57,
-      longitude: 126.982,
-    };
-    const currentPoint: LocationProps = {
-      latitude: 37.5651,
-      longitude: 126.99,
-    };
+export const Map = ({
+  startLat = 0,
+  startLng = 0,
+  endLat = 0,
+  endLng = 0,
+  currentLat = 36.3504,
+  currentLng = 123.3845,
+}: MapLocationData) => {
+  // 지도와 마커를 저장할 ref
+  const mapRef = useRef<any>(null);
+  const startMarkerRef = useRef<any>(null);
+  const endMarkerRef = useRef<any>(null);
+  const currentMarkerRef = useRef<any>(null);
 
+  useEffect(() => {
     // 카카오맵 API 스크립트 동적으로 추가
     const script = document.createElement('script');
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAO_MAP_API_KEY}&autoload=false`;
@@ -42,29 +44,16 @@ export const Map: React.FC = () => {
         const container = document.getElementById('map');
         if (container) {
           const options = {
-            center: new window.kakao.maps.LatLng(startPoint.latitude, startPoint.longitude),
+            center: new window.kakao.maps.LatLng(currentLat, currentLng),
             level: 3,
           };
-          const map = new window.kakao.maps.Map(container, options);
-
-          // 마커 위치 설정
-          const startMarkerPosition = new window.kakao.maps.LatLng(
-            startPoint.latitude,
-            startPoint.longitude
-          );
-          const endMarkerPosition = new window.kakao.maps.LatLng(
-            endPoint.latitude,
-            endPoint.longitude
-          );
-          const currentMarkerPosition = new window.kakao.maps.LatLng(
-            currentPoint.latitude,
-            currentPoint.longitude
-          );
+          // 지도 객체 생성 및 저장 (한 번만 생성)
+          mapRef.current = new window.kakao.maps.Map(container, options);
 
           // 마커 이미지 설정
           const startMarkerImage = new window.kakao.maps.MarkerImage(
             startMarkerImageSrc,
-            new window.kakao.maps.Size(28, 28) // 마커 이미지 크기 설정
+            new window.kakao.maps.Size(28, 28)
           );
           const endMarkerImage = new window.kakao.maps.MarkerImage(
             endMarkerImageSrc,
@@ -75,33 +64,47 @@ export const Map: React.FC = () => {
             new window.kakao.maps.Size(28, 28)
           );
 
-          // 마커 생성 및 지도에 표시
-          const startMarker = new window.kakao.maps.Marker({
-            position: startMarkerPosition,
+          // 마커 생성 및 저장 (한 번만 생성)
+          startMarkerRef.current = new window.kakao.maps.Marker({
+            position: new window.kakao.maps.LatLng(startLat, startLng),
             image: startMarkerImage,
+            map: mapRef.current,
           });
-          startMarker.setMap(map);
-
-          const endMarker = new window.kakao.maps.Marker({
-            position: endMarkerPosition,
+          endMarkerRef.current = new window.kakao.maps.Marker({
+            position: new window.kakao.maps.LatLng(endLat, endLng),
             image: endMarkerImage,
+            map: mapRef.current,
           });
-          endMarker.setMap(map);
-
-          const currentMarker = new window.kakao.maps.Marker({
-            position: currentMarkerPosition,
+          currentMarkerRef.current = new window.kakao.maps.Marker({
+            position: new window.kakao.maps.LatLng(currentLat, currentLng),
             image: currentMarkerImage,
+            map: mapRef.current,
           });
-          currentMarker.setMap(map);
-
-          console.log('Marker created:', startMarker, endMarker, currentMarker);
         } else {
           console.error('Map container not found');
         }
       });
     };
     document.head.appendChild(script);
-  }, []);
+  }, []); // 빈 배열로 한 번만 실행
+
+  useEffect(() => {
+    // 마커 위치만 업데이트
+    if (
+      mapRef.current &&
+      startMarkerRef.current &&
+      endMarkerRef.current &&
+      currentMarkerRef.current
+    ) {
+      const newCenter = new window.kakao.maps.LatLng(currentLat, currentLng);
+      mapRef.current.setCenter(newCenter);
+
+      // 마커 위치 업데이트
+      startMarkerRef.current.setPosition(new window.kakao.maps.LatLng(startLat, startLng));
+      endMarkerRef.current.setPosition(new window.kakao.maps.LatLng(endLat, endLng));
+      currentMarkerRef.current.setPosition(newCenter);
+    }
+  }, [startLat, startLng, endLat, endLng, currentLat, currentLng]); // 위치 값이 변경될 때만 실행
 
   return <div id='map' style={{ width: '100%', height: '100%', borderRadius: '15px' }}></div>;
 };

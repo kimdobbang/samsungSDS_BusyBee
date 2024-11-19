@@ -1,0 +1,125 @@
+service: chat-app
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-northeast-2
+  stage: dev
+
+  environment:
+    DOMAIN_NAME: ${self:custom.websocketApiGatewayId}.execute-api.${self:provider.region}.amazonaws.com
+    CHAT_SESSIONS_TABLE_NAME: ${self:service}-CustomerChatSessions
+    ORDER_DATA_TABLE_NAME: estimate
+    DISCONNECT_FUNCTION_NAME: ${self:service}-disconnect
+    DEFAULT_FUNCTION_NAME: ${self:service}-default
+    COMPLETION_FUNCTION_NAME: ${self:service}-completion
+
+    CHAT_SESSIONS_TABLE_CONNECTION_INDEX: ConnectionIndex
+    SQS_QUEUE_URL: https://sqs.${self:provider.region}.amazonaws.com/481665114066/chat-quotation-calculation-trigger
+    LLM_API_URL: https://${self:custom.llmApiGatewayId}.execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}/llm-interaction
+    STAGE: ${self:provider.stage}
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+        - logs:DescribeLogStreams
+        - logs:TagResource
+      Resource: '*'
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+        - dynamodb:GetItem
+        - dynamodb:Query
+        - dynamodb:UpdateItem
+      Resource:
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-CustomerChatSessions
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${self:service}-CustomerChatSessions/index/ConnectionIndex
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      Resource:
+        - arn:aws:lambda:${self:provider.region}:*:function:${self:service}-disconnect
+        - arn:aws:lambda:${self:provider.region}:481665114066:function:${self:service}-default
+        - arn:aws:lambda:${self:provider.region}:481665114066:function:${self:service}-completion
+
+    - Effect: Allow
+      Action:
+        - execute-api:ManageConnections
+      Resource:
+        - arn:aws:execute-api:${self:provider.region}:*:*/*/@connections/*
+    - Effect: Allow
+      Action:
+        - sqs:SendMessage
+      Resource:
+        - arn:aws:sqs:${self:provider.region}:*:chat-quotation-calculation-trigger
+
+    - Effect: Allow
+      Action:
+        - translate:TranslateText
+      Resource: '*'
+
+functions:
+  connect:
+    name: ${self:service}-connect
+    handler: handlers/connect.handler
+    events:
+      - websocket:
+          route: $connect
+
+  disconnect:
+    name: ${self:service}-disconnect
+    handler: handlers/disconnect.handler
+    events:
+      - websocket:
+          route: $disconnect
+
+  default:
+    name: ${self:service}-default
+    handler: handlers/default.handler
+    events:
+      - websocket:
+          route: $default
+
+  message:
+    name: ${self:service}-message
+    timeout: 30
+    handler: handlers/message.handler
+    events:
+      - websocket:
+          route: sendMessage
+
+  completion:
+    name: ${self:service}-completion
+    handler: handlers/completion.handler
+
+resources:
+  Resources:
+    CustomerChatSessionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-CustomerChatSessions
+        AttributeDefinitions:
+          - AttributeName: orderId
+            AttributeType: S
+          - AttributeName: connectionId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: orderId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+        GlobalSecondaryIndexes:
+          - IndexName: ConnectionIndex
+            KeySchema:
+              - AttributeName: connectionId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+custom:
+  websocketApiGatewayId: 00v93zeny4
+  llmApiGatewayId: nr2499od16

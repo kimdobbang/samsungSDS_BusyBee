@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.682.0",
+    "@aws-sdk/client-dynamodb": "^3.682.0",
+    "@aws-sdk/client-lambda": "^3.682.0",
+    "@aws-sdk/client-sqs": "^3.682.0",
+    "@aws-sdk/client-translate": "^3.687.0",
+    "@aws-sdk/lib-dynamodb": "^3.685.0",
+    "@aws-sdk/node-http-handler": "^3.374.0",
+    "@aws-sdk/protocol-http": "^3.374.0"
+  }
+}

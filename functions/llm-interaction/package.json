@@ -1,0 +1,20 @@
+{
+  "name": "llm-interaction",
+  "version": "1.0.0",
+  "description": "<!-- title: 'AWS NodeJS Example' description: 'This template demonstrates how to deploy a simple NodeJS function running on AWS Lambda using the Serverless Framework.' layout: Doc framework: v4 platform: AWS language: nodeJS priority: 1 authorLink: 'https://github.com/serverless' authorName: 'Serverless, Inc.' authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4' -->",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.682.0",
+    "@aws-sdk/lib-dynamodb": "^3.685.0",
+    "@langchain/core": "^0.3.17",
+    "@langchain/openai": "^0.3.11",
+    "aws-sdk": "^2.1691.0",
+    "langchain": "^0.3.5"
+  }
+}

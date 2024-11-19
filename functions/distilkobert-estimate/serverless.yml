@@ -1,0 +1,62 @@
+service: distilkobert-evaluation
+
+frameworkVersion: '4'
+
+provider:
+  name: aws
+  region: ap-northeast-2
+  environment:
+    S3_BUCKET: sagemaker-ap-northeast-2-481665114066
+    MODEL_PREFIX: distilkobert-onxx/
+    TEST_DATA_PREFIX: distilkobert-data/test_dataset.json
+    DYNAMODB_TABLE: evaluation-results
+
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 's3:GetObject'
+          Resource:
+            - 'arn:aws:s3:::sagemaker-ap-northeast-2-481665114066/distilkobert-onxx/*'
+            - 'arn:aws:s3:::sagemaker-ap-northeast-2-481665114066/distilkobert-data/*'
+        - Effect: 'Allow'
+          Action:
+            - 'dynamodb:PutItem'
+            - 'dynamodb:GetItem'
+            - 'dynamodb:Scan'
+          Resource:
+            - 'arn:aws:dynamodb:ap-northeast-2:*:table/evaluation-results'
+        - Effect: 'Allow'
+          Action:
+            - 'lambda:InvokeFunction'
+          Resource:
+            - 'arn:aws:lambda:ap-northeast-2:481665114066:function:distilkobert-evaluation'
+
+functions:
+  test-evaluation:
+    image: 481665114066.dkr.ecr.ap-northeast-2.amazonaws.com/distilkobert-evaluation:latest
+    name: distilkobert-evaluation
+    memorySize: 1024
+    timeout: 30
+    events:
+      - http:
+          path: test-evaluate
+          method: post
+      - http:
+          path: test-evaluate
+          method: get
+
+resources:
+  Resources:
+    EvaluationResults:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: evaluation-results
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST

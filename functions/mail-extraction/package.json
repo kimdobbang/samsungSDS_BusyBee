@@ -1,0 +1,22 @@
+{
+  "name": "mail-extraction",
+  "version": "1.0.0",
+  "main": "cityMapping.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.693.0",
+    "@aws-sdk/client-sqs": "^3.693.0",
+    "@aws-sdk/client-textract": "^3.693.0",
+    "mammoth": "^1.8.0",
+    "openai": "^4.72.0",
+    "pdf-parse": "^1.1.1",
+    "uuid": "^11.0.3",
+    "xlsx": "^0.18.5"
+  }
+}

@@ -1,0 +1,50 @@
+service: mail-extraction
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-northeast-2
+  environment:
+    OPENAI_API_KEY: ${ssm:/prod/openAI/api_key} # SSM Parameter Store에서 참조
+    EXTRACT_QUEUE_URL: 'https://sqs.ap-northeast-2.amazonaws.com/481665114066/information-integrity-verification-trigger'
+    MAIL_S3_BUCKET: 'mails-to-files' # S3 버킷 이름 환경 변수로 설정
+
+  iamRoleStatements: # 변경된 키
+    - Effect: 'Allow'
+      Action:
+        - 'ssm:GetParameter'
+      Resource: 'arn:aws:ssm:ap-northeast-2:481665114066:parameter/prod/openAI/api_key'
+    - Effect: 'Allow'
+      Action:
+        - 'sqs:SendMessage'
+        - 'sqs:ReceiveMessage'
+        - 'sqs:DeleteMessage'
+      Resource:
+        - 'arn:aws:sqs:ap-northeast-2:481665114066:mail-extraction-trigger'
+        - 'arn:aws:sqs:ap-northeast-2:481665114066:information-integrity-verification-trigger'
+    - Effect: 'Allow'
+      Action:
+        - 's3:GetObject'
+      Resource: 'arn:aws:s3:::mails-to-files/*'
+    - Effect: 'Allow'
+      Action:
+        - 'textract:AnalyzeDocument'
+      Resource: '*' # Textract를 모든 문서에 대해 사용 가능하게 설정 (필요 시 리소스를 제한할 수 있음)
+
+functions:
+  extractEmailData:
+    name: mail-extraction
+    timeout: 30
+    handler: handler.handler # 핸들러 설정
+    package:
+      include:
+        - handler.js # Lambda 함수 파일
+        - package.json
+        - package-lock.json
+        - node_modules/** # 종속성 포함
+    layers:
+      - arn:aws:lambda:ap-northeast-2:481665114066:layer:langchainLayer:23
+      - arn:aws:lambda:ap-northeast-2:481665114066:layer:langgraphLayer:3
+    events:
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:mail-extraction-trigger

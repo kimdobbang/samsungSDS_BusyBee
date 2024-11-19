@@ -1,0 +1,42 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Serverless directories
+.serverless/
+.webpack/
+.sst/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.DS_Store
+Thumbs.db
+.env
+.env.*
+
+# Build output
+dist/
+build/
+coverage/
+
+# AWS credentials (should not be committed)
+.aws-sam/
+.sam/
+.vs/
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.iml
+
+# Local testing
+localstack/
+.mock/

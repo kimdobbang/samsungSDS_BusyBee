@@ -1,0 +1,36 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: ourmail
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: distilkobert
+
+# Serverless Framework 버전
+frameworkVersion: '4'
+
+# AWS 프로바이더 설정
+provider:
+  name: aws
+  region: ap-northeast-2 # 리전: 서울
+  runtime: python3.12 # Lambda 실행 환경
+  environment: # Lambda 환경 변수
+    S3_BUCKET: sagemaker-ap-northeast-2-481665114066
+    MODEL_PREFIX: distilkobert-onxx/ # ONNX 모델 경로 설정
+    HF_HOME: /tmp/huggingface_cache # 필요 시, 캐시 디렉터리 설정 가능
+
+  # Lambda IAM 역할에 필요한 권한 추가
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - 's3:GetObject' # S3에서 객체를 읽기 위한 권한
+          Resource: 'arn:aws:s3:::sagemaker-ap-northeast-2-481665114066/distilkobert-onxx/*' # ONNX 모델 파일 경로
+
+functions:
+  inference:
+    image: 481665114066.dkr.ecr.ap-northeast-2.amazonaws.com/distilkobert-lambda:latest
+    memorySize: 1024
+    timeout: 30 # 타임아웃 설정 (초 단위)
+    events:
+      - http:
+          path: inference
+          method: post

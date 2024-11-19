@@ -1,0 +1,38 @@
+service: quotation-calculation
+
+provider:
+  name: aws
+  runtime: java17
+  region: ap-northeast-2
+  memorySize: 512
+  timeout: 30
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+          Resource:
+            - arn:aws:sqs:ap-northeast-2:481665114066:quotation-calculation-trigger
+            - arn:aws:sqs:ap-northeast-2:481665114066:chat-quotation-calculation-trigger
+        - Effect: Allow
+          Action:
+            - sns:Publish
+          Resource:
+            - arn:aws:sns:ap-northeast-2:481665114066:save-data
+
+package:
+  artifact: build/libs/quotation-calculation-0.0.1-SNAPSHOT-all.jar
+
+functions:
+  InformationIntegrityVerification:
+    name: quotation-calculation
+    handler: online.everymail.QuotationCalculation
+    events:
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:quotation-calculation-trigger
+      - sqs:
+          arn: arn:aws:sqs:ap-northeast-2:481665114066:chat-quotation-calculation-trigger

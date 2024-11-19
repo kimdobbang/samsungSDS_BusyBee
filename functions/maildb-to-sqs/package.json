@@ -1,0 +1,15 @@
+{
+  "name": "maildb-to-sqs",
+  "version": "1.0.0",
+  "description": "<!--\r title: 'AWS NodeJS Example'\r description: 'This template demonstrates how to deploy a simple NodeJS function running on AWS Lambda using the Serverless Framework.'\r layout: Doc\r framework: v4\r platform: AWS\r language: nodeJS\r priority: 1\r authorLink: 'https://github.com/serverless'\r authorName: 'Serverless, Inc.'\r authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'\r -->",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.693.0",
+    "@aws-sdk/util-dynamodb": "^3.693.0"
+  }
+}

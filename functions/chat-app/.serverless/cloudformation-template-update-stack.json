@@ -1,0 +1,877 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The AWS CloudFormation template for this Serverless application",
+  "Resources": {
+    "ConnectLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/chat-app-connect"
+      }
+    },
+    "DisconnectLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/chat-app-disconnect"
+      }
+    },
+    "DefaultLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/chat-app-default"
+      }
+    },
+    "MessageLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/chat-app-message"
+      }
+    },
+    "CompletionLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/chat-app-completion"
+      }
+    },
+    "IamRoleLambdaExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "chat-app",
+                  "dev",
+                  "lambda"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup",
+                    "logs:TagResource"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/chat-app-connect:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/chat-app-disconnect:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/chat-app-default:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/chat-app-message:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/chat-app-completion:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/chat-app-connect:*:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/chat-app-disconnect:*:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/chat-app-default:*:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/chat-app-message:*:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/chat-app-completion:*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                    "logs:DescribeLogStreams",
+                    "logs:TagResource"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:PutItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:GetItem",
+                    "dynamodb:Query",
+                    "dynamodb:UpdateItem"
+                  ],
+                  "Resource": [
+                    "arn:aws:dynamodb:ap-northeast-2:*:table/chat-app-CustomerChatSessions",
+                    "arn:aws:dynamodb:ap-northeast-2:*:table/chat-app-CustomerChatSessions/index/ConnectionIndex"
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Resource": [
+                    "arn:aws:lambda:ap-northeast-2:*:function:chat-app-disconnect",
+                    "arn:aws:lambda:ap-northeast-2:481665114066:function:chat-app-default",
+                    "arn:aws:lambda:ap-northeast-2:481665114066:function:chat-app-completion"
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "execute-api:ManageConnections"
+                  ],
+                  "Resource": "arn:aws:execute-api:ap-northeast-2:*:*/*/@connections/*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:SendMessage"
+                  ],
+                  "Resource": "arn:aws:sqs:ap-northeast-2:*:chat-quotation-calculation-trigger"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "translate:TranslateText"
+                  ],
+                  "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "execute-api:ManageConnections"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:execute-api:*:*:*/@connections/*"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "Path": "/",
+        "RoleName": {
+          "Fn::Join": [
+            "-",
+            [
+              "chat-app",
+              "dev",
+              {
+                "Ref": "AWS::Region"
+              },
+              "lambdaRole"
+            ]
+          ]
+        }
+      }
+    },
+    "ConnectLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "serverless-framework-deployments-ap-northeast-2-b6e5cf50-bb0f",
+          "S3Key": "serverless/chat-app/dev/1731477745173-2024-11-13T06:02:25.173Z/chat-app.zip"
+        },
+        "Handler": "handlers/connect.handler",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "chat-app-connect",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "DOMAIN_NAME": "00v93zeny4.execute-api.ap-northeast-2.amazonaws.com",
+            "CHAT_SESSIONS_TABLE_NAME": "chat-app-CustomerChatSessions",
+            "ORDER_DATA_TABLE_NAME": "estimate",
+            "DISCONNECT_FUNCTION_NAME": "chat-app-disconnect",
+            "DEFAULT_FUNCTION_NAME": "chat-app-default",
+            "COMPLETION_FUNCTION_NAME": "chat-app-completion",
+            "CHAT_SESSIONS_TABLE_CONNECTION_INDEX": "ConnectionIndex",
+            "SQS_QUEUE_URL": "https://sqs.ap-northeast-2.amazonaws.com/481665114066/chat-quotation-calculation-trigger",
+            "LLM_API_URL": "https://nr2499od16.execute-api.ap-northeast-2.amazonaws.com/dev/llm-interaction",
+            "STAGE": "dev"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ConnectLogGroup"
+      ]
+    },
+    "DisconnectLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "serverless-framework-deployments-ap-northeast-2-b6e5cf50-bb0f",
+          "S3Key": "serverless/chat-app/dev/1731477745173-2024-11-13T06:02:25.173Z/chat-app.zip"
+        },
+        "Handler": "handlers/disconnect.handler",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "chat-app-disconnect",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "DOMAIN_NAME": "00v93zeny4.execute-api.ap-northeast-2.amazonaws.com",
+            "CHAT_SESSIONS_TABLE_NAME": "chat-app-CustomerChatSessions",
+            "ORDER_DATA_TABLE_NAME": "estimate",
+            "DISCONNECT_FUNCTION_NAME": "chat-app-disconnect",
+            "DEFAULT_FUNCTION_NAME": "chat-app-default",
+            "COMPLETION_FUNCTION_NAME": "chat-app-completion",
+            "CHAT_SESSIONS_TABLE_CONNECTION_INDEX": "ConnectionIndex",
+            "SQS_QUEUE_URL": "https://sqs.ap-northeast-2.amazonaws.com/481665114066/chat-quotation-calculation-trigger",
+            "LLM_API_URL": "https://nr2499od16.execute-api.ap-northeast-2.amazonaws.com/dev/llm-interaction",
+            "STAGE": "dev"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "DisconnectLogGroup"
+      ]
+    },
+    "DefaultLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "serverless-framework-deployments-ap-northeast-2-b6e5cf50-bb0f",
+          "S3Key": "serverless/chat-app/dev/1731477745173-2024-11-13T06:02:25.173Z/chat-app.zip"
+        },
+        "Handler": "handlers/default.handler",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "chat-app-default",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "DOMAIN_NAME": "00v93zeny4.execute-api.ap-northeast-2.amazonaws.com",
+            "CHAT_SESSIONS_TABLE_NAME": "chat-app-CustomerChatSessions",
+            "ORDER_DATA_TABLE_NAME": "estimate",
+            "DISCONNECT_FUNCTION_NAME": "chat-app-disconnect",
+            "DEFAULT_FUNCTION_NAME": "chat-app-default",
+            "COMPLETION_FUNCTION_NAME": "chat-app-completion",
+            "CHAT_SESSIONS_TABLE_CONNECTION_INDEX": "ConnectionIndex",
+            "SQS_QUEUE_URL": "https://sqs.ap-northeast-2.amazonaws.com/481665114066/chat-quotation-calculation-trigger",
+            "LLM_API_URL": "https://nr2499od16.execute-api.ap-northeast-2.amazonaws.com/dev/llm-interaction",
+            "STAGE": "dev"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "DefaultLogGroup"
+      ]
+    },
+    "MessageLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "serverless-framework-deployments-ap-northeast-2-b6e5cf50-bb0f",
+          "S3Key": "serverless/chat-app/dev/1731477745173-2024-11-13T06:02:25.173Z/chat-app.zip"
+        },
+        "Handler": "handlers/message.handler",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "chat-app-message",
+        "MemorySize": 1024,
+        "Timeout": 30,
+        "Environment": {
+          "Variables": {
+            "DOMAIN_NAME": "00v93zeny4.execute-api.ap-northeast-2.amazonaws.com",
+            "CHAT_SESSIONS_TABLE_NAME": "chat-app-CustomerChatSessions",
+            "ORDER_DATA_TABLE_NAME": "estimate",
+            "DISCONNECT_FUNCTION_NAME": "chat-app-disconnect",
+            "DEFAULT_FUNCTION_NAME": "chat-app-default",
+            "COMPLETION_FUNCTION_NAME": "chat-app-completion",
+            "CHAT_SESSIONS_TABLE_CONNECTION_INDEX": "ConnectionIndex",
+            "SQS_QUEUE_URL": "https://sqs.ap-northeast-2.amazonaws.com/481665114066/chat-quotation-calculation-trigger",
+            "LLM_API_URL": "https://nr2499od16.execute-api.ap-northeast-2.amazonaws.com/dev/llm-interaction",
+            "STAGE": "dev"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "MessageLogGroup"
+      ]
+    },
+    "CompletionLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "serverless-framework-deployments-ap-northeast-2-b6e5cf50-bb0f",
+          "S3Key": "serverless/chat-app/dev/1731477745173-2024-11-13T06:02:25.173Z/chat-app.zip"
+        },
+        "Handler": "handlers/completion.handler",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "chat-app-completion",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "DOMAIN_NAME": "00v93zeny4.execute-api.ap-northeast-2.amazonaws.com",
+            "CHAT_SESSIONS_TABLE_NAME": "chat-app-CustomerChatSessions",
+            "ORDER_DATA_TABLE_NAME": "estimate",
+            "DISCONNECT_FUNCTION_NAME": "chat-app-disconnect",
+            "DEFAULT_FUNCTION_NAME": "chat-app-default",
+            "COMPLETION_FUNCTION_NAME": "chat-app-completion",
+            "CHAT_SESSIONS_TABLE_CONNECTION_INDEX": "ConnectionIndex",
+            "SQS_QUEUE_URL": "https://sqs.ap-northeast-2.amazonaws.com/481665114066/chat-quotation-calculation-trigger",
+            "LLM_API_URL": "https://nr2499od16.execute-api.ap-northeast-2.amazonaws.com/dev/llm-interaction",
+            "STAGE": "dev"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CompletionLogGroup"
+      ]
+    },
+    "ConnectLambdaVersionpYXy5LCptqjja2pdbKuQENqt05rxAcXJ7DcsXw8k4": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ConnectLambdaFunction"
+        },
+        "CodeSha256": "CCkqXnLlP+xYl3o8JajvdtubVPbZWlYMVDGtfB9Ulk0="
+      }
+    },
+    "DisconnectLambdaVersionYqhrIG3ejF14jS5SXDDzgQAO1qcDlYlmwV0VTzog": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "DisconnectLambdaFunction"
+        },
+        "CodeSha256": "CCkqXnLlP+xYl3o8JajvdtubVPbZWlYMVDGtfB9Ulk0="
+      }
+    },
+    "DefaultLambdaVersion2MWL4XKQpxyaiNrrFblQuX3aNZFf0AvLPZbmpFdw": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "DefaultLambdaFunction"
+        },
+        "CodeSha256": "CCkqXnLlP+xYl3o8JajvdtubVPbZWlYMVDGtfB9Ulk0="
+      }
+    },
+    "MessageLambdaVersion79PQAlu402vveNIYvCeRYNKh6bTjNSe9Iq6YBGTDXUk": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "MessageLambdaFunction"
+        },
+        "CodeSha256": "CCkqXnLlP+xYl3o8JajvdtubVPbZWlYMVDGtfB9Ulk0="
+      }
+    },
+    "CompletionLambdaVersionmgqXUUd3NWSo40EgmhuqHBRRxV1lCE8SI0gOu1VfC1Q": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CompletionLambdaFunction"
+        },
+        "CodeSha256": "CCkqXnLlP+xYl3o8JajvdtubVPbZWlYMVDGtfB9Ulk0="
+      }
+    },
+    "WebsocketsApi": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "Properties": {
+        "Name": "dev-chat-app-websockets",
+        "RouteSelectionExpression": "$request.body.action",
+        "Description": "Serverless Websockets",
+        "ProtocolType": "WEBSOCKET"
+      }
+    },
+    "ConnectWebsocketsIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WebsocketsApi"
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":apigateway:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":lambda:path/2015-03-31/functions/",
+              {
+                "Fn::GetAtt": [
+                  "ConnectLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "/invocations"
+            ]
+          ]
+        }
+      }
+    },
+    "DisconnectWebsocketsIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WebsocketsApi"
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":apigateway:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":lambda:path/2015-03-31/functions/",
+              {
+                "Fn::GetAtt": [
+                  "DisconnectLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "/invocations"
+            ]
+          ]
+        }
+      }
+    },
+    "DefaultWebsocketsIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WebsocketsApi"
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":apigateway:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":lambda:path/2015-03-31/functions/",
+              {
+                "Fn::GetAtt": [
+                  "DefaultLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "/invocations"
+            ]
+          ]
+        }
+      }
+    },
+    "MessageWebsocketsIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WebsocketsApi"
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":apigateway:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":lambda:path/2015-03-31/functions/",
+              {
+                "Fn::GetAtt": [
+                  "MessageLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "/invocations"
+            ]
+          ]
+        }
+      }
+    },
+    "ConnectLambdaPermissionWebsockets": {
+      "Type": "AWS::Lambda::Permission",
+      "DependsOn": [
+        "WebsocketsApi",
+        "ConnectLambdaFunction"
+      ],
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ConnectLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com"
+      }
+    },
+    "DisconnectLambdaPermissionWebsockets": {
+      "Type": "AWS::Lambda::Permission",
+      "DependsOn": [
+        "WebsocketsApi",
+        "DisconnectLambdaFunction"
+      ],
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "DisconnectLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com"
+      }
+    },
+    "DefaultLambdaPermissionWebsockets": {
+      "Type": "AWS::Lambda::Permission",
+      "DependsOn": [
+        "WebsocketsApi",
+        "DefaultLambdaFunction"
+      ],
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "DefaultLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com"
+      }
+    },
+    "MessageLambdaPermissionWebsockets": {
+      "Type": "AWS::Lambda::Permission",
+      "DependsOn": [
+        "WebsocketsApi",
+        "MessageLambdaFunction"
+      ],
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "MessageLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com"
+      }
+    },
+    "SconnectWebsocketsRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WebsocketsApi"
+        },
+        "RouteKey": "$connect",
+        "AuthorizationType": "NONE",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "ConnectWebsocketsIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "SdisconnectWebsocketsRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WebsocketsApi"
+        },
+        "RouteKey": "$disconnect",
+        "AuthorizationType": "NONE",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "DisconnectWebsocketsIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "SdefaultWebsocketsRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WebsocketsApi"
+        },
+        "RouteKey": "$default",
+        "AuthorizationType": "NONE",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "DefaultWebsocketsIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "sendMessageWebsocketsRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WebsocketsApi"
+        },
+        "RouteKey": "sendMessage",
+        "AuthorizationType": "NONE",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "MessageWebsocketsIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "WebsocketsDeploymentStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": {
+          "Ref": "WebsocketsApi"
+        },
+        "StageName": "dev",
+        "Description": "Serverless Websockets",
+        "DeploymentId": {
+          "Ref": "WebsocketsDeploymentBmX3T2XfuL4rqsxWjwXi4g5cuXP97Zx0lPA3TiWSO0"
+        }
+      }
+    },
+    "WebsocketsDeploymentBmX3T2XfuL4rqsxWjwXi4g5cuXP97Zx0lPA3TiWSO0": {
+      "Type": "AWS::ApiGatewayV2::Deployment",
+      "DependsOn": [
+        "SconnectWebsocketsRoute",
+        "SdisconnectWebsocketsRoute",
+        "SdefaultWebsocketsRoute",
+        "sendMessageWebsocketsRoute"
+      ],
+      "Properties": {
+        "ApiId": {
+          "Ref": "WebsocketsApi"
+        },
+        "Description": "Serverless Websockets"
+      }
+    },
+    "CustomerChatSessionsTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": "chat-app-CustomerChatSessions",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "orderId",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "connectionId",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "orderId",
+            "KeyType": "HASH"
+          }
+        ],
+        "BillingMode": "PAY_PER_REQUEST",
+        "StreamSpecification": {
+          "StreamViewType": "NEW_IMAGE"
+        },
+        "GlobalSecondaryIndexes": [
+          {
+            "IndexName": "ConnectionIndex",
+            "KeySchema": [
+              {
+                "AttributeName": "connectionId",
+                "KeyType": "HASH"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "ALL"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "ServerlessDeploymentBucketName": {
+      "Value": "serverless-framework-deployments-ap-northeast-2-b6e5cf50-bb0f",
+      "Export": {
+        "Name": "sls-chat-app-dev-ServerlessDeploymentBucketName"
+      }
+    },
+    "ConnectLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ConnectLambdaVersionpYXy5LCptqjja2pdbKuQENqt05rxAcXJ7DcsXw8k4"
+      },
+      "Export": {
+        "Name": "sls-chat-app-dev-ConnectLambdaFunctionQualifiedArn"
+      }
+    },
+    "DisconnectLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "DisconnectLambdaVersionYqhrIG3ejF14jS5SXDDzgQAO1qcDlYlmwV0VTzog"
+      },
+      "Export": {
+        "Name": "sls-chat-app-dev-DisconnectLambdaFunctionQualifiedArn"
+      }
+    },
+    "DefaultLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "DefaultLambdaVersion2MWL4XKQpxyaiNrrFblQuX3aNZFf0AvLPZbmpFdw"
+      },
+      "Export": {
+        "Name": "sls-chat-app-dev-DefaultLambdaFunctionQualifiedArn"
+      }
+    },
+    "MessageLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "MessageLambdaVersion79PQAlu402vveNIYvCeRYNKh6bTjNSe9Iq6YBGTDXUk"
+      },
+      "Export": {
+        "Name": "sls-chat-app-dev-MessageLambdaFunctionQualifiedArn"
+      }
+    },
+    "CompletionLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CompletionLambdaVersionmgqXUUd3NWSo40EgmhuqHBRRxV1lCE8SI0gOu1VfC1Q"
+      },
+      "Export": {
+        "Name": "sls-chat-app-dev-CompletionLambdaFunctionQualifiedArn"
+      }
+    },
+    "ServiceEndpointWebsocket": {
+      "Description": "URL of the service endpoint",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "wss://",
+            {
+              "Ref": "WebsocketsApi"
+            },
+            ".execute-api.",
+            {
+              "Ref": "AWS::Region"
+            },
+            ".",
+            {
+              "Ref": "AWS::URLSuffix"
+            },
+            "/dev"
+          ]
+        ]
+      },
+      "Export": {
+        "Name": "sls-chat-app-dev-ServiceEndpointWebsocket"
+      }
+    }
+  }
+}

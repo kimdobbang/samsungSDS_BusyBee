@@ -2,7 +2,7 @@
 
 ---
 
-![KakaoTalk_20241125_093325900.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/cfc7df16-f064-4871-93cc-79f089a29045/fad2637c-58fd-4eb7-ba13-df86b245829b.png)
+![표지.png](https://img.notionusercontent.com/s3/prod-files-secure%2Fdbef53de-55a7-4b44-b51f-16508766f48a%2Fcfc7df16-f064-4871-93cc-79f089a29045%2Ffad2637c-58fd-4eb7-ba13-df86b245829b.png/size/w=2000?exp=1733129442&sig=NXH1zo2SWcw9gclZ22mReVV7PC8-1HvE76GlHFC1SVs)
 
 - 삼성 SDS 기업연계 프로젝트
 - 개발기간: 2024.10.14 ~ 2024.11.19
@@ -78,7 +78,7 @@
 
 ## 4.1. 로그인
 
-![9.로그인(코그니토).PNG](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/9cc54abe-b268-4feb-9cbe-6989e903e3c9/9.%EB%A1%9C%EA%B7%B8%EC%9D%B8(%EC%BD%94%EA%B7%B8%EB%8B%88%ED%86%A0).png)
+![9.로그인(코그니토).PNG](https://img.notionusercontent.com/s3/prod-files-secure%2Fdbef53de-55a7-4b44-b51f-16508766f48a%2F9cc54abe-b268-4feb-9cbe-6989e903e3c9%2F9.%EB%A1%9C%EA%B7%B8%EC%9D%B8(%EC%BD%94%EA%B7%B8%EB%8B%88%ED%86%A0).png/size/w=2000?exp=1733129545&sig=nBk0VjiAYIFIqtorlxF1vnLhmpJ2nhTiCWMKHjN8bko)
 
 - 코그니토를 사용하여 유저 로그인, 로그아웃, 회원가입 기능을 구현했습니다.
 - 유저 데이터와 비밀번호는 개인 데이터베이스에 저장하지 않고, AWS에서 관리하므로 보안 문제가 없습니다.
@@ -86,18 +86,18 @@
 
 ## 4.2. 메일함
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/33193214-e38a-4de4-bf85-0d4a8b02388c/image.png)
+![image.png](https://img.notionusercontent.com/s3/prod-files-secure%2F67647f11-5d74-47d2-a281-3299272bad3e%2Fbca82292-c99d-4bd1-bbe3-d3da9cc40324%2F%EB%A9%94%EC%9D%BC%ED%95%A9%EC%84%B1.png/size/w=2000?exp=1733214806&sig=aTq2vPiJTAErTtupESGIHSUVzAFCfOja6e7r2TLdmog)
 
-![8.메일함상세.PNG](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/ee7c64b2-1128-45a5-b4d4-07a6b72da839/8.%EB%A9%94%EC%9D%BC%ED%95%A8%EC%83%81%EC%84%B8.png)
+![8.메일함상세.PNG](https://img.notionusercontent.com/s3/prod-files-secure%2Fdbef53de-55a7-4b44-b51f-16508766f48a%2Fee7c64b2-1128-45a5-b4d4-07a6b72da839%2F8.%EB%A9%94%EC%9D%BC%ED%95%A8%EC%83%81%EC%84%B8.png/size/w=2000?exp=1733129389&sig=ADIy8W8QUCfiiDceBCh-rNEg0SZLBZs7RviAoP11Px8)
 
 - 관리자 계정은 도착한 이메일의 본문과 첨부파일을 조회할 수 있습니다.
 - 메일함에서는 메일 내용을 분석하고, 이를 바탕으로 이메일을 **견적**, **주문**, **스팸**, **기타**로 4가지로 분류하고 태그를 자동으로 붙입니다.
 
 ## 4.3. 대시보드
 
-![1.대시보드.PNG](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/1317a753-5750-445b-a702-efda63da7476/1.%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.png)
+![1.대시보드.PNG](https://img.notionusercontent.com/s3/prod-files-secure%2Fdbef53de-55a7-4b44-b51f-16508766f48a%2F1317a753-5750-445b-a702-efda63da7476%2F1.%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.png/size/w=2000?exp=1733129576&sig=n9vdqOTD5mvTWi64SQZTotCJRbYxm9aPOoy9xieflys)
 
-![대시보드녹화5.gif](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/5521bfbb-8389-4544-bb0f-c556dd8d674e/%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C%EB%85%B9%ED%99%945.gif)
+![대시보드녹화5.gif](https://file.notion.so/f/f/dbef53de-55a7-4b44-b51f-16508766f48a/5521bfbb-8389-4544-bb0f-c556dd8d674e/%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C%EB%85%B9%ED%99%945.gif?table=block&id=dd1bbc3e-462c-421f-a530-119b10e7972a&spaceId=dbef53de-55a7-4b44-b51f-16508766f48a&expirationTimestamp=1733270400000&signature=soqWjYkV6Qp-POd3DIfLzSAHklioeSdsywYXjUYpsy0)
 
 - 대시보드에서는 현재 배송 중인 건의 단계와, 배송 중일 경우 실시간 위치를 지도에서 조회할 수 있습니다.
 - 카메라를 통해 컨테이너 내부 상황을 실시간으로 볼 수 있으며, 열림 감지, 온도, 습도 정보 등을 제공하여 물류가 정상적으로 배송되고 있는지 확인할 수 있습니다.
@@ -105,29 +105,32 @@
 
 ## 4.4. 채팅
 
-![10-2.채팅링크메일(구글).png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/35c29d7e-ed83-4238-972f-392c76df84aa/10-2.%EC%B1%84%ED%8C%85%EB%A7%81%ED%81%AC%EB%A9%94%EC%9D%BC(%EA%B5%AC%EA%B8%80).png)
+![10-2.채팅링크메일(구글).png](https://img.notionusercontent.com/s3/prod-files-secure%2Fdbef53de-55a7-4b44-b51f-16508766f48a%2F35c29d7e-ed83-4238-972f-392c76df84aa%2F10-2.%EC%B1%84%ED%8C%85%EB%A7%81%ED%81%AC%EB%A9%94%EC%9D%BC(%EA%B5%AC%EA%B8%80).png/size/w=2000?exp=1733129734&sig=CzKPDO4aFL7D8FXbwKT0zz_jzCOMIJ8EJlLsQNkKOps)
 
 - 견적 요청 메일을 보낼 때, 누락된 정보가 있다면 채팅 링크를 통해 추가 정보를 받을 수 있습니다.
 
-![11-1.채팅.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/fef650df-e230-4f56-ae61-b8405eae5073/11-1.%EC%B1%84%ED%8C%85.png)
+![11-1.채팅.png](https://img.notionusercontent.com/s3/prod-files-secure%2Fdbef53de-55a7-4b44-b51f-16508766f48a%2Ffef650df-e230-4f56-ae61-b8405eae5073%2F11-1.%EC%B1%84%ED%8C%85.png/size/w=2000?exp=1733129755&sig=K1cIiK21ZDz0I1WO16o2Bnpg_rXfRzMHdlIFWyeVaWU)
 
 - 자연어를 이용해 유연하게 추가 정보를 입력받을 수 있습니다. 요청된 순서나 보기 내에서만 요청하는 것이 아니라, 필요할 때 돌발적인 정보도 요청할 수 있습니다. 특히, 사용자의 요청에 따라 Tavily(AI 기반 검색 엔진)를 이용해 최신 물류 뉴스와 운송 가능 지역을 제공할 수 있습니다.
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/a1430203-cb03-4e40-866b-ee0e1b5ed686/image.png)
+![image.png](https://img.notionusercontent.com/s3/prod-files-secure%2Fdbef53de-55a7-4b44-b51f-16508766f48a%2Fa1430203-cb03-4e40-866b-ee0e1b5ed686%2Fimage.png/size/w=2000?exp=1733129791&sig=TZOJTBypEmVkPjpXUMt2sM-oDrvYrTEkZU7i0lf1a78)
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/81c24cad-ef2b-42b9-9d76-365be6e314f2/image.png)
+![image.png](https://img.notionusercontent.com/s3/prod-files-secure%2Fdbef53de-55a7-4b44-b51f-16508766f48a%2F81c24cad-ef2b-42b9-9d76-365be6e314f2%2Fimage.png/size/w=2000?exp=1733129878&sig=Jpl_V24PLvqQQ8UHfGH1ZPszr2yvVK_UICf7WHP2vhg)
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/1db9e345-91e1-4ee6-ba0a-e5afa3e3a438/image.png)
+![image.png](https://img.notionusercontent.com/s3/prod-files-secure%2Fdbef53de-55a7-4b44-b51f-16508766f48a%2F1db9e345-91e1-4ee6-ba0a-e5afa3e3a438%2Fimage.png/size/w=2000?exp=1733129908&sig=Q-EVS4DImhyoPee_tZu_WY4rhUva-a58bwC255sncRE)
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/9f6bea83-cfe4-4f91-9eec-4d8d59eeed6e/image.png)
+![image.png](https://img.notionusercontent.com/s3/prod-files-secure%2Fdbef53de-55a7-4b44-b51f-16508766f48a%2F9f6bea83-cfe4-4f91-9eec-4d8d59eeed6e%2Fimage.png/size/w=2000?exp=1733129928&sig=CKFXvFpiPI7qX7-r-kCUoFV7rL9ok4w4qn3RnZFczzc)
 
 - 영어, 일본어, 태국어 등 다른 언어로 요청할 시 해당 언어로 답변을 제공합니다.
+- 채팅 아키텍쳐
+![채팅 아키텍쳐.png](https://img.notionusercontent.com/s3/prod-files-secure%2F67647f11-5d74-47d2-a281-3299272bad3e%2Faab5f3e1-893b-478e-9652-ff04ad1c986d%2FIMG_9331.jpeg/size/w=2000?exp=1733214712&sig=ymjTBHOq5xMuxI6K4atQ9NhWDYwyAJPiY3sPB14AQYg)
+
 
 # 5. 아키텍쳐
 
 ---
 
-![비지비 아키텍쳐.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dbef53de-55a7-4b44-b51f-16508766f48a/0f53b2ab-c7d4-4412-a970-7ad01e06c4f6/%EB%B9%84%EC%A7%80%EB%B9%84_%EC%95%84%ED%82%A4%ED%85%8D%EC%B3%90.png)
+![비지비 아키텍쳐.png](https://img.notionusercontent.com/s3/prod-files-secure%2F67647f11-5d74-47d2-a281-3299272bad3e%2F4b3ef4df-b74d-4e44-ac46-0c78f08ea1f7%2Fa05d494c-bfed-4518-81dd-e526a5e010d4.png/size/w=2000?exp=1733214592&sig=TUL3aGqgXWMERzFArb8IxcC-TN3qL2BxfN4DYM0ybGc)
 
 # 6. 개선사항
 
